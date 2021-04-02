@@ -1,3 +1,24 @@
+"""
+This module contains methods for optimizing hyperparameters of models
+
+HyperOptUtils:
+    This class contains various helper utilities for setting up and running hyperparameter optimization
+
+GridSearch:
+    This class performs a basic grid search over the parameters and value ranges of interest to find the best
+    set of model hyperparameters in the provided grid of values
+
+RandomizedSearch:
+    This class performs a randomized search over the parameters and value ranges of interest to find the best
+    set of model hyperparameters in the provided grid of values. Often faster than GridSearch. Instead of a grid
+    of values, it takes a probability distribution name as input (e.g. "norm")
+
+BayesianSearch:
+    This class performs a Bayesian search over the parameters and value ranges of interest to find the best
+    set of model hyperparameters in the provided grid of values. Often faster than GridSearch.
+
+"""
+
 import sklearn.model_selection as ms
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from skopt import BayesSearchCV
@@ -14,50 +35,47 @@ class HyperOptUtils():
     Helper class providing useful methods for other hyperparameter optimization classes.
 
     Args:
+       param_names: (list), list containing names of hyperparams to optimize
 
-       param_names (list) : list containing names of hyperparams to optimize
-
-       param_values (list) : list containing values of hyperparams to optimize
-
-       param_dict (dict) : dict of {param_name : param_value} pairs. Constructed using one of the _get_*_param_dict methods.
+       param_values: (list), list containing values of hyperparams to optimize
 
     Methods:
-
         _search_space_generator : parses GridSearch param_dict and checks values
-
             Args:
-
-                params (dict) : dict of {param_name : param_value} pairs.
+                params: (dict), dict of {param_name : param_value} pairs.
 
             Returns:
-
-                params_ (dict) : dict of {param_name : param_value} pairs.
+                params_: (dict), dict of {param_name : param_value} pairs.
 
         _save_output : saves hyperparameter optimization output and best values to csv file
-
             Args:
+                savepath: (str), path of output directory
 
-                savepath (str) : path of output directory
+                data: (dict), dict of {estimator_name : hyper_opt.GridSearch.fit()} object, or equivalent
 
-                data (dict) : dict of {estimator_name : hyper_opt.GridSearch.fit()} object, or equivalent
+            Returns:
+                None
 
         _get_grid_param_dict : configures the param_dict for GridSearch
+            Args:
+                None
 
             Returns:
-
-                param_dict (dict) : dict of {param_name : param_value} pairs.
+                param_dict: (dict), dict of {param_name : param_value} pairs.
 
         _get_randomized_param_dict : configures the param_dict for RandomSearch
+            Args:
+                None
 
             Returns:
-
-                param_dict (dict) : dict of {param_name : param_value} pairs.
+                param_dict: (dict), dict of {param_name : param_value} pairs.
 
         _get_bayesian_param_dict : configures the param_dict for BayesianSearch
+            Args:
+                None
 
             Returns:
-
-                param_dict (dict) : dict of {param_name : param_value} pairs.
+                param_dict: (dict), dict of {param_name : param_value} pairs.
 
     """
     def __init__(self, param_names, param_values):
@@ -67,6 +85,8 @@ class HyperOptUtils():
     def _search_space_generator(self, params):
         params_ = dict()
         for param_name, param_vals in params.items():
+            #TODO: update treatment of strings based on master branch edits
+            #TODO: add support for tuples so MLPRegressor opt can be done
             dtype = param_vals[4]
             try:
                 if param_vals[3] == "lin":
@@ -90,6 +110,7 @@ class HyperOptUtils():
             best = pd.DataFrame(d.best_params_, index=['Best Parameters'])
             out.to_excel(os.path.join(savepath, self.__class__.__name__+"_"+str(key)+'_output.xlsx'))
             best.to_excel(os.path.join(savepath, self.__class__.__name__+"_"+str(key)+'_bestparams.xlsx'))
+        return
 
     def _get_grid_param_dict(self):
         param_dict = dict()
@@ -196,34 +217,29 @@ class GridSearch(HyperOptUtils):
     Class to conduct a grid search to find optimized model hyperparameter values
 
     Args:
+        param_names: (list), list containing names of hyperparams to optimize
 
-        estimator (sklearn estimator object) : an sklearn estimator
+        param_values: (list), list containing values of hyperparams to optimize
 
-        cv (sklearn cross-validator object or iterator) : an sklearn cross-validator
+        scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
 
-        param_names (list) : list containing names of hyperparams to optimize
-
-        param_values (list) : list containing values of hyperparams to optimize
-
-        scoring (sklearn scoring object or str) : an sklearn scorer
+        n_jobs: (int), number of jobs to run in parallel. Can speed up calculation when using multiple cores
 
     Methods:
-
         fit : optimizes hyperparameters
-
             Args:
+                X: (pd.DataFrame), dataframe of X feature data
 
-                X (np array) : array of X data
+                y: (pd.Series), series of target y data
 
-                y (np array) : array of y data
+                model: (mastml.models object), a MAST-ML model, e.g. SklearnModel or EnsembleModel
 
-                savepath (str) : path of output directory
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+                savepath: (str), path of output directory
 
             Returns:
-
-                best_estimator (sklearn estimator object) : the optimized sklearn estimator
-
-        _estimator_name : returns string of estimator name
+                best_estimator (mastml.models object) : the optimized MAST-ML model
 
     """
     def __init__(self, param_names, param_values, scoring=None, n_jobs=1):
@@ -273,39 +289,34 @@ class GridSearch(HyperOptUtils):
 
 class RandomizedSearch(HyperOptUtils):
     """
-        Class to conduct a randomized search to find optimized model hyperparameter values
+    Class to conduct a randomized search to find optimized model hyperparameter values
 
-        Args:
+    Args:
+        param_names: (list), list containing names of hyperparams to optimize
 
-            estimator (sklearn estimator object) : an sklearn estimator
+        param_values: (list), list containing values of hyperparams to optimize
 
-            cv (sklearn cross-validator object or iterator) : an sklearn cross-validator
+        scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
 
-            param_names (list) : list containing names of hyperparams to optimize
+        n_iter: (int), number denoting the number of evaluations in the search space to perform. Higher numbers will take longer but will be more accurate
 
-            param_values (list) : list containing values of hyperparams to optimize
+        n_jobs: (int), number of jobs to run in parallel. Can speed up calculation when using multiple cores
 
-            scoring (sklearn scoring object or str) : an sklearn scorer
+    Methods:
+        fit : optimizes hyperparameters
+            Args:
+                X: (pd.DataFrame), dataframe of X feature data
 
-            n_iter (int) : number of optimizer iterations
+                y: (pd.Series), series of target y data
 
-        Methods:
+                model: (mastml.models object), a MAST-ML model, e.g. SklearnModel or EnsembleModel
 
-            fit : optimizes hyperparameters
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
 
-                Args:
+                savepath: (str), path of output directory
 
-                    X (np array) : array of X data
-
-                    y (np array) : array of y data
-
-                    savepath (str) : path of output directory
-
-                Returns:
-
-                    best_estimator (sklearn estimator object) : the optimized sklearn estimator
-
-            _estimator_name : returns string of estimator name
+            Returns:
+                best_estimator (mastml.models object) : the optimized MAST-ML model
 
         """
     def __init__(self, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
@@ -317,7 +328,7 @@ class RandomizedSearch(HyperOptUtils):
         self.n_iter = int(n_iter)
         self.n_jobs = int(n_jobs)
 
-    def fit(self, X, y,  model, cv=None, savepath=None, refit=True):
+    def fit(self, X, y, model, cv=None, savepath=None, refit=True):
         rst = dict()
         param_dict = self._get_randomized_param_dict()
 
@@ -361,36 +372,31 @@ class BayesianSearch(HyperOptUtils):
     Class to conduct a Bayesian search to find optimized model hyperparameter values
 
     Args:
+        param_names: (list), list containing names of hyperparams to optimize
 
-        estimator (sklearn estimator object) : an sklearn estimator
+        param_values: (list), list containing values of hyperparams to optimize
 
-        cv (sklearn cross-validator object or iterator) : an sklearn cross-validator
+        scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
 
-        param_names (list) : list containing names of hyperparams to optimize
+        n_iter: (int), number denoting the number of evaluations in the search space to perform. Higher numbers will take longer but will be more accurate
 
-        param_values (list) : list containing values of hyperparams to optimize
-
-        scoring (sklearn scoring object or str) : an sklearn scorer
-
-        n_iter (int) : number of optimizer iterations
+        n_jobs: (int), number of jobs to run in parallel. Can speed up calculation when using multiple cores
 
     Methods:
-
         fit : optimizes hyperparameters
-
             Args:
+                X: (pd.DataFrame), dataframe of X feature data
 
-                X (np array) : array of X data
+                y: (pd.Series), series of target y data
 
-                y (np array) : array of y data
+                model: (mastml.models object), a MAST-ML model, e.g. SklearnModel or EnsembleModel
 
-                savepath (str) : path of output directory
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+                savepath: (str), path of output directory
 
             Returns:
-
-                best_estimator (sklearn estimator object) : the optimized sklearn estimator
-
-        _estimator_name : returns string of estimator name
+                best_estimator (mastml.models object) : the optimized MAST-ML model
     """
 
     def __init__(self, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
