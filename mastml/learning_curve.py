@@ -1,7 +1,11 @@
 """
-This module contains methods to construct learning curves, which evaluate some cross-validation performance metric (e.g. RMSE)
-as a function of amount of training data (i.e. a sample learning curve) or as a function of the number of features used
-in the fitting (i.e. a feature learning curve).
+This module contains methods to construct learning curves, which evaluate some cross-validation performance metric
+(e.g. RMSE) as a function of amount of training data (i.e. a data learning curve) or as a function of the number of
+features used in the fitting (i.e. a feature learning curve).
+
+LearningCurve:
+    Class used to construct data learning curves and feature learning curves
+
 """
 
 import numpy as np
@@ -19,9 +23,90 @@ from mastml.feature_selectors import SklearnFeatureSelector
 from mastml.plots import Line
 
 class LearningCurve():
-    '''
+    """
+    This class is used to construct learning curves, both in the form of model performance vs. amount of training
+    data and model performance vs. number of features used in the fit.
 
-    '''
+    Args:
+        None
+
+    Methods:
+        evaluate: Sets up a save directory and performs both the data and feature-based learning curves
+            Args:
+                model: (SklearnModel or EnsembleModel), a model made in MAST-ML
+
+                X: (pd.DataFrame), dataframe containing the X feature matrix
+
+                y: (pd.Series), series containing the target y data
+
+                savepath: (str), string denoting the savepath to save the learning curve output
+
+                groups: (pd.Series), series of group designation
+
+                train_sizes: (list or np.array), list or array of floats denoting fractions of training data to evaluate for data learning curve
+
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
+
+                selector: (mastml.feature_selector), a mastml.feature_selectors instance
+
+                make_plot: (bool), whether or not to make the learning curve plots
+
+        data_learning_curve: Method that calculates the model CV score as a function of amount of training data used
+            Args:
+                model: (SklearnModel or EnsembleModel), a model made in MAST-ML
+
+                X: (pd.DataFrame), dataframe containing the X feature matrix
+
+                y: (pd.Series), series containing the target y data
+
+                savepath: (str), string denoting the savepath to save the learning curve output
+
+                groups: (pd.Series), series of group designation
+
+                train_sizes: (list or np.array), list or array of floats denoting fractions of training data to evaluate for data learning curve
+
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
+
+                make_plot: (bool), whether or not to make the learning curve plots
+
+            Returns:
+                None
+
+        feature_learning_curve: Method that calculates the model CV score as a function of the number of features used
+            Args:
+                model: (SklearnModel or EnsembleModel), a model made in MAST-ML
+
+                X: (pd.DataFrame), dataframe containing the X feature matrix
+
+                y: (pd.Series), series containing the target y data
+
+                savepath: (str), string denoting the savepath to save the learning curve output
+
+                groups: (pd.Series), series of group designation
+
+                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
+
+                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list
+
+                selector: (mastml.feature_selector), a mastml.feature_selectors instance
+
+                make_plot: (bool), whether or not to make the learning curve plots
+
+            Returns:
+                None
+
+        _setup_savedir: Method to create the output save directory for learning curve data
+            Args:
+                savepath: (str), string denoting the base path to save the output to
+
+            Returns:
+                splitdir: (str), path where learning curve data will be saved to
+
+    """
     def __init__(self):
         pass
 
@@ -52,35 +137,7 @@ class LearningCurve():
 
     def data_learning_curve(self, model, X, y, savepath=None, groups=None, train_sizes=None, cv=None, scoring=None,
                             make_plot=True):
-        """
-        Method that calculates data used to plot a sample learning curve, e.g. the RMSE of a cross-validation routine using a
-        specified model and a given fraction of the total training data
 
-        Args:
-            X: (numpy array), array of X data values
-
-            y: (numpy array), array of y data values
-
-            estimator: (scikit-learn model object), a scikit-learn model used for fitting
-
-            cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits
-
-            scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer
-
-            Xgroups: (list), list of row indices corresponding to each group
-
-        Returns:
-            train_sizes: (numpy array), array of fractions of training data used in learning curve
-
-            train_mean: (numpy array), array of means of training data scores for each training data fraction
-
-            test_mean: (numpy array), array of means of testing data scores for each training data fraction
-
-            train_stdev: (numpy array), array of standard deviations of training data scores for each training data fraction
-
-            test_stdev: (numpy array), array of standard deviations of testing data scores for each training data fraction
-
-        """
         if savepath is None:
             savepath = os.getcwd()
         if train_sizes is None:
@@ -130,39 +187,6 @@ class LearningCurve():
         return
 
     def feature_learning_curve(self, model, X, y, savepath=None, groups=None, cv=None, scoring=None, selector=None, make_plot=True):
-        """
-        Method that calculates data used to plot a feature learning curve, e.g. the RMSE of a cross-validation routine using a
-        specified model and a given number of features
-
-        Args:
-            X: (numpy array), array of X data values
-
-            y: (numpy array), array of y data values
-
-            estimator: (scikit-learn model object), a scikit-learn model used for fitting
-
-            cv: (scikit-learn cross validation object), a scikit-learn cross validation object to construct train/test splits
-
-            scoring: (scikit-learn metric object), a scikit-learn metric to use as a scorer
-
-            selector_name: (str), name of a scikit-learn or MAST-ML feature selection routine
-
-            n_features_to_select: (int), total number of features to select, i.e. stopping criterion for number of features
-
-            Xgroups: (list), list of row indices corresponding to each group
-
-        Returns:
-            train_sizes: (numpy array), array of fractions of training data used in learning curve
-
-            train_mean: (numpy array), array of means of training data scores for each number of features
-
-            test_mean: (numpy array), array of means of testing data scores for each number of features
-
-            train_stdev: (numpy array), array of standard deviations of training data scores for each number of features
-
-            test_stdev: (numpy array), array of standard deviations of testing data scores for each number of features
-
-        """
 
         if savepath is None:
             savepath = os.getcwd()
