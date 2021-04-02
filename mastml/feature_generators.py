@@ -1,5 +1,49 @@
 """
 This module contains a collection of classes for generating input features to fit machine learning models to.
+
+BaseGenerator:
+    Base class to provide MAST-ML type functionality to all feature generators. All other feature generator classes
+    should inherit from this base class
+
+ElementalFeatureGenerator:
+    Class written for MAST-ML to generate features for material compositions based on properties of the elements
+    comprising the composition. A number of mathematically derived variants are included, like arithmetic average,
+    composition-weighted average, range, max, and min. This generator also supports sublattice-based generation, where
+    the elemental features can be averaged for each sublattice as opposed to just the total composition together. To
+    use the sublattice feature of this generator, composition strings must include square brackets to separate the sublattices,
+    e.g. the perovskite material La0.75Sr0.25MnO3 would be written as [La0.75Sr0.25][Mn][O3]
+
+PolynomialFeatureGenerator:
+    Class used to construct new features based on a polynomial expansion of existing features. The degree of the
+    polynomial is given as input. For example, for two features x1 and x2, the quadratic features x1^2, x2^2 and x1*x2
+    would be generated if the degree is set to 2.
+
+OneHotGroupGenerator:
+    Class used to create a set of one-hot encoded features based on a single feature containing assorted categories.
+    For example, if a feature contains strings denoting each data point as belonging to one of three groups such as
+    "metal", "semiconductor", "insulator", then the generated one-hot features are three feature columns containing a 1 or
+    0 to denote which group each data point is in
+
+OneHotElementEncoder:
+    Class used to create a set of one-hot encoded features based on elements present in a supplied chemical composition string.
+    For example, if the data set contains alloys of materials with chemical formulas such as "GaAs", "InAs", "InP", etc.,
+    then the generated one-hot features are four feature columns containing a 1 or 0 to denote whether a particular data
+    point contains each of the unique elements, in this case Ga, As, In, or P.
+
+MaterialsProjectFeatureGenerator:
+    Class used to search the Materials Project database for computed material property information for the
+    supplied composition. This only works if the material composition matches an entry present in the Materials Project.
+    Will return material properties like formation energy, volume, electronic bandgap, elastic constants, etc.
+
+MatminerFeatureGenerator:
+    Class used to combine various composition and structure-based feature generation routines in the matminer package
+    into MAST-ML. The use of structure-based features will require pymatgen structure objects in the input
+    dataframe, while composition-based features require only a composition string. See the class documentation
+    for more information on the different types of feature generation this class supports.
+
+DataframeUtilities:
+    Collection of helper routines for various common dataframe operations, like concatentation, merging, etc.
+
 """
 
 import os
@@ -13,39 +57,38 @@ import pickle
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
 
-import matminer
-import matminer.featurizers.structure
-import matminer.featurizers.site
-from matminer.featurizers.composition import ElementProperty, OxidationStates
-from matminer.featurizers.conversions import StrToComposition, CompositionToOxidComposition
+try:
+    import matminer
+    import matminer.featurizers.structure
+    import matminer.featurizers.site
+    from matminer.featurizers.composition import ElementProperty, OxidationStates
+    from matminer.featurizers.conversions import StrToComposition, CompositionToOxidComposition
+except:
+    print('matminer is an optional dependency. To install matminer, do pip install matminer')
 
 try:
     import pymatgen
     from pymatgen import Element, Composition
     from pymatgen.ext.matproj import MPRester
 except:
-    # pass if fails for autodoc build
-    pass
+    print('pymatgen is an optional dependency. To install pymatgen, do pip install pymatgen')
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
 MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 
+
 class BaseGenerator(BaseEstimator, TransformerMixin):
     """
     Class functioning as a base generator to support directory organization and evaluating different feature generators
 
     Args:
-
         None
 
     Methods:
-
         evaluate: main method to run feature generators on supplied data, and save to file
-
             Args:
-
                 X: (pd.DataFrame), dataframe of X data containing features and composition string information
 
                 y: (pd.Series), series of y target data
@@ -53,21 +96,17 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
                 savepath: (str) string denoting the main save path directory
 
             Returns:
-
                 X: (pd.DataFrame), dataframe of X features containing newly generated features
 
                 y: (pd.Series), series of y target data
 
         _setup_savedir: method to set up a save directory for the generated dataset
-
             Args:
-
                 generator: mastml.feature_generators instance, e.g. ElementalFeatureGenerator
 
                 savepath: (str) string denoting the main save path directory
 
             Returns:
-
                 splitdir: (str) string of the split directory where generated feature data is saved
 
     """
@@ -105,12 +144,12 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         self.splitdir = splitdir
         return splitdir
 
+
 class ElementalFeatureGenerator(BaseGenerator):
     """
     Class that is used to create elemental-based features from material composition strings
 
     Args:
-
         composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix.
@@ -118,24 +157,19 @@ class ElementalFeatureGenerator(BaseGenerator):
         remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
     Methods:
-
         fit: pass through, copies input columns as pre-generated features
-
             Args:
-
                 X: (pd.DataFrame), input dataframe containing X data
 
                 y: (pd.Series), series containing y data
 
         transform: generate the elemental feature matrix from composition strings
-
             Args:
-
                 None.
 
             Returns:
-
                 X: (dataframe), output dataframe containing generated features
+
                 y: (series), output y data as series
     """
 
@@ -993,37 +1027,29 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         return element_list, atoms_per_formula_unit
 
+
 class PolynomialFeatureGenerator(BaseGenerator):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html
 
     Args:
-
         degree: (int), degree of polynomial features
 
-        interaction_only: (bool), If true, only interaction features are produced: features that are products of at
-        most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).
+        interaction_only: (bool), If true, only interaction features are produced: features that are products of at most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).
 
-        include_bias: (bool),If True (default), then include a bias column, the feature in which all polynomial powers
-        are zero (i.e. a column of ones - acts as an intercept term in a linear model).
+        include_bias: (bool),If True (default), then include a bias column, the feature in which all polynomial powers are zero (i.e. a column of ones - acts as an intercept term in a linear model).
 
     Methods:
-
         fit: conducts fit method of polynomial feature generation
-
-        Args:
-
-            df: (dataframe), dataframe of input X and y data
+            Args:
+                df: (dataframe), dataframe of input X and y data
 
         transform: generates dataframe containing polynomial features
-
-        Args:
-
-            df: (dataframe), dataframe of input X and y data
+            Args:
+                df: (dataframe), dataframe of input X and y data
 
         Returns:
-
             (dataframe), dataframe containing new polynomial features, plus original features present
 
     """
@@ -1045,36 +1071,31 @@ class PolynomialFeatureGenerator(BaseGenerator):
         new_features = self.SPF.get_feature_names()
         return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
 
+
 class OneHotGroupGenerator(BaseGenerator):
     """
     Class to generate one-hot encoded values from a list of categories using scikit-learn's one hot encoder method
     More info at: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
     Args:
-
         groups: (pd.Series): pandas Series of group (category) names
 
         remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
     Methods:
-
         fit: pass through, copies input columns as pre-generated features
-
             Args:
-
                 X: (pd.DataFrame), input dataframe containing X data
 
                 y: (pd.Series), series containing y data
 
         transform: generate the one-hot encoded features. There will be n columns made, where n = number of unique categories in groups
-
             Args:
-
                 None.
 
             Returns:
-
                 df: (dataframe), output dataframe containing generated features
+
                 y: (series), output y data as series
 
     """
@@ -1103,13 +1124,13 @@ class OneHotGroupGenerator(BaseGenerator):
 
         return df, self.y
 
+
 class OneHotElementEncoder(BaseGenerator):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
     certain designated element
 
     Args:
-
         composition_feature: (str), string denoting a chemical composition to generate elemental features from
 
         element: (str), string representing the name of an element
@@ -1119,21 +1140,15 @@ class OneHotElementEncoder(BaseGenerator):
         all_elments: (bool), whether to generate new features for all elements present from all compositions in the dataset.
 
     Methods:
-
         fit: pass through, needed to maintain scikit-learn class structure
-
-        Args:
-
-            df: (dataframe), dataframe of input X and y data
+            Args:
+                df: (dataframe), dataframe of input X and y data
 
         transform: generate new element-specific features
-
-        Args:
-
-            df: (dataframe), dataframe of input X and y data
+            Args:
+                df: (dataframe), dataframe of input X and y data
 
         Returns:
-
             df_trans: (dataframe), dataframe with generated element-specific features
 
     """
@@ -1181,32 +1196,26 @@ class OneHotElementEncoder(BaseGenerator):
             df_trans[self.new_column_name] = has_element
         return df_trans
 
+
 class MaterialsProjectFeatureGenerator(BaseGenerator):
     """
     Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
 
     Args:
-
         composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         mapi_key: (str), string denoting your Materials Project API key
 
     Methods:
-
         fit: pass through, copies input columns as pre-generated features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
+            Args:
+                df: (dataframe), input dataframe containing X and y data
 
         transform: generate Materials Project features
-
-        Args:
-
-            df: (dataframe), input dataframe containing X and y data
+            Args:
+                df: (dataframe), input dataframe containing X and y data
 
         Returns:
-
             df: (dataframe), output dataframe containing generated features, original features and y data
 
     """
@@ -1298,12 +1307,26 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
 
         return structure_data_dict_condensed
 
-# TODO: finish assessing each method compatiblity
+
+# TODO: finish assessing each method compatability
 class MatminerFeatureGenerator(BaseGenerator):
     '''
+    Class to wrap feature generator routines contained in the matminer package to more neatly conform to the
+    MAST-ML working environment, and have all under a single class
 
-    featurizer : 'composition', 'structure'
-    presets (for composition only): 'magpie', 'deml', 'matminer', 'matscholar_el', 'megnet_el'
+    Args:
+        featurize_df: (pd.DataFrame), input dataframe to be featurized. Needs to contain at least a column with chemical compositions or pymatgen Structure objects
+
+        featurizer: (str), type of featurization to conduct. Valid names are "composition" or "structure"
+
+        composition_feature_types: (list of str), if featurizer='composition', the type of composition-based features to include. Valid values are 'magpie', 'deml', 'matminer', 'matscholar_el', 'megnet_el'
+
+        structure_feature_type: (str), if featurizer='structure', the type of structure-based featurization to conduct. See list below for valid names.
+
+        remove_constant_columns: (bool), whether or not to remove feature columns that are constant values. Default is False.
+
+        kwargs: additional keyword arguments needed if structure based features are being made
+
 
     Available structure featurizer types for structure_feature_types:
         matminer.featurizers.structure
@@ -1362,6 +1385,29 @@ class MatminerFeatureGenerator(BaseGenerator):
         'VoronoiFingerprint',
         'VoronoiNN']
 
+    Methods:
+        fit: present for convenience and just passes through
+            Args:
+                X: (pd.DataFrame), the X feature matrix
+
+            Returns:
+                self
+
+        transform: generates new features and transforms to have new dataframe with generated features
+            Args:
+                X: (pd.DataFrame), the X feature matrix
+
+            Returns:
+                df: (pd.DataFrame), the transformed dataframe containing generated features
+
+                y: (pd.Series), the target y-data
+
+        generate_matminer_features: method to generate the composition or structure features of interest
+            Args:
+                X: (pd.DataFrame), the X feature matrix
+
+            Returns:
+                df: (pd.DataFrame), the transformed dataframe containing generated features
 
     '''
     def __init__(self, featurize_df, featurizer, composition_feature_types=['magpie', 'deml', 'matminer'],
@@ -1434,97 +1480,72 @@ class MatminerFeatureGenerator(BaseGenerator):
             df = self.featurizer.featurize_dataframe(df=df, col_id=df_col, ignore_errors=True, return_errors=False)
         return df
 
+
 class DataframeUtilities(object):
     """
     Class of basic utilities for dataframe manipulation, and exchanging between dataframes and numpy arrays
 
     Args:
-
         None
 
     Methods:
-
-        clean_dataframe : Method to clean dataframes after feature generation has occurred, to remove columns that
-            have a single missing or NaN value, or remove a row that is fully empty
-
-        Args:
-
-            df: (dataframe), a post feature generation dataframe that needs cleaning
+        clean_dataframe : Method to clean dataframes after feature generation has occurred, to remove columns that have a single missing or NaN value, or remove a row that is fully empty
+            Args:
+                df: (dataframe), a post feature generation dataframe that needs cleaning
 
         Returns:
-
             df: (dataframe), the cleaned dataframe
 
         merge_dataframe_columns : merge two dataframes by concatenating the column names (duplicate columns omitted)
-
             Args:
-
                 dataframe1: (dataframe), a pandas dataframe object
 
                 dataframe2: (dataframe), a pandas dataframe object
 
             Returns:
-
                 dataframe: (dataframe), merged dataframe
 
         merge_dataframe_rows : merge two dataframes by concatenating the row contents (duplicate rows omitted)
-
             Args:
-
                 dataframe1: (dataframe), a pandas dataframe object
 
                 dataframe2: (dataframe), a pandas dataframe object
 
             Returns:
-
                 dataframe: (dataframe), merged dataframe
 
         get_dataframe_statistics : obtain basic statistics about data contained in the dataframe
-
             Args:
-
                 dataframe: (dataframe), a pandas dataframe object
 
             Returns:
-
                 dataframe_stats: (dataframe), dataframe containing input dataframe statistics
 
         dataframe_to_array : transform a pandas dataframe to a numpy array
-
             Args:
-
                 dataframe: (dataframe), a pandas dataframe object
 
             Returns:
-
                 array: (numpy array), a numpy array representation of the inputted dataframe
 
         array_to_dataframe : transform a numpy array to a pandas dataframe
-
             Args:
-
                 array: (numpy array), a numpy array
 
             Returns:
-
                 dataframe: (dataframe), a pandas dataframe representation of the inputted numpy array
 
         concatenate_arrays : merge two numpy arrays by concatenating along the columns
-
             Args:
-
                 Xarray: (numpy array), a numpy array object
 
                 yarray: (numpy array), a numpy array object
 
             Returns:
-
                 array: (numpy array), a numpy array merging the two input arrays
 
         assign_columns_as_features : adds column names to dataframe based on the x and y feature names
-
             Args:
-
                 dataframe: (dataframe), a pandas dataframe object
 
                 x_features: (list), list containing x feature names
@@ -1532,19 +1553,15 @@ class DataframeUtilities(object):
                 y_feature: (str), target feature name
 
             Returns:
-
                 dataframe: (dataframe), dataframe containing same data as input, with columns labeled with features
 
         save_all_dataframe_statistics : obtain dataframe statistics and save it to a csv file
-
             Args:
-
                 dataframe: (dataframe), a pandas dataframe object
 
                 data_path: (str), file path to save dataframe statistics to
 
             Returns:
-
                 fname: (str), name of file dataframe stats saved to
 
     """
