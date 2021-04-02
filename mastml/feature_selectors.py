@@ -1,8 +1,33 @@
 """
-This module contains a collection of classes and methods for selecting features, and interfaces with scikit-learn feature
-selectors. More information on scikit-learn feature selectors is available at:
+This module contains a collection of routines to perform feature selection.
 
-http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_selection
+BaseSelector:
+    Base class to have MAST-ML like workflow functionality for feature selectors. All feature selection routines
+    should inherit this base class
+
+SklearnFeatureSelector:
+    Class to wrap feature selectors from the scikit-learn package and make them have functionality from
+    BaseSelector. Any scikit-learn feature selector from sklearn.feature_selection can be used by providing the
+    name of the selector class as a string.
+
+NoSelect:
+    Class that performs no feature selection and just uses all features in the dataset. Needed as a placeholder
+    when evaluating data splits in a MAST-ML run where feature selection is not performed.
+
+EnsembleModelFeatureSelector:
+    Class to selects features based on the feature importances scores obtained when fitting an ensemble-based model.
+    Any model with the feature_importances_ attribute will work, e.g. sklearn's RandomForestRegressor and
+    GradientBoostingRegressor.
+
+PearsonSelector:
+    Class that selects features based on their Pearson correlation score with the target data. Can also be used
+    to assess Pearson correlation between features for use to reduce dimensionality of the feature space.
+
+MASTMLFeatureSelector:
+    Class written for MAST-ML to perform more flexible forward selection than what can be found in scikit-learn.
+    Allows the user to specify a particular model and cross validation routine for selecting features, as well as the
+    ability to forcibly select certain features on the outset.
+
 """
 
 import warnings
@@ -25,38 +50,27 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     Base class that forms foundation of MAST-ML feature selectors
 
     Args:
-
         None. See individual selector types for input arguments
 
     Methods:
-
         fit: Does nothing, present for compatibility
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
 
-
             Returns:
-
                 None
 
         transform: Does nothing, present for compatibility
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
             Returns:
-
                 X: (dataframe), dataframe of X features
 
         evaluate: runs the fit and transform functions to select features, saves selector-specific files and saves list of selected features
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
@@ -100,34 +114,25 @@ class SklearnFeatureSelector(BaseSelector):
     Class that wraps scikit-learn feature selection methods with some new MAST-ML functionality
 
     Args:
-
         selector (str) : a string denoting the name of a sklearn.feature_selection object
 
         **kwargs: the key word arguments of the designated sklearn.feature_selection object
 
     Methods:
-
         fit: performs feature selection
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
 
-
             Returns:
-
                 None
 
         transform: performs the transform to generate output of only selected features
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
             Returns:
-
                 X_select: (dataframe), dataframe of selected X features
 
     '''
@@ -172,34 +177,25 @@ class EnsembleModelFeatureSelector(BaseSelector):
     Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances
 
     Args:
-
         model: (mastml.models object), a MAST-ML compatable model
 
         n_features_to_select: (int), the number of features to select
 
     Methods:
-
         fit: performs feature selection
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
 
-
             Returns:
-
                 None
 
         transform: performs the transform to generate output of only selected features
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
             Returns:
-
                 dataframe: (dataframe), dataframe of selected X features
 
     """
@@ -244,40 +240,29 @@ class PearsonSelector(BaseSelector):
     with each other.
 
     Args:
+        threshold_between_features: (float), the threshold to decide whether redundant features are removed. Should be a decimal value between 0 and 1. Only used if remove_highly_correlated_features is True
 
-        threshold_between_features: (float), the threshold to decide whether redundant features are removed. Should be
-        a decimal value between 0 and 1. Only used if remove_highly_correlated_features is True
-
-        threshold_with_target: (float), the threshold to decide whether a given feature is sufficiently correlated with
-        the target feature and thus kept as a selected feature. Should be a decimal value between 0 and 1.
+        threshold_with_target: (float), the threshold to decide whether a given feature is sufficiently correlated with the target feature and thus kept as a selected feature. Should be a decimal value between 0 and 1.
 
         remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other
 
         n_features_to_select: (int), the number of features to select
 
     Methods:
-
         fit: performs feature selection
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
 
-
             Returns:
-
                 None
 
         transform: performs the transform to generate output of only selected features
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
             Returns:
-
                 dataframe: (dataframe), dataframe of selected X features
 
     """
@@ -403,22 +388,17 @@ class MASTMLFeatureSelector(BaseSelector):
     Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme
 
     Args:
-
         estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator
 
         n_features_to_select: (int), the number of features to select
 
         cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object
 
-        manually_selected_features: (list), a list of features manually set by the user. The feature selector will first
-        start from this list of features and sequentially add features until n_features_to_select is met.
+        manually_selected_features: (list), a list of features manually set by the user. The feature selector will first start from this list of features and sequentially add features until n_features_to_select is met.
 
     Methods:
-
         fit: performs feature selection
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
                 y: (dataframe), dataframe of y data
@@ -426,17 +406,13 @@ class MASTMLFeatureSelector(BaseSelector):
                 Xgroups: (dataframe), dataframe of group labels
 
             Returns:
-
                 None
 
         transform: performs the transform to generate output of only selected features
-
             Args:
-
                 X: (dataframe), dataframe of X features
 
             Returns:
-
                 dataframe: (dataframe), dataframe of selected X features
 
     """

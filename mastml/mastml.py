@@ -3,7 +3,7 @@ This module contains routines to set up and manage the metadata for a MAST-ML ru
 
 Mastml:
     Class to set up directories for saving the output of a MAST-ML run, and for constructing and updating a
-    metadata summary file. 
+    metadata summary file.
 
 """
 
