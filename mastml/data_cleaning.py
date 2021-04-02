@@ -38,32 +38,40 @@ class DataCleaning():
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
+
                 axis: (int), whether to remove rows (axis=0) or columns (axis=1)
 
             Returns:
                 X: (pd.DataFrame): dataframe of cleaned X data
+
                 y: (pd.Series): series of cleaned y data
 
         imputation: Method that imputes values to the missing places based on the median, mean, etc. of the data in the column
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
+
                 strategy: (str), method of imputation, e.g. median, mean, etc.
 
             Returns:
                 X: (pd.DataFrame): dataframe of cleaned X data
+
                 y: (pd.Series): series of cleaned y data
 
         ppca: Method that imputes data using principal component analysis to interpolate missing values
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
 
             Returns:
                 X: (pd.DataFrame): dataframe of cleaned X data
+
                 y: (pd.Series): series of cleaned y data
 
         evaluate: main method to evaluate initial data analysis routines (e.g. flag outliers), perform data cleaning and
@@ -71,13 +79,18 @@ class DataCleaning():
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
+
                 method: (str), data cleaning method name, must be one of 'remove', 'imputation' or 'ppca'
+
                 savepath: (str), string containing the savepath information
+
                 kwargs: additional keyword arguments needed for the remove, imputation or ppca methods
 
             Returns:
                 X: (pd.DataFrame): dataframe of cleaned X data
+
                 y: (pd.Series): series of cleaned y data
 
         _setup_savedir: method to create a savedir based on the provided model, splitter, selector names and datetime
@@ -166,15 +179,17 @@ class DataUtilities():
         None
 
     Methods:
-
         flag_outliers: Method that scans values in each X feature matrix column and flags values that are larger than
             X standard deviations from the average of that column value. The index and column values of potentially
             problematic points are listed and written to an output file.
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
+
                 savepath: (str), string containing the save path directory
+
                 n_stdevs: (int), number of standard deviations to use as threshold value
 
             Returns:
@@ -184,7 +199,9 @@ class DataUtilities():
 
             Args:
                 X: (pd.DataFrame), dataframe containing X data
+
                 y: (pd.Series), series containing y data
+
                 savepath: (str), string containing the save path directory
 
             Returns:

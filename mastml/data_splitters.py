@@ -78,19 +78,22 @@ class BaseSplitter(ms.BaseCrossValidator):
     """
     Class functioning as a base splitter with methods for organizing output and evaluating any mastml data splitter
 
-    Attributes:
-        splitter (mastml.data_splitters object): a mastml.data_splitters object, e.g. mastml.data_splitters.SklearnDataSplitter
+    Args:
+        None
 
     Methods:
         split_asframe: method to perform split into train indices and test indices, but return as dataframes
 
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 y: (pd.Series), series of y target data
+
                 groups: (pd.Series), series of group designations
 
             Returns:
                 X_splits: (list), list of dataframes for X splits
+
                 y_splits: (list), list of dataframes for y splits
 
         evaluate: main method to evaluate a sequence of models, selectors, and hyperparameter optimizers, build directories
@@ -98,22 +101,39 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 X: (pd.DataFrame), dataframe of X features
+
                 y: (pd.Series), series of y target data
+
                 models: (list), list containing mastml.models instances
+
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
                 groups: (pd.Series), series of group designations
+
                 hyperopts: (list), list containing mastml.hyperopt instances. One for each provided model is needed.
+
                 selectors: (list), list containing mastml.feature_selectors instances
+
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
                 plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
+
                 savepath: (str), string containing main savepath to construct splits for saving output
+
                 X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
+
                 leaveout_inds: (list), list of arrays containing indices of data to be held out and evaluated using best model from set of train/validation splits
+
                 best_run_metric: (str), metric name to be used to decide which model performed best. Defaults to first listed metric in metrics.
+
                 nested_CV: (bool), whether to perform nested cross-validation. The nesting is done using the same splitter object as self.splitter
+
                 error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+
                 remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+
                 recalibrate_errors: (bool), whether to perform the predicted error bar recalibration method of Palmer et al. Default False.
+
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
@@ -124,23 +144,41 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 X_splits: (list), list of dataframes for X splits
+
                 y_splits: (list), list of dataframes for y splits
+
                 train_inds: (list), list of arrays of indices denoting the training data
+
                 test_inds: (list), list of arrays of indices denoting the testing data
+
                 model: (mastml.models instance), an estimator for fitting data
+
                 model_name: (str), class name of the model being evaluated
+
                 selector: (mastml.selector), a feature selector to select features in each split
+
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
                 X_extra: (pd.DataFrame), dataframe of extra X data not used in model fitting
+
                 groups: (pd.Series), series of group designations
+
                 splitdir: (str), string denoting the split path in the save directory
+
                 hyperopt: (mastml.hyperopt), mastml.hyperopt instance to perform model hyperparameter optimization in each split
+
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
                 plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
+
                 has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
+
                 error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+
                 remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+
                 recalibrate_errors: (bool), whether to perform the predicted error bar recalibration method of Palmer et al. Default False.
+
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
@@ -151,23 +189,41 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 X_train: (pd.DataFrame), dataframe of X training features
+
                 X_test: (pd.DataFrame), dataframe of X test features
+
                 y_train: (pd.Series), series of y training features
+
                 y_test: (pd.Series), series of y test features
+
                 model: (mastml.models instance), an estimator for fitting data
+
                 model_name: (str), class name of the model being evaluated
+
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
                 selector: (mastml.selector), a feature selector to select features in each split
+
                 hyperopt: (mastml.hyperopt), mastml.hyperopt instance to perform model hyperparameter optimization in each split
+
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
                 plots: (list), list of names denoting which types of plots to make. Valid names are 'Scatter', 'Error', and 'Histogram'
+
                 groups: (str), string denoting the test group, if applicable
+
                 splitpath:(str), string denoting the split path in the save directory
+
                 has_model_errors: (bool), whether the model used has error bars (uncertainty quantification)
+
                 X_extra_train: (pd.DataFrame), dataframe of the extra X data of the training split (not used in fit)
+
                 X_extra_test: (pd.DataFrame), dataframe of the extra X data of the testing split (not used in fit)
+
                 error_method: (str), the type of model error evaluation method to perform. Only applies to certain models. Valid names are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+
                 remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
+
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
             Returns:
@@ -177,16 +233,22 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 model: (mastml.models instance), an estimator for fitting data
+
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
                 selector: (mastml.selector), a feature selector to select features in each split
+
                 savepath: (str), string denoting the save path of the file
 
         _save_split_data: method to save the X and y split data to excel files
 
             Args:
                 df: (pd.DataFrame), dataframe of X or y data to save to file
+
                 filename: (str), string denoting the filename, e.g. 'Xtest'
+
                 savepath: (str), string denoting the save path of the file
+
                 columns: (list), list of dataframe column names, e.g. X feature names
 
             Returns:
@@ -196,6 +258,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 filename: (str), string denoting the filename, e.g. 'ytest'
+
                 savepath: (str), string denoting the save path of the file
 
             Returns:
@@ -205,6 +268,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 filename: (str), string denoting the filename, e.g. 'Xtest'
+
                 savepath: (str), string denoting the save path of the file
 
             Returns:
@@ -213,8 +277,11 @@ class BaseSplitter(ms.BaseCrossValidator):
         _get_best_split: method to find the best performing model in a set of train/test splits
             Args:
                 savepath: (str), string denoting the save path of the file
+
                 preprocessor: (mastml.preprocessor), mastml.preprocessor object to normalize the training data in each split.
+
                 best_run_metric: (str), name of the metric to use to find the best performing model
+
                 model_name: (str), class name of model being evaluated
 
             Returns:
@@ -226,16 +293,19 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             Args:
                 savepath: (str), string denoting the save path of the file
+
                 data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
 
             Returns:
                 recalibrate_avg_dict: (dict): dictionary of average recalibration parameters
+
                 recalibrate_stdev_dict: (dict): dictionary of stdev of recalibration parameters
 
         _get_recalibration_params: method to get the recalibration factors for a single evaluation
 
             Args:
                 savepath: (str), string denoting the save path of the file
+
                 data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
 
             Returns:
