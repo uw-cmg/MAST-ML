@@ -1,10 +1,19 @@
 """
-This module contains a collection of functions which make plots (saved as png files) using matplotlib, generated from
-some model fits and cross-validation evaluation within a MAST-ML run.
+This module contains classes used for generating different types of analysis plots
 
-This module also contains a method to create python notebooks containing plotted data and the relevant source code from
-this module, to enable the user to make their own modifications to the created plots in a straightforward way (useful for
-tweaking plots for a presentation or publication).
+Scatter:
+    This class contains a variety of scatter plot types, e.g. parity (predicted vs. true) plots
+
+Error:
+    This class contains plotting methods used to better quantify the model errors and uncertainty quantification.
+
+Histogram:
+    This class contains methods for constructing histograms of data distributions and visualization of model residuals.
+
+Line:
+    This class contains methods for making line plots, e.g. for constructing learning curves of model performance vs.
+    amount of data or number of features.
+
 """
 
 import warnings
@@ -12,11 +21,10 @@ import math
 import os
 import pandas as pd
 import numpy as np
-from collections import Iterable, OrderedDict
-from math import log, floor, ceil
+from collections import Iterable
+from math import log, ceil
 from scipy.stats import gaussian_kde, norm
 import scipy.stats as stats
-import statistics
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
@@ -52,28 +60,84 @@ class Scatter():
     Methods:
 
         plot_predicted_vs_true: method to plot a parity plot
-
             Args:
-
                 y_true: (pd.Series), series of true y data
 
                 y_pred: (pd.Series), series of predicted y data
 
                 savepath: (str), string denoting the save path for the figure image
 
+                data_type: (str), string denoting the data type (e.g. train, test, leaveout)
+
                 x_label: (str), string denoting the true and predicted property name
 
                 metrics_list: (list), list of strings of metric names to evaluate and include on the figure
-
-                groups: (pd.Series), series of group designations
 
                 show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
 
             Returns:
                 None
+
+        plot_best_worst_split: method to find the best and worst split in an evaluation set and plot them together
+            Args:
+                savepath: (str), string denoting the save path for the figure image
+
+                data_type: (str), string denoting the data type (e.g. train, test, leaveout)
+
+                x_label: (str), string denoting the true and predicted property name
+
+                metrics_list: (list), list of strings of metric names to evaluate and include on the figure
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+
+        plot_best_worst_per_point: method to find all of the best and worst data points from an evaluation set and plot them together
+            Args:
+                savepath: (str), string denoting the save path for the figure image
+
+                data_type: (str), string denoting the data type (e.g. train, test, leaveout)
+
+                x_label: (str), string denoting the true and predicted property name
+
+                metrics_list: (list), list of strings of metric names to evaluate and include on the figure
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+
+        plot_predicted_vs_true_bars: method to plot the average predicted value of each data point from an evaluation set with error bars denoting the standard deviation in predicted values
+            Args:
+                savepath: (str), string denoting the save path for the figure image
+
+                data_type: (str), string denoting the data type (e.g. train, test, leaveout)
+
+                x_label: (str), string denoting the true and predicted property name
+
+                metrics_list: (list), list of strings of metric names to evaluate and include on the figure
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                None
+
+        plot_metric_vs_group: method to plot the metric value for each group during e.g. a LeaveOneGroupOut data split
+            Args:
+                savepath: (str), string denoting the save path for the figure image
+
+                data_type: (str), string denoting the data type (e.g. train, test, leaveout)
+
+                show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+            Returns:
+                 None
+
     """
     @classmethod
     def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False):
+
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
         y_pred = check_dimensions(y_pred)
@@ -115,6 +179,7 @@ class Scatter():
 
     @classmethod
     def plot_best_worst_split(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
+
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
@@ -187,32 +252,6 @@ class Scatter():
 
     @classmethod
     def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
-        """
-        Method to create a parity plot (predicted vs. true values) of the set of best and worst CV scores for each
-
-        individual data point.
-
-        Args:
-
-            y_true: (numpy array), array of true y data
-
-            y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
-
-            savepath: (str), path to save plots to
-
-            metrics_dict: (dict), dict of scikit-learn metric objects to calculate score of predicted vs. true values
-
-            avg_stats: (dict), dict of calculated average metrics over all CV splits
-
-            title: (str), title of the best_worst_per_point plot
-
-            label: (str), label used for axis labeling
-
-        Returns:
-
-            None
-
-        """
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -288,31 +327,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, groups=None, show_figure=False):
-        """
-        Method to calculate parity plot (predicted vs. true) of average predictions, averaged over all CV splits, with error
-
-        bars on each point corresponding to the standard deviation of the predicted values over all CV splits.
-
-        Args:
-
-            y_true: (numpy array), array of true y data
-
-            y_pred_list: (list), list of numpy arrays containing predicted y data for each CV split
-
-            avg_stats: (dict), dict of calculated average metrics over all CV splits
-
-            savepath: (str), path to save plots to
-
-            title: (str), title of the best_worst_per_point plot
-
-            label: (str), label used for axis labeling
-
-        Returns:
-
-            None
-
-        """
+    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False):
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -395,20 +410,7 @@ class Scatter():
 
     @classmethod
     def plot_metric_vs_group(cls, savepath, data_type, show_figure):
-        """
-        Method to plot the value of a particular calculated metric (e.g. RMSE, R^2, etc) for each data group
 
-        Args:
-
-            savepath: (str), path to save plots to
-
-            data_type: (str), 'test' or 'train' to denote data type
-
-        Returns:
-
-            None
-
-        """
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
@@ -450,33 +452,127 @@ class Scatter():
 
 
 class Error():
-    '''
+    """
+    Class to make plots related to model error assessment and uncertainty quantification
 
-    '''
+    Args:
+        None
+
+    Methods:
+        plot_normalized_error: Method to plot the normalized residual errors of a model prediction
+            Args:
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                savepath: (str), string denoting the save path to save the figure to
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                model_errors: (pd.Series), series containing the predicted model errors (optional, default None)
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+            Returns:
+                None
+
+        plot_cumulative_normalized_error: Method to plot the cumulative normalized residual errors of a model prediction
+            Args:
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                savepath: (str), string denoting the save path to save the figure to
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                model_errors: (pd.Series), series containing the predicted model errors (optional, default None)
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+
+            Returns:
+                None
+
+        plot_rstat: Method for plotting the r-statistic distribution (true divided by predicted error)
+            Args:
+                savepath: (str), string denoting the save path to save the figure to
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+                is_calibrated: (bool), whether or not the model errors have been recalibrated (default False)
+
+            Returns:
+                None
+
+        plot_rstat_uncal_cal_overlay: Method for plotting the r-statistic distribution for two cases together: the as-obtained uncalibrated model errors and calibrated errors
+            Args:
+                savepath: (str), string denoting the save path to save the figure to
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                model_errors_cal: (pd.Series), series containing the calibrated predicted model errors
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+            Returns:
+                None
+
+        plot_real_vs_predicted_error: Sometimes called the RvE plot, or residual vs. error plot, this method plots the binned RMS residuals as a function of the binned model errors
+            Args:
+                savepath: (str), string denoting the save path to save the figure to
+
+                model: (mastml.models object), a MAST-ML model object, e.g. SklearnModel or EnsembleModel
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                dataset_stdev: (float), the standard deviation of the training dataset
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+                is_calibrated: (bool), whether or not the model errors have been recalibrated (default False)
+
+                well_sampled_fraction: (float), number denoting whether a bin qualifies as well-sampled or not. Default to 0.025 (2.5% of total samples). Only affects visuals, not fitting
+
+            Returns:
+                None
+
+        plot_real_vs_predicted_error_uncal_cal_overlay: Method for making the residual vs. error plot for two cases together: using the as-obtained uncalibrated model errors and calibrated errors
+            Args:
+                savepath: (str), string denoting the save path to save the figure to
+
+                model: (mastml.models object), a MAST-ML model object, e.g. SklearnModel or EnsembleModel
+
+                data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                model_errors_cal: (pd.Series), series containing the calibrated predicted model errors
+
+                residuals: (pd.Series), series containing the true errors (model residuals)
+
+                dataset_stdev: (float), the standard deviation of the training dataset
+
+                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+                well_sampled_fraction: (float), number denoting whether a bin qualifies as well-sampled or not. Default to 0.025 (2.5% of total samples). Only affects visuals, not fitting
+
+            Returns:
+                None
+
+    """
     @classmethod
     def plot_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False):
-        """
-        Method to plot the normalized residual errors of a model prediction
-
-        Args:
-
-            y_true: (numpy array), array containing the true y data values
-
-            y_pred: (numpy array), array containing the predicted y data values
-
-            savepath: (str), path to save the plotted normalized error plot
-
-            model: (scikit-learn model/estimator object), a scikit-learn model object
-
-            X: (numpy array), array of X features
-
-            avg_stats: (dict), dict of calculated average metrics over all CV splits
-
-        Returns:
-
-            None
-
-        """
 
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -527,28 +623,6 @@ class Error():
 
     @classmethod
     def plot_cumulative_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False):
-        """
-        Method to plot the cumulative normalized residual errors of a model prediction
-
-        Args:
-
-            y_true: (numpy array), array containing the true y data values
-
-            y_pred: (numpy array), array containing the predicted y data values
-
-            savepath: (str), path to save the plotted cumulative normalized error plot
-
-            model: (scikit-learn model/estimator object), a scikit-learn model object
-
-            X: (numpy array), array of X features
-
-            avg_stats: (dict), dict of calculated average metrics over all CV splits
-
-        Returns:
-
-            None
-
-        """
 
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -939,11 +1013,8 @@ class Histogram():
         None
 
     Methods:
-
         plot_histogram: method to plot a basic histogram of supplied data
-
             Args:
-
                 df: (pd.DataFrame), dataframe or series of data to plot as a histogram
 
                 savepath: (str), string denoting the save path for the figure image
@@ -958,9 +1029,7 @@ class Histogram():
                 None
 
         plot_residuals_histogram: method to plot a histogram of residual values
-
             Args:
-
                 y_true: (pd.Series), series of true y data
 
                 y_pred: (pd.Series), series of predicted y data
@@ -975,14 +1044,12 @@ class Histogram():
                 None
 
         _get_histogram_bins: Method to obtain the number of bins to use when plotting a histogram
-
             Args:
-
                 df: (pandas Series or numpy array), array of y data used to construct histogram
 
             Returns:
-
                 num_bins: (int), the number of bins to use when plotting a histogram
+
     """
     @classmethod
     def plot_histogram(cls, df, savepath, file_name, x_label, show_figure=False):
@@ -1050,16 +1117,15 @@ class Histogram():
 
 class Line():
     '''
+    Class containing methods for constructing line plots
 
-    '''
-    @classmethod
-    def plot_learning_curve(cls, train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name,
-                            learning_curve_type, savepath):
-        """
-        Method used to plot both data and feature learning curves
+    Args:
+        None
+
+    Methods:
+        plot_learning_curve: Method used to plot both data and feature learning curves
 
         Args:
-
             train_sizes: (numpy array), array of x-axis values, such as fraction of data used or number of features
 
             train_mean: (numpy array), array of training data mean values, averaged over some type/number of CV splits
@@ -1077,10 +1143,13 @@ class Line():
             savepath: (str), path to save the plotted learning curve to
 
         Returns:
-
             None
 
-        """
+    '''
+    @classmethod
+    def plot_learning_curve(cls, train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name,
+                            learning_curve_type, savepath):
+
         # Set image aspect ratio (do custom for learning curve):
         w, h = figaspect(0.75)
         fig = Figure(figsize=(w, h))
@@ -1125,11 +1194,50 @@ class Line():
         fig.savefig(os.path.join(savepath, learning_curve_type + '.png'), dpi=DPI, bbox_inches='tight')
         return
 
-# Helpers:
-
 
 def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
+    """
+    Helper function to make collections of different types of plots after a single or multiple data splits are evaluated.
+
+    Args:
+        plots: (list of str), list denoting which types of plots to make. Viable entries are "Scatter", "Histogram", "Error"
+
+        y_true: (pd.Series), series containing the true y data
+
+        y_pred: (pd.Series), series containing the predicted y data
+
+        groups: (list), list denoting the group label for each data point
+
+        dataset_stdev: (float), the dataset standard deviation
+
+        metrics: (list of str), list denoting the metric names to evaluate. See mastml.metrics.Metrics.metrics_zoo_ for full list
+
+        model: (mastml.models object), a MAST-ML model object, e.g. SklearnModel or EnsembleModel
+
+        residuals: (pd.Series), series containing the residuals (true model errors)
+
+        model_errors: (pd.Series), series containing the as-obtained uncalibrated model errors
+
+        has_model_errors: (bool), whether the model type used can be subject to UQ and thus have model errors calculated
+
+        savepath: (str), string denoting the path to save output to
+
+        data_type: (str), string denoting the data type analyzed, e.g. train, test, leftout
+
+        show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+        recalibrate_errors: (bool), whether or not the model errors have been recalibrated (default False)
+
+        model_errors_cal: (pd.Series), series containing the calibrated predicted model errors
+
+        splits_summary: (bool), whether or not the data used in the plots comes from a collection of many splits (default False), False denotes a single split folder
+
+    Returns:
+        None.
+
+    """
+
     if 'Histogram' in plots:
         Histogram.plot_residuals_histogram(y_true=y_true,
                                            y_pred=y_pred,
@@ -1159,7 +1267,6 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                 data_type=data_type,
                                                 x_label='values',
                                                 metrics_list=metrics,
-                                                groups=groups,
                                                 show_figure=show_figure)
             if groups is not None:
                 Scatter.plot_metric_vs_group(savepath=savepath,
