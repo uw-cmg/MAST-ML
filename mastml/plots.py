@@ -289,6 +289,9 @@ class Scatter():
             bests.append(all_y_pred_flat[np.where(all_residuals_flat == best)])
             worsts.append(all_y_pred_flat[np.where(all_residuals_flat == worst)])
 
+        bests = np.array([item for sublist in bests for item in sublist])
+        worsts = np.array([item for sublist in worsts for item in sublist])
+
         stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=bests)
         stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=worsts)
 
