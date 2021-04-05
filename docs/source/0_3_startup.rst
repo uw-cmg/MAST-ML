@@ -24,5 +24,5 @@ session. There are explanations for each cell of the notebook. Reading through a
 about 10 minutes. At the end, you will have performed your first MAST-ML run!
 
 Once complete, there are a series of other example/tutorial notebooks that can be found in the mastml/examples folder
-on Github. 
+on Github.
 
