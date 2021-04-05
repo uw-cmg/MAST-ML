@@ -1,18 +1,110 @@
+"""
+This module contains classes for quantifying the predicted model errors (uncertainty quantification), and preparing
+provided residual (true errors) predicted model error data for plotting (e.g. residual vs. error plots), or for
+recalibration of model errors using the method of Palmer et al.
+
+ErrorUtils:
+    Collection of functions to conduct error analysis on certain types of models (uncertainty quantification), and prepare
+    residual and model error data for plotting, as well as recalibrate model errors with various methods
+
+CorrectionFactors
+    Class for performing recalibration of model errors (uncertainty quantification) based on the method from the
+    work of Palmer et al.
+
+"""
+
 import os
 import sys
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
 from scipy.optimize import minimize
 try:
     from forestci import random_forest_error
 except:
-    print('To install latest forestci compatabilty with scikit-learn>=0.24, run '
+    print('forestci is an optional dependency. To install latest forestci compatabilty with scikit-learn>=0.24, run '
           'pip install git+git://github.com/scikit-learn-contrib/forest-confidence-interval.git')
 
 class ErrorUtils():
     '''
+    Collection of functions to conduct error analysis on certain types of models (uncertainty quantification), and prepare
+    residual and model error data for plotting, as well as recalibrate model errors with various methods
+
+    Args:
+        None
+
+    Methods:
+        _collect_error_data: method to collect all residuals, model errors, and dataset standard deviation over many data splits
+            Args:
+                savepath: (str), string denoting the path to save output to
+
+                data_type: (str), string denoting the data type analyzed, e.g. train, test, leftout
+
+            Returns:
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                residuals: (pd.Series), series containing the true model errors (residuals)
+
+                dataset_stdev: (float), standard deviation of the data set
+
+        _recalibrate_errors: method to recalibrate the model errors using negative log likelihood function from work of Palmer et al.
+            Args:
+                model_errors: (pd.Series), series containing the predicted (uncalibrated) model errors
+
+                residuals: (pd.Series), series containing the true model errors (residuals)
+
+            Returns:
+                model_errors: (pd.Series), series containing the predicted (calibrated) model errors
+
+                a: (float), the slope of the recalibration linear fit
+
+                b: (float), the intercept of the recalibration linear fit
+
+        _parse_error_data: method to prepare the provided residuals and model errors for plotting the binned RvE (residual vs error) plots
+            Args:
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                residuals: (pd.Series), series containing the true model errors (residuals)
+
+                dataset_stdev: (float), standard deviation of the data set
+
+                number_of_bins: (int), the number of bins to digitize the data into for making the RvE (residual vs. error) plot
+
+            Returns:
+                bin_values: (np.array), the x-axis of the RvE plot: reduced model error values digitized into bins
+
+                rms_residual_values: (np.array), the y-axis of the RvE plot: the RMS of the residual values digitized into bins
+
+                num_values_per_bin: (np.array), the number of data samples in each bin
+
+                number_of_bins: (int), the number of bins to put the model error and residual data into.
+
+        _get_model_errors: method for generating the model error values using either the standard deviation of weak learners or jackknife-after-bootstrap method of Wager et al.
+            Args:
+                model: (mastml.models object), a MAST-ML model, e.g. SklearnModel or EnsembleModel
+
+                X: (pd.DataFrame), dataframe of the X feature matrix
+
+                X_train: (pd.DataFrame), dataframe of the X training data feature matrix
+
+                X_test: (pd.DataFrame), dataframe of the X test data feature matrix
+
+                error_method: (str), string denoting the UQ error method to use. Viable options are 'stdev_weak_learners' and 'jackknife_after_bootstrap'
+
+                remove_outlier_learners: (bool), whether specific weak learners that are found to deviate from 3 sigma of the average prediction for a given data point are removed (Default False)
+
+            Returns:
+                model_errors: (pd.Series), series containing the predicted model errors
+
+                num_removed_learners: (list), list of number of removed weak learners for each data point
+
+        _remove_outlier_preds: method to flag and remove outlier weak learner predictions
+            Args:
+                preds: (list), list of predicted values of a given data point from an ensemble of weak learners
+
+            Returns:
+                preds_cleaned: (list), ammended list of predicted values of a given data point from an ensemble of weak learners, with predictions from outlier learners removed
+
+                num_outliers: (int), the number of removed weak learners for the data point evaluated
 
     '''
     @classmethod
@@ -127,33 +219,9 @@ class ErrorUtils():
 
     @classmethod
     def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners', remove_outlier_learners=False):
-        """
-        Method to calculate prediction intervals when using Random Forest and Gaussian Process regression models.
-
-        Prediction intervals for random forest adapted from https://blog.datadive.net/prediction-intervals-for-random-forests/
-
-        Args:
-
-            model: (scikit-learn model/estimator object), a scikit-learn model object
-
-            X: (numpy array), array of X features
-
-            method: (str), type of error bar to formulate (e.g. "stdev" is standard deviation of predicted errors, "confint"
-            is error bar as confidence interval
-
-            percentile: (float), percentile for which to form error bars
-
-        Returns:
-
-            err_up: (list), list of upper bounds of error bars for each data point
-
-            err_down: (list), list of lower bounds of error bars for each data point
-
-        """
 
         err_down = list()
         err_up = list()
-        nan_indices = list()
         indices_TF = list()
         X_aslist = X.values.tolist()
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
@@ -249,28 +317,35 @@ class ErrorUtils():
 
 class CorrectionFactors():
     '''
+    Class for performing recalibration of model errors (uncertainty quantification) based on the method from the
+    work of Palmer et al.
+
+    Args:
+        residuals: (pd.Series), series containing the true model errors (residuals)
+
+        model_errors: (pd.Series), series containing the predicted model errors
+
+    Methods:
+        nll: Method to perform optimization of normalized model error distribution using the negative log likelihood function
+            Args:
+                None
+
+            Returns:
+                a: (float), the slope of the recalibration linear fit
+
+                b: (float), the intercept of the recalibration linear fit
+
+        _nll_opt: Method for evaluating the negative log likelihood function for set of residuals and model errors
+            Args:
+                x: (np.array), array providing the initial guess of (a, b)
+
+            Returns:
+                _ : (float), the recalibrated error value
 
     '''
     def __init__(self, residuals, model_errors):
         self.residuals = residuals
         self.model_errors = model_errors
-
-    # Function to find scale factors by directly optimizing the r-stat distribution
-    # The r^2 value returned is obtained by making a binned residual vs. error plot and
-    # fitting a line, after scaling with the a and b found by this function.
-    def direct(self):
-        x0 = np.array([1.0, 0.0])
-        res = minimize(self._direct_opt, x0, method='nelder-mead')
-        a = res.x[0]
-        b = res.x[1]
-        success = res.success
-        if success is True:
-            print("r-stat optimization successful!")
-        elif success is False:
-            print("r-stat optimization failed.")
-        # print(res)
-        r_squared = self._direct_rsquared(a, b)
-        return a, b, r_squared
 
     def nll(self):
         x0 = np.array([1.0, 0.0])
@@ -279,132 +354,15 @@ class CorrectionFactors():
         b = res.x[1]
         success = res.success
         if success is True:
-            print("NLL optimization successful!")
+            pass
         elif success is False:
-            print("NLL optimization failed.")
+            print("Warning: NLL optimization failed!")
         # print(res)
         #r_squared = self._direct_rsquared(a, b)
         return a, b
-
-    # Function to find scale factors using binned residual vs. model error plot
-    def rve(self, number_of_bins=15):
-        model_errors = self.model_errors
-        abs_res = abs(self.residuals)
-
-        # Set bins for calculating RMS
-        upperbound = np.amax(model_errors)
-        lowerbound = np.amin(model_errors)
-        bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
-
-        # Create a vector determining bin of each data point
-        digitized = np.digitize(model_errors, bins)
-
-        # Record which bins contain data (to avoid trying to do calculations on empty bins)
-        bins_present = []
-        for i in range(1, number_of_bins + 1):
-            if i in digitized:
-                bins_present.append(i)
-
-        # Create array of weights based on counts in each bin
-        weights = []
-        for i in range(1, number_of_bins + 1):
-            if i in digitized:
-                weights.append(np.count_nonzero(digitized == i))
-
-        # Calculate RMS of the absolute residuals
-        RMS_abs_res = [np.sqrt((abs_res[digitized == bins_present[i]] ** 2).mean()) for i in
-                       range(0, len(bins_present))]
-
-        # Set the x-values to the midpoint of each bin
-        bin_width = bins[1] - bins[0]
-        binned_model_errors = np.zeros(len(bins_present))
-        for i in range(0, len(bins_present)):
-            curr_bin = bins_present[i]
-            binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
-
-        # Fit a line to the data
-        model = LinearRegression(fit_intercept=True)
-        model.fit(binned_model_errors[:, np.newaxis],
-                  RMS_abs_res,
-                  sample_weight=weights)  #### SELF: Can indicate subset of points to fit to using ":" --> "a:b"
-        xfit = binned_model_errors
-        yfit = model.predict(xfit[:, np.newaxis])
-
-        # Calculate r^2 value
-        r_squared = r2_score(RMS_abs_res, yfit, sample_weight=weights)
-        # Calculate slope
-        slope = model.coef_
-        # Calculate y-intercept
-        intercept = model.intercept_
-
-        # print("rf slope: {}".format(slope))
-        # print("rf intercept: {}".format(intercept))
-
-        return slope, intercept, r_squared
-
-    def _direct_opt(self, x):
-        ratio = self.residuals / (self.model_errors * x[0] + x[1])
-        sigma = np.std(ratio)
-        mu = np.mean(ratio)
-        return mu ** 2 + (sigma - 1) ** 2
 
     def _nll_opt(self, x):
         sum = 0
         for i in range(0, len(self.residuals)):
             sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i] + x[1]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i] + x[1]) ** 2
         return 0.5 * sum / len(self.residuals)
-
-    def _direct_rsquared(self, a, b, number_of_bins=15):
-        model_errors = self.model_errors * a + b
-        abs_res = abs(self.residuals)
-
-        # Set bins for calculating RMS
-        upperbound = np.amax(model_errors)
-        lowerbound = np.amin(model_errors)
-        bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
-
-        # Create a vector determining bin of each data point
-        digitized = np.digitize(model_errors, bins)
-
-        # Record which bins contain data (to avoid trying to do calculations on empty bins)
-        bins_present = []
-        for i in range(1, number_of_bins + 1):
-            if i in digitized:
-                bins_present.append(i)
-
-        # Create array of weights based on counts in each bin
-        weights = []
-        for i in range(1, number_of_bins + 1):
-            if i in digitized:
-                weights.append(np.count_nonzero(digitized == i))
-
-        # Calculate RMS of the absolute residuals
-        RMS_abs_res = [np.sqrt((abs_res[digitized == bins_present[i]] ** 2).mean()) for i in
-                       range(0, len(bins_present))]
-
-        # Set the x-values to the midpoint of each bin
-        bin_width = bins[1] - bins[0]
-        binned_model_errors = np.zeros(len(bins_present))
-        for i in range(0, len(bins_present)):
-            curr_bin = bins_present[i]
-            binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
-
-        # Fit a line to the data
-        model = LinearRegression(fit_intercept=True)
-        model.fit(binned_model_errors[:, np.newaxis],
-                  RMS_abs_res,
-                  sample_weight=weights)  #### SELF: Can indicate subset of points to fit to using ":" --> "a:b"
-        xfit = binned_model_errors
-        yfit = model.predict(xfit[:, np.newaxis])
-
-        # Calculate r^2 value
-        r_squared = r2_score(RMS_abs_res, yfit, sample_weight=weights)
-        # Calculate slope
-        slope = model.coef_
-        # Calculate y-intercept
-        intercept = model.intercept_
-
-        # print("rf slope: {}".format(slope))
-        # print("rf intercept: {}".format(intercept))
-
-        return r_squared
