@@ -6,6 +6,10 @@ Materials Simulation Toolkit for Machine Learning (MAST-ML)
 
 MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
+As of MAST-ML version 3.x, much of the original code and workflow have been rewritten. The use of an input file in version 2.x and older
+has been removed in favor of a more modular Jupyter notebook computing environment. Please see the examples and tutorials under
+the mastml/examples folder for a guide in using MAST-ML
+
 **Contributors**
 
 University of Wisconsin-Madison Computational Materials Group:
@@ -24,7 +28,9 @@ University of Kentucky contributors:
 
 MAST-ML documentation:
 
-An overview of code documentation and tutorials for getting started with MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
+An overview of code documentation and guides for installing MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
+
+A number of Jupyter notebook tutorials detailing different MAST-ML use cases can be found `here <https://github.com/uw-cmg/MAST-ML/tree/dev_Ryan_2020-12-21/examples>`_
 
 **Funding**
 
