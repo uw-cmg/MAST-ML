@@ -285,7 +285,9 @@ class ErrorUtils():
             model_errors = (np.array(err_up) + np.array(err_down)) / 2
             nan_indices = np.where(np.isnan(err_up))
             nan_indices_sorted = np.array(sorted(nan_indices[0], reverse=True))
+            num_removed_learners = list()
             for i, val in enumerate(list(err_up)):
+                num_removed_learners.append(0)
                 if i in nan_indices_sorted:
                     indices_TF.append(False)
                 else:
