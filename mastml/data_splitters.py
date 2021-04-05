@@ -355,7 +355,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             preprocessor = NoPreprocessor()
 
         if metrics is None:
-            metrics = ['mean_absolute_error']
+            metrics = ['root_mean_squared_error']
 
         if best_run_metric is None:
             best_run_metric = metrics[0]
