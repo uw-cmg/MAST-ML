@@ -94,11 +94,12 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             return pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
         return self.preprocessor.fit_transform(X=X)
 
-    def evaluate(self, X, y=None, savepath=None, file_name=''):
+    def evaluate(self, X, y=None, savepath=None, file_name='', make_new_dir=False):
         if not savepath:
             savepath = os.getcwd()
-        #splitdir = self._setup_savedir(savepath=savepath)
-        #self.splitdir = splitdir
+        if make_new_dir is True:
+            splitdir = self._setup_savedir(savepath=savepath)
+            savepath = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
             Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))

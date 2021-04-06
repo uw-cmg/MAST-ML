@@ -140,22 +140,24 @@ class DataCleaning():
         X = df[[col for col in columns if col != target]]
         return X, y
 
-    def evaluate(self, X, y, method, savepath=None, **kwargs):
+    def evaluate(self, X, y, method, savepath=None, make_new_dir=True, **kwargs):
         if not savepath:
             savepath = os.getcwd()
-        splitdir = self._setup_savedir(savepath=savepath)
+        if make_new_dir is True:
+            splitdir = self._setup_savedir(savepath=savepath)
+            savepath = splitdir
         self.splitdir = splitdir
-        DataUtilities().flag_columns_with_strings(X=X, y=y, savepath=splitdir)
-        DataUtilities().flag_outliers(X=X, y=y, savepath=splitdir, n_stdevs=3)
+        DataUtilities().flag_columns_with_strings(X=X, y=y, savepath=savepath)
+        DataUtilities().flag_outliers(X=X, y=y, savepath=savepath, n_stdevs=3)
         df_orig = pd.concat([X, y], axis=1)
         self.cleaner = getattr(self, method)
         X, y = self.cleaner(X, y, **kwargs)
         df_cleaned = pd.concat([X, y], axis=1)
-        df_orig.to_excel(os.path.join(splitdir, 'data_original.xlsx'), index=False)
-        df_cleaned.to_excel(os.path.join(splitdir, 'data_cleaned.xlsx'), index=False)
+        df_orig.to_excel(os.path.join(savepath, 'data_original.xlsx'), index=False)
+        df_cleaned.to_excel(os.path.join(savepath, 'data_cleaned.xlsx'), index=False)
 
         # Make histogram of the input data
-        Histogram.plot_histogram(df=y, file_name='histogram_target_values', savepath=splitdir, x_label='Target values')
+        Histogram.plot_histogram(df=y, file_name='histogram_target_values', savepath=savepath, x_label='Target values')
 
         return X, y
 

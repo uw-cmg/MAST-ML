@@ -35,6 +35,7 @@ import numpy as np
 import pandas as pd
 import os
 import copy
+from datetime import datetime
 
 import sklearn
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -91,9 +92,14 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X
 
-    def evaluate(self, X, y, savepath):
+    def evaluate(self, X, y, savepath=None, make_new_dir=False):
+        if savepath is None:
+            savepath = os.getcwd()
         self.fit(X=X, y=y)
         X_select = self.transform(X=X)
+        if make_new_dir is True:
+            splitdir = self._setup_savedir(selector=self, savepath=savepath)
+            savepath = splitdir
         self.selected_features = X_select.columns.tolist()
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
@@ -107,7 +113,22 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             self.features_highly_correlated_with_target.to_excel(os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
         if self.__class__.__name__ == 'MASTMLFeatureSelector':
             self.mastml_forward_selection_df.to_excel(os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
+
+    def _setup_savedir(self, selector, savepath):
+        now = datetime.now()
+        dirname = selector.__class__.__name__
+        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+                        f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
+        if savepath == None:
+            splitdir = os.getcwd()
+        else:
+            splitdir = os.path.join(savepath, dirname)
+        if not os.path.exists(splitdir):
+            os.mkdir(splitdir)
+        self.splitdir = splitdir
+        return splitdir
 
 class SklearnFeatureSelector(BaseSelector):
     '''

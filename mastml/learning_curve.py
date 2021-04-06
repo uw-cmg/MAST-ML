@@ -111,14 +111,16 @@ class LearningCurve():
         pass
 
     def evaluate(self, model, X, y, savepath=None, groups=None, train_sizes=None, cv=None, scoring=None, selector=None,
-                            make_plot=True):
+                            make_plot=True, make_new_dir=True):
         if savepath is None:
             savepath = os.getcwd()
-        splitdir = self._setup_savedir(savepath=savepath)
+        if make_new_dir is True:
+            splitdir = self._setup_savedir(savepath=savepath)
+            savepath = splitdir
         self.data_learning_curve(model=model,
                                  X=X,
                                  y=y,
-                                 savepath=splitdir,
+                                 savepath=savepath,
                                  groups=groups,
                                  train_sizes=train_sizes,
                                  cv=cv,
@@ -127,7 +129,7 @@ class LearningCurve():
         self.feature_learning_curve(model=model,
                                     X=X,
                                     y=y,
-                                    savepath=splitdir,
+                                    savepath=savepath,
                                     groups=groups,
                                     cv=cv,
                                     scoring=scoring,

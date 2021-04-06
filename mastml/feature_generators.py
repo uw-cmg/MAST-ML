@@ -113,20 +113,22 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
     def __init__(self):
         pass
 
-    def evaluate(self, X, y, savepath=None):
+    def evaluate(self, X, y, savepath=None, make_new_dir=True):
         X_orig = copy(X)
         if not savepath:
             savepath = os.getcwd()
+        if make_new_dir is True:
+            splitdir = self._setup_savedir(generator=self, savepath=savepath)
+            savepath = splitdir
         X, y = self.fit_transform(X=X, y=y)
-        splitdir = self._setup_savedir(generator=self, savepath=savepath)
         # Join the originally provided feature set with the new feature set
         X = pd.concat([X_orig, X], axis=1)
         df = pd.concat([X, y], axis=1)
         try:
-            df.to_excel(os.path.join(splitdir, 'generated_features.xlsx'), index=False)
+            df.to_excel(os.path.join(savepath, 'generated_features.xlsx'), index=False)
         except ValueError:
             print('Warning! Excel file too large to save.')
-        with open(os.path.join(splitdir, 'generated_features.pickle'), 'wb') as f:
+        with open(os.path.join(savepath, 'generated_features.pickle'), 'wb') as f:
             pickle.dump(df, f)
         return X, y
 
