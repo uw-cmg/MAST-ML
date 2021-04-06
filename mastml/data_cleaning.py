@@ -102,7 +102,10 @@ class DataCleaning():
 
     def remove(self, X, y, axis):
         df = pd.concat([X, y], axis=1)
-        target = y.name
+        try:
+            target = y.name
+        except:
+            target = y.columns.tolist()[0]
         df = df.dropna(axis=axis, how='any')
         y = df[target]
         X = df[[col for col in df.columns if col != target]]
@@ -112,14 +115,20 @@ class DataCleaning():
         df = pd.concat([X, y], axis=1)
         columns = df.columns.tolist()
         df = pd.DataFrame(SimpleImputer(missing_values=np.nan, strategy=strategy).fit_transform(df), columns=columns)
-        target = y.name
+        try:
+            target = y.name
+        except:
+            target = y.columns.tolist()[0]
         y = df[target]
         X = df[[col for col in df.columns if col != target]]
         return X, y
 
     def ppca(self, X, y):
         df = pd.concat([X, y], axis=1)
-        target = y.name
+        try:
+            target = y.name
+        except:
+            target = y.columns.tolist()[0]
         columns = df.columns.tolist()
         pca_magic = PPCA()
         pca_magic.fit(np.array(df))
@@ -142,8 +151,8 @@ class DataCleaning():
         self.cleaner = getattr(self, method)
         X, y = self.cleaner(X, y, **kwargs)
         df_cleaned = pd.concat([X, y], axis=1)
-        df_orig.to_excel(os.path.join(splitdir, 'data_original.xlsx'))
-        df_cleaned.to_excel(os.path.join(splitdir, 'data_cleaned.xlsx'))
+        df_orig.to_excel(os.path.join(splitdir, 'data_original.xlsx'), index=False)
+        df_cleaned.to_excel(os.path.join(splitdir, 'data_cleaned.xlsx'), index=False)
 
         # Make histogram of the input data
         Histogram.plot_histogram(df=y, file_name='histogram_target_values', savepath=splitdir, x_label='Target values')
