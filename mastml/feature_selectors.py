@@ -172,11 +172,11 @@ class SklearnFeatureSelector(BaseSelector):
         original_cols = X.columns.tolist()
         new_cols = X_select.columns.tolist()
         new_cols_renamed = list()
-        for original_col in original_cols:
-            for new_col in new_cols:
-                # Need to compare as array because indicies are different
+        for new_col in new_cols:
+            for original_col in original_cols:
                 if np.array_equal(X[original_col].values, X_select[new_col].values):
                     new_cols_renamed.append(original_col)
+                    break
 
         X_select.columns = new_cols_renamed
         return X_select

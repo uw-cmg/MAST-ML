@@ -216,7 +216,7 @@ class LearningCurve():
             selector_name = 'SequentialFeatureSelector'
             selector = SklearnFeatureSelector(selector='SequentialFeatureSelector',
                                               estimator=model,
-                                              n_features_to_select=X.shape[1],
+                                              n_features_to_select=X.shape[1]-1,
                                               scoring=scoring,
                                               cv=cv)
         else:
@@ -245,18 +245,13 @@ class LearningCurve():
                         "Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme")
             Xnew = selector.fit(X=X, y=y).transform(X=X)
         else:
-            try:
-                Xnew = selector.fit(X=X, y=y).transform(X=X)
-            except:
-                print("You have specified an invalid selector_name for learning curve. Either leave blank to use the default"
-                      " SequentialFeatureSelector or use one of SelectKBest, RFE, SequentialFeatureSelector, MASTMLFeatureSelector")
-                sys.exit()
+            Xnew = selector.fit(X=X, y=y).transform(X=X)
 
         # save selected features for each iteration to text file
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             features_selected = Xnew.columns.tolist()
             for feature in features_selected:
-                f.write(feature+'\n')
+                f.write(str(feature)+'\n')
 
         train_scores = dict()
         test_scores = dict()
