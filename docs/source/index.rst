@@ -13,6 +13,8 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    0_3_startup.rst
 
+   0_5_tutorials.rst
+
    1_data_cleaning.rst
 
    2_data_splitters.rst
