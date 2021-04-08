@@ -1072,8 +1072,6 @@ class SklearnDataSplitter(BaseSplitter):
 
     def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
-        if model.model.__class__.__name__ == 'BaggingRegressor':
-            dirname = model.model.__class__.__name__ + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' + preprocessor.__class__.__name__+'_' + selector.__class__.__name__
         try:
             model_name = model.model.__class__.__name__
         except:
