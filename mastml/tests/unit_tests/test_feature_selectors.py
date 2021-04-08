@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+from mastml.datasets import LocalDatasets
 sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.feature_selectors import NoSelect, EnsembleModelFeatureSelector, PearsonSelector, MASTMLFeatureSelector
 from sklearn.ensemble import RandomForestRegressor
+
 
 class TestSelectors(unittest.TestCase):
 
@@ -61,6 +63,48 @@ class TestSelectors(unittest.TestCase):
         self.assertEqual(Xselect.shape, (10, 2))
         self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.xlsx')))
         os.remove(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        os.remove('selected_features.txt')
+        return
+
+    def test_featureselector_with_random_score(self):
+        target = 'E_regression.1'
+        extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
+        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+                          target=target,
+                          extra_columns=extra_columns,
+                          group_column='Material compositions 1',
+                          testdata_columns=None,
+                          as_frame=True)
+        data_dict = d.load_data()
+        X = data_dict['X']
+        y = data_dict['y']
+        model = RandomForestRegressor()
+        selector = EnsembleModelFeatureSelector(model=model, n_features_to_select=100, n_random_dummy= 100)
+        Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xselect.shape, (408, 100))
+        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.xlsx'))
+        os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
+        os.remove('selected_features.txt')
+        return
+
+    def test_featureselector_with_permutated_score(self):
+        target = 'E_regression.1'
+        extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
+        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+                          target=target,
+                          extra_columns=extra_columns,
+                          group_column='Material compositions 1',
+                          testdata_columns=None,
+                          as_frame=True)
+        data_dict = d.load_data()
+        X = data_dict['X']
+        y = data_dict['y']
+        model = RandomForestRegressor()
+        selector = EnsembleModelFeatureSelector(model=model, n_features_to_select=100, n_random_dummy= 100, n_permuted_dummy = 200)
+        Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xselect.shape, (408, 100))
+        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.xlsx'))
+        os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
         os.remove('selected_features.txt')
         return
 
