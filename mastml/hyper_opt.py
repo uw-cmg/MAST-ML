@@ -28,6 +28,7 @@ import scipy.stats
 import pandas as pd
 import numpy as np
 import os
+from ast import literal_eval
 
 from mastml.models import SklearnModel
 from mastml.metrics import Metrics
@@ -87,7 +88,6 @@ class HyperOptUtils():
     def _search_space_generator(self, params):
         params_ = dict()
         for param_name, param_vals in params.items():
-            #TODO: add support for tuples so MLPRegressor opt can be done
             if 'int' in param_vals:
                 dtype = 'int'
             elif 'float' in param_vals:
@@ -95,6 +95,9 @@ class HyperOptUtils():
             elif 'str' in param_vals:
                 dtype = 'str'
                 param_vals.remove('str')
+            elif 'tup' in param_vals:
+                is_tuple = True
+                param_vals.remove('tup')
             else:
                 print('Error: You must specify datatype as int, float or str (last entry in param values for a given parameter)')
             try:
@@ -103,8 +106,12 @@ class HyperOptUtils():
                 elif param_vals[3] == "log":
                     params_[param_name] = np.logspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
                 else:
-                    print('You must specify either lin or log scaling for GridSearch')
-                    exit()
+                    if is_tuple is True:
+                        param_vals = [literal_eval(param_val) for param_val in param_vals]
+                        params_[param_name] = np.array(param_vals)
+                    else:
+                        print('You must specify either lin or log scaling for GridSearch, or be specifying a set of tuples')
+                        exit()
             except:
                 params_[param_name] = param_vals
         return params_
@@ -116,7 +123,10 @@ class HyperOptUtils():
                      # Bayesian search does not report test scores and will error out
                      #('mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score'))
             out = pd.DataFrame(c, d.cv_results_['params'])
-            best = pd.DataFrame(d.best_params_, index=['Best Parameters'])
+            try:
+                best = pd.DataFrame(d.best_params_, index=['Best Parameters'])
+            except:
+                best = pd.DataFrame(d.best_params_)
             out.to_excel(os.path.join(savepath, self.__class__.__name__+"_"+str(key)+'_output.xlsx'))
             best.to_excel(os.path.join(savepath, self.__class__.__name__+"_"+str(key)+'_bestparams.xlsx'))
         return
