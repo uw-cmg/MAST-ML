@@ -574,6 +574,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                             model_errors_leaveout_all_calibrated = None
                     else:
                         model_errors_leaveout_all = None
+                        model_errors_leaveout_all_calibrated = None
 
                     # Gather the recalibration dicts from each split set and save average and stdev of recalibrations
                     if has_model_errors is True and recalibrate_errors is True:
