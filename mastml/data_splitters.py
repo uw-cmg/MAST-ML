@@ -644,6 +644,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             model_orig = copy.deepcopy(model)
             selector_orig = copy.deepcopy(selector)
             preprocessor_orig = copy.deepcopy(preprocessor)
+            hyperopt_orig = copy.deepcopy(hyperopt)
 
             X_train = Xs[0]
             X_test = Xs[1]
@@ -666,7 +667,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             os.mkdir(splitpath)
 
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, preprocessor_orig, selector_orig,
-                                 hyperopt, metrics, plots, group,
+                                 hyperopt_orig, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
                                  verbosity)
             split_count += 1
