@@ -21,6 +21,7 @@ BayesianSearch:
 
 import sklearn.model_selection as ms
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+from sklearn.metrics import make_scorer
 from skopt import BayesSearchCV
 from skopt.space import Real, Categorical, Integer
 import scipy.stats
@@ -29,6 +30,7 @@ import numpy as np
 import os
 
 from mastml.models import SklearnModel
+from mastml.metrics import Metrics
 
 class HyperOptUtils():
     """
@@ -85,9 +87,16 @@ class HyperOptUtils():
     def _search_space_generator(self, params):
         params_ = dict()
         for param_name, param_vals in params.items():
-            #TODO: update treatment of strings based on master branch edits
             #TODO: add support for tuples so MLPRegressor opt can be done
-            dtype = param_vals[4]
+            if 'int' in param_vals:
+                dtype = 'int'
+            elif 'float' in param_vals:
+                dtype = 'float'
+            elif 'str' in param_vals:
+                dtype = 'str'
+                param_vals.remove('str')
+            else:
+                print('Error: You must specify datatype as int, float or str (last entry in param values for a given parameter)')
             try:
                 if param_vals[3] == "lin":
                     params_[param_name] = np.linspace(float(param_vals[0]), float(param_vals[1]), num=int(param_vals[2]), dtype=dtype)
@@ -262,9 +271,17 @@ class GridSearch(HyperOptUtils):
         if cv is None:
             cv = ms.RepeatedKFold()
 
+        metrics = Metrics(metrics_list=None)._metric_zoo()
+        if self.scoring is None:
+            scoring = make_scorer(metrics['mean_absolute_error'][1],
+                                  greater_is_better=metrics['mean_absolute_error'][0])  # Note using True b/c if False then sklearn multiplies by -1
+        else:
+            scoring = make_scorer(metrics[self.scoring][1],
+                                  greater_is_better=metrics[self.scoring][0])  # Note using True b/c if False then sklearn multiplies by -1
+
         model = GridSearchCV(model.model,
                              param_dict,
-                             scoring=self.scoring,
+                             scoring=scoring,
                              cv=cv,
                              refit=True,
                              n_jobs=self.n_jobs,
@@ -340,10 +357,18 @@ class RandomizedSearch(HyperOptUtils):
         if cv is None:
             cv = ms.RepeatedKFold()
 
+        metrics = Metrics(metrics_list=None)._metric_zoo()
+        if self.scoring is None:
+            scoring = make_scorer(metrics['mean_absolute_error'][1],
+                                  greater_is_better=metrics['mean_absolute_error'][0])  # Note using True b/c if False then sklearn multiplies by -1
+        else:
+            scoring = make_scorer(metrics[self.scoring][1],
+                                  greater_is_better=metrics[self.scoring][0])  # Note using True b/c if False then sklearn multiplies by -1
+
         model = RandomizedSearchCV(model.model,
                                    param_dict,
                                    n_iter=self.n_iter,
-                                   scoring=self.scoring,
+                                   scoring=scoring,
                                    cv=cv,
                                    refit=refit,
                                    n_jobs=self.n_jobs,
@@ -400,6 +425,10 @@ class BayesianSearch(HyperOptUtils):
     """
 
     def __init__(self, param_names, param_values, scoring=None, n_iter=50, n_jobs=1):
+        print('Warning: As of 2/4/21, Bayesian search from skopt is not compatible with'
+              ' sklearn>=0.24. Downgrade to sklearn 0.23.2 should fix the issue but may cause'
+              ' other unforseen compatibility issues in the MAST-ML code')
+
         super(BayesianSearch, self).__init__(param_names=param_names, param_values=param_values)
         self.param_names = param_names
         self.param_values = param_values
@@ -419,10 +448,18 @@ class BayesianSearch(HyperOptUtils):
         if cv is None:
             cv = ms.RepeatedKFold()
 
+        metrics = Metrics(metrics_list=None)._metric_zoo()
+        if self.scoring is None:
+            scoring = make_scorer(metrics['mean_absolute_error'][1],
+                                  greater_is_better=metrics['mean_absolute_error'][0])  # Note using True b/c if False then sklearn multiplies by -1
+        else:
+            scoring = make_scorer(metrics[self.scoring][1],
+                                  greater_is_better=metrics[self.scoring][0])  # Note using True b/c if False then sklearn multiplies by -1
+
         model = BayesSearchCV(estimator=model.model,
                               search_spaces=param_dict,
                               n_iter=self.n_iter,
-                              scoring=self.scoring,
+                              scoring=scoring,
                               cv=cv,
                               refit=True,
                               n_jobs=self.n_jobs,
