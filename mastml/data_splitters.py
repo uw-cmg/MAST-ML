@@ -322,7 +322,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         return X_splits, y_splits, train_inds, test_inds
 
     def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
-                 plots=['Histogram', 'Scatter', 'Error'], savepath=None, X_extra=None, leaveout_inds=list(list()),
+                 plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1):
 
@@ -337,6 +337,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                 if len(leaveout_inds_orig) > 0:
                     for i in leaveout_inds_orig:
                         leaveout_inds.append(i)
+
+        if plots is None:
+            plots = ['Scatter']
 
         if type(models) == list:
             pass
