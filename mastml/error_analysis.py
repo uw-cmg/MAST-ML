@@ -231,6 +231,11 @@ class ErrorUtils():
                 model_errors_var = random_forest_error(forest=model.model, X_test=X_test, X_train=X_train)
                 # Wager method returns the variance. Take sqrt to turn into stdev
                 model_errors = np.sqrt(model_errors_var)
+                num_removed_learners = list()
+                if remove_outlier_learners is True:
+                    print("Warning: removal of outlier learners isn't supported with jackknife after bootstrap")
+                for _ in model_errors:
+                    num_removed_learners.append(0)
 
             elif error_method == 'stdev_weak_learners':
                 num_removed_learners = list()
