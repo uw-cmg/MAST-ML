@@ -250,6 +250,7 @@ class Scatter():
             plt.close()
         return
 
+    #TODO: this method runs into issues when the y_true data have multiple instances where the y data have the same value, leading to size mismatch errors
     @classmethod
     def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
 
@@ -280,6 +281,7 @@ class Scatter():
         all_y_pred_flat = np.array([item for sublist in all_y_pred for item in sublist])
         all_residuals_flat = np.array([item for sublist in all_abs_residuals for item in sublist])
 
+        # TODO: this is the source of the issue, as y_true_unique can be smaller than y_true. A better way?
         y_true_unique = np.unique(all_y_true_flat)
         bests = list()
         worsts = list()
@@ -1261,11 +1263,12 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                           x_label='values',
                                           metrics_list=metrics,
                                           show_figure=show_figure)
-            Scatter.plot_best_worst_per_point(savepath=savepath,
-                                              data_type=data_type,
-                                              x_label='values',
-                                              metrics_list=metrics,
-                                              show_figure=show_figure)
+            # Commenting out for now as this plot can cause errors for certain datasets with many identical y_true vals
+            #Scatter.plot_best_worst_per_point(savepath=savepath,
+            #                                  data_type=data_type,
+            #                                  x_label='values',
+            #                                  metrics_list=metrics,
+            #                                  show_figure=show_figure)
             Scatter.plot_predicted_vs_true_bars(savepath=savepath,
                                                 data_type=data_type,
                                                 x_label='values',
