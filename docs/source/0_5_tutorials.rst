@@ -31,13 +31,13 @@ Tutorial 3: Feature Generation and Selection (MASTML_Tutorial_3_FeatureEngineeri
         2. Generate one-hot encoded features based on group labels
         3. Preprocess features to be normalized
         4. Select features using an ensemble model-based approach
-        5. Select features using forward selection
-        6. Generate learning curves using a basic feature selection approach
+        5. Generate learning curves using a basic feature selection approach
+        6. Select features using forward selection
 
 Tutorial 4: Model Fits and Data Split Tests (MASTML_Tutorial_4_Models_and_Tests.ipynb):
     In this notebook, we will learn how to run a few different types of models on a select dataset, and conduct a few different types of data splits to evaluate our model performance. In this tutorial, we will:
         1. Run a variety of model types from the scikit-learn package
-        2. Run a bootstrapped ensemble of linear ridge regression models
+        2. Run a bootstrapped ensemble of neural networks
         3. Compare performance of scikit-learn's gradient boosting method and XGBoost
         4. Compare performance of scikit-learn's neural network and Keras-based neural network regressor
         5. Compare model performance using random k-fold cross validation and leave out group cross validation
