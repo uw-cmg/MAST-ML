@@ -1544,3 +1544,68 @@ class Bootstrap(BaseSplitter):
         for trains, tests in self:
             split.append((trains.tolist(), tests.tolist()))
         return split
+
+class LeaveOutClusterCV(BaseSplitter):
+    def __init__(self, cluster, **kwargs):
+        super(LeaveOutClusterCV, self).__init__()
+
+        # generate cluster object of given input
+        self.cluster = getattr(sklearn.cluster, cluster)(**kwargs)
+
+    # gets number of splits or clusters
+    def get_n_splits(self, X, y=None, groups=None):
+
+        return len(np.unique(self.labels(X)))
+
+        #return self.cluster.n_clusters
+
+        #fit_cluster = self.cluster.fit(X)
+        #return len(np.unique(fit_cluster.labels_))
+
+
+
+    # splits data into train and test based on clusters
+    def split(self, X, y=None, groups=None):
+
+        # trains cluster
+        fit_cluster = self.cluster.fit(X)
+
+        if hasattr(fit_cluster, 'labels_'):
+            # returns array of cluster labels
+            labels = fit_cluster.labels_
+        elif hasattr(fit_cluster, 'row_labels_'):
+            # returns array of cluster labels
+            labels = fit_cluster.row_labels_
+
+        # set up split list to return
+        trains_tests = list()
+
+        # iterate over unique labels
+        for i in np.unique(labels):
+
+            # add X indices not in cluster to train
+            train = np.where(labels != i)
+
+            # add X indices in cluster to test
+            test = np.where(labels == i)
+
+            # append set of train_test to split
+            trains_tests.append([train, test])
+
+        return trains_tests
+
+    # returns cluster labels
+    def labels(self, X, y=None, groups=None):
+
+        # trains cluster
+        fit_cluster = self.cluster.fit(X)
+
+        if hasattr(fit_cluster, 'labels_'):
+            # returns array of cluster labels
+            labels = fit_cluster.labels_
+        elif hasattr(fit_cluster, 'row_labels_'):
+            # returns array of cluster labels
+            labels = fit_cluster.row_labels_
+
+        # return labels
+        return labels
