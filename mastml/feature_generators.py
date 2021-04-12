@@ -76,7 +76,10 @@ except:
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
 import mastml
-MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
+try:
+    MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
+except:
+    print('the path to the magpie data files needs to be defined to perform elemental property-based feature generation')
 
 
 class BaseGenerator(BaseEstimator, TransformerMixin):
