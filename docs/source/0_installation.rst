@@ -16,8 +16,3 @@ Installing MAST-ML
     :titlesonly:
 
     0_2_windows_installation
-
-.. toctree::
-    :titlesonly:
-
-    0_3_startup

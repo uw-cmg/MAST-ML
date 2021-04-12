@@ -6,14 +6,14 @@ Hardware and Data Requirements
 Hardware
 ========
 
-PC or Mac computer capable of running python 3.
+PC, Mac, computing cluster or Cloud resource (e.g. Google Colab) capable of running Python 3.
 
 =========
 Data
 =========
 
-* Numeric data file in the form of .csv or .xlsx file. There must be at least some target feature data, so that models can be fit.
+* Numeric data file in the form of .xlsx file. There must be at least some target feature data, so that models can be fit.
 
-* First row of file (each column) should have a text name (as string) which is how columns will be referenced later in the input file.
+* First row of data file (each column) should have a text name (as string) which will be used for importing data with MAST-ML.
 
-* If working in Jupyter environment, can also directly pass in a pandas dataframe
+* For more information and examples of how to import data into MAST-ML, see the mastml/examples folder and the MASTML_examples_dataimport.ipynb Jupyter notebook.

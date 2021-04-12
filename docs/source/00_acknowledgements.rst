@@ -6,6 +6,10 @@ Materials Simulation Toolkit for Machine Learning (MAST-ML)
 
 MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
+As of MAST-ML version 3.x, much of the original code and workflow have been rewritten. The use of an input file in version 2.x and older
+has been removed in favor of a more modular Jupyter notebook computing environment. Please see the examples and tutorials under
+the mastml/examples folder for a guide in using MAST-ML
+
 **Contributors**
 
 University of Wisconsin-Madison Computational Materials Group:
@@ -22,9 +26,17 @@ University of Kentucky contributors:
 * Robert Max Williams
 * Prof. Raphael Finkel
 
+University of Wisconsin-Madison Undergraduate Skunkworks members (Spring 2021):
+
+* Avery Chan
+* Min Yi Lin
+* Hock Lye Lee
+
 MAST-ML documentation:
 
-An overview of code documentation and tutorials for getting started with MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
+An overview of code documentation and guides for installing MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
+
+A number of Jupyter notebook tutorials detailing different MAST-ML use cases can be found `here <https://github.com/uw-cmg/MAST-ML/tree/dev_Ryan_2020-12-21/examples>`_
 
 **Funding**
 
@@ -38,8 +50,8 @@ Jacobs, R., Mayeshiba, T., Afflerbach, B., Miles, L., Williams, M., Turner, M., 
 
 **Code Repository**
 
-MAST-ML is available on PyPi: pip install mastml
+MAST-ML is available via PyPi: pip install mastml
 
-MAST-ML is available on `Github <https://github.com/uw-cmg/MAST-ML>`
+MAST-ML is available via `Github <https://github.com/uw-cmg/MAST-ML>`_
 
 git clone --single-branch master https://github.com/uw-cmg/MAST-ML

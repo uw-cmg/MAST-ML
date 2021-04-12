@@ -1,45 +1,28 @@
-*******************
-Startup
-*******************
+*****************************
+Getting Started with MAST-ML
+*****************************
 
 ===========================
-Locate the examples folder
+Installing MAST-ML
 ===========================
 
-In the installed MASTML directory, navigate to the ``tests`` folder.
+If you have not done so, the first step is to install MAST-ML. More information on how to install MAST-ML can be found
+by navigating to the "Installing MAST-ML" tab on the left-hand side of this documentation page.
 
-Under tests/conf, The file ``example_input.conf`` will use the ``example_data.xlsx`` data file located in tests/csv to run an example.
+==================================
+Performing your first MAST-ML run
+==================================
 
-========================
-Run the MASTML command
-========================
+Once MAST-ML is installed, you are ready to perform your first MAST-ML run
 
-The format is ``python3 -m mastml.mastml_driver <path to config file> <path to data .xlsx file> -o <path to results folder>``
+The first MAST-ML tutorial can be found under the mastml/examples folder, and is named **MASTML_Tutorial_1_GettingStarted.ipynb**
 
-For example, to conduct the test run above, while in the MASTML install directory::
+This first notebook can also be downloaded via this link: :download:`MASTML_Tutorial_1_GettingStarted <MASTML_Tutorial_1_GettingStarted.ipynb>`
 
-    python3 -m mastml.mastml_driver tests/conf/example_input.conf tests/csv/example_data.xlsx -o results/example_results
+Open this first example notebook either in Google Colab if running on the cloud or locally by starting a Jupyter notebook
+session. There are explanations for each cell of the notebook. Reading through and running this tutorial should take
+about 10 minutes. At the end, you will have performed your first MAST-ML run!
 
-This is a terminal command.
-For Windows, assuming setup has been followed
-as above, go to the Anaconda Navigator, Environments, select the environment,
-click the green arrow button, and Open terminal.
+Once complete, there are a series of other example/tutorial notebooks that can be found in the mastml/examples folder
+on Github.
 
-When you execute the above command, you'll know it's working if you begin to see output on your screen.
-
-================
-Check output
-================
-
-``index.html`` should be created, linking to certain representative plots for each test
-
-For this example, output will be located in subfolders in the results/example_results folder.
-
-Check the following to see if the run completed successfully::
-
-    A log.log file is generated and the last line contains the phrase "Making html file of all run stats..."
-    An index.html file that gives some summary plots from all the tests that were run
-    A series of subfolders with names "StandardScaler"->"DoNothing"->"KernelRidge", with the following three directories
-    within the "KernelRidge" directory: "LeaveOneGroupOut_host", "NoSplit", and "RepeatedKFold"
-
-You can compare all of these files with those given in the /example_results directory which should match.
