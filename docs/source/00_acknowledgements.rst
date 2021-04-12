@@ -26,6 +26,11 @@ University of Kentucky contributors:
 * Robert Max Williams
 * Prof. Raphael Finkel
 
+University of Wisconsin-Madison Undergraduate Skunkworks members (Spring 2021):
+* Avery Chan
+* Min Yi Lin
+* Hock Lye Lee
+
 MAST-ML documentation:
 
 An overview of code documentation and guides for installing MAST-ML can be found `here <https://mastmldocs.readthedocs.io/en/latest/>`_
