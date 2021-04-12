@@ -130,7 +130,7 @@ htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+#latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
@@ -146,15 +146,15 @@ latex_elements = {
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
-}
+#}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'MAterialsSimulationToolkitforMachineLearningMAST-ML.tex', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
-     'University of Wisconsin-Madison Computational Materials Group', 'manual'),
-]
+#latex_documents = [
+#    (master_doc, 'MAterialsSimulationToolkitforMachineLearningMAST-ML.tex', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
+#     'University of Wisconsin-Madison Computational Materials Group', 'manual'),
+#]
 
 
 # -- Options for manual page output ---------------------------------------
@@ -172,11 +172,11 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'MAterialsSimulationToolkitforMachineLearningMAST-ML', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
-     author, 'MAterialsSimulationToolkitforMachineLearningMAST-ML', 'One line description of project.',
-     'Miscellaneous'),
-]
+#texinfo_documents = [
+#    (master_doc, 'MAterialsSimulationToolkitforMachineLearningMAST-ML', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
+#     author, 'MAterialsSimulationToolkitforMachineLearningMAST-ML', 'One line description of project.',
+#     'Miscellaneous'),
+#]
 
 
 
