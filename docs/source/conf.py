@@ -125,7 +125,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
+#htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -161,10 +161,10 @@ htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'mast', master_doc, 'materialssimulationtoolkitformachinelearningmast-ml', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
-     [author], 1)
-]
+#man_pages = [
+#    ('index', 'mast', master_doc, 'materialssimulationtoolkitformachinelearningmast-ml', 'MAterials Simulation Toolkit for Machine Learning (MAST-ML) Documentation',
+#     [author], 1)
+#]
 
 
 # -- Options for Texinfo output -------------------------------------------

@@ -27,6 +27,7 @@ University of Kentucky contributors:
 * Prof. Raphael Finkel
 
 University of Wisconsin-Madison Undergraduate Skunkworks members (Spring 2021):
+
 * Avery Chan
 * Min Yi Lin
 * Hock Lye Lee
