@@ -20,7 +20,7 @@ if sys.version_info[0] < 3:
 #print("Check with `python --version`")
 
 # One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
-verstr = "unknown"
+verstr = "3.0.1"
 try:
     verstr = open("VERSION", "rt").read().strip()
 except EnvironmentError:
@@ -28,8 +28,8 @@ except EnvironmentError:
 
 setup(
     name="mastml",
-    packages=['mastml', 'mastml.magpie', 'mastml.tests.unit_tests'],
-    package_data={'mastml.magpie': ["*.*"], 'mastml.tests.unit_tests': ["*.*"]},
+    packages=['mastml', 'mastml.magpie', 'mastml.tests.unit_tests', 'mastml.data'],
+    package_data={'mastml.magpie': ["*.*"], 'mastml.tests.unit_tests': ["*.*"], 'mastml.data': ["*.*"]},
     include_package_data = True,
     version=verstr,
     install_requires=[
@@ -46,7 +46,7 @@ setup(
         "openpyxl",
         "pandas",
         "pymatgen==2021.3.9",
-        "scikit-learn",
+        "scikit-learn>=0.24.1",
         "scikit-optimize",
         "scipy",
         "sphinx-automodapi",
