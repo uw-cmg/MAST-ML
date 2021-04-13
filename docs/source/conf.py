@@ -14,9 +14,11 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 import os
+import sys
 os.system('pip install sphinx-automodapi')
 os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
-
+sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
