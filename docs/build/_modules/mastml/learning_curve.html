@@ -1,0 +1,770 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mastml.learning_curve &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_4_majorchanges.html">MAST-ML version 3.x</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_4_majorchanges.html#new-changes-to-mast-ml">New changes to MAST-ML</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal environment e.g. Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-conda-environment-if-using-anaconda">Create a conda environment (if using Anaconda)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-virtualenv-environment-if-not-using-anaconda">Create a virtualenv environment (if not using Anaconda)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-pypi">Install the MAST-ML package via PyPi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-git">Install the MAST-ML package via Git</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_3_startup.html">Getting Started with MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#installing-mast-ml">Installing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#performing-your-first-mast-ml-run">Performing your first MAST-ML run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_5_tutorials.html">Overview of MAST-ML tutorials and examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_5_tutorials.html#mast-ml-tutorials">MAST-ML tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../1_data_cleaning.html">Code Documentation: Data Cleaning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1_data_cleaning.html#module-mastml.data_cleaning">mastml.data_cleaning Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataCleaning.html">DataCleaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataUtilities.html">DataUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.PPCA.html">PPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../2_data_splitters.html">Code Documentation: Data Splitters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../2_data_splitters.html#module-mastml.data_splitters">mastml.data_splitters Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.BaseSplitter.html">BaseSplitter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.Bootstrap.html">Bootstrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.JustEachGroup.html">JustEachGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveCloseCompositionsOut.html">LeaveCloseCompositionsOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutPercent.html">LeaveOutPercent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutTwinCV.html">LeaveOutTwinCV</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.NoSplit.html">NoSplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.SklearnDataSplitter.html">SklearnDataSplitter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../3_datasets.html">Code Documentation: Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../3_datasets.html#module-mastml.datasets">mastml.datasets Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FigshareDatasets.html">FigshareDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FoundryDatasets.html">FoundryDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.LocalDatasets.html">LocalDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.MatminerDatasets.html">MatminerDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.SklearnDatasets.html">SklearnDatasets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../4_error_analysis.html">Code Documentation: Error Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../4_error_analysis.html#module-mastml.error_analysis">mastml.error_analysis Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.CorrectionFactors.html">CorrectionFactors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.ErrorUtils.html">ErrorUtils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../5_feature_generators.html">Code Documentation: Feature Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../5_feature_generators.html#module-mastml.feature_generators">mastml.feature_generators Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.BaseGenerator.html">BaseGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.DataframeUtilities.html">DataframeUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.ElementalFeatureGenerator.html">ElementalFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MaterialsProjectFeatureGenerator.html">MaterialsProjectFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MatminerFeatureGenerator.html">MatminerFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotElementEncoder.html">OneHotElementEncoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotGroupGenerator.html">OneHotGroupGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.PolynomialFeatureGenerator.html">PolynomialFeatureGenerator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../6_feature_selectors.html">Code Documentation: Feature Selectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../6_feature_selectors.html#module-mastml.feature_selectors">mastml.feature_selectors Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.BaseSelector.html">BaseSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html">EnsembleModelFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html">MASTMLFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.NoSelect.html">NoSelect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.PearsonSelector.html">PearsonSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html">SklearnFeatureSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../7_hyper_opt.html">Code Documentation: Hyperparameter Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../7_hyper_opt.html#module-mastml.hyper_opt">mastml.hyper_opt Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.BayesianSearch.html">BayesianSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.GridSearch.html">GridSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.HyperOptUtils.html">HyperOptUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.RandomizedSearch.html">RandomizedSearch</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../8_learning_curve.html">Code Documentation: Learning Curve</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../8_learning_curve.html#module-mastml.learning_curve">mastml.learning_curve Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.learning_curve.LearningCurve.html">LearningCurve</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../9_mastml.html">Code Documentation: Mastml</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../9_mastml.html#module-mastml.mastml">mastml.mastml Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.mastml.Mastml.html">Mastml</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../10_metrics.html">Code Documentation: Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../10_metrics.html#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_adjusted.html">r2_score_adjusted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.Metrics.html">Metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../11_models.html">Code Documentation: Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../11_models.html#module-mastml.models">mastml.models Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.EnsembleModel.html">EnsembleModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.SklearnModel.html">SklearnModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../12_plots.html">Code Documentation: Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../12_plots.html#module-mastml.plots">mastml.plots Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.check_dimensions.html">check_dimensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.get_divisor.html">get_divisor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_axis_same.html">make_axis_same</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax.html">make_fig_ax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax_square.html">make_fig_ax_square</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_plots.html">make_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_mean.html">nice_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_names.html">nice_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_std.html">nice_std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.plot_stats.html">plot_stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max.html">recursive_max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max_and_min.html">recursive_max_and_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_min.html">recursive_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.reset_index.html">reset_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_down.html">round_down</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_up.html">round_up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.rounder.html">rounder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.stat_to_string.html">stat_to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.trim_array.html">trim_array</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Error.html">Error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Histogram.html">Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Line.html">Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Scatter.html">Scatter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../13_preprocessing.html">Code Documentation: Preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../13_preprocessing.html#module-mastml.preprocessing">mastml.preprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.BasePreprocessor.html">BasePreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.MeanStdevScaler.html">MeanStdevScaler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.NoPreprocessor.html">NoPreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.SklearnPreprocessor.html">SklearnPreprocessor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mastml.learning_curve</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mastml.learning_curve</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains methods to construct learning curves, which evaluate some cross-validation performance metric</span>
+<span class="sd">(e.g. RMSE) as a function of amount of training data (i.e. a data learning curve) or as a function of the number of</span>
+<span class="sd">features used in the fitting (i.e. a feature learning curve).</span>
+
+<span class="sd">LearningCurve:</span>
+<span class="sd">    Class used to construct data learning curves and feature learning curves</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">learning_curve</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">make_scorer</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
+
+<span class="kn">from</span> <span class="nn">mastml.metrics</span> <span class="kn">import</span> <span class="n">Metrics</span>
+<span class="kn">from</span> <span class="nn">mastml.feature_selectors</span> <span class="kn">import</span> <span class="n">SklearnFeatureSelector</span>
+<span class="kn">from</span> <span class="nn">mastml.plots</span> <span class="kn">import</span> <span class="n">Line</span>
+
+<div class="viewcode-block" id="LearningCurve"><a class="viewcode-back" href="../../api/mastml.learning_curve.LearningCurve.html#mastml.learning_curve.LearningCurve">[docs]</a><span class="k">class</span> <span class="nc">LearningCurve</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to construct learning curves, both in the form of model performance vs. amount of training</span>
+<span class="sd">    data and model performance vs. number of features used in the fit.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        evaluate: Sets up a save directory and performs both the data and feature-based learning curves</span>
+<span class="sd">            Args:</span>
+<span class="sd">                model: (SklearnModel or EnsembleModel), a model made in MAST-ML</span>
+
+<span class="sd">                X: (pd.DataFrame), dataframe containing the X feature matrix</span>
+
+<span class="sd">                y: (pd.Series), series containing the target y data</span>
+
+<span class="sd">                savepath: (str), string denoting the savepath to save the learning curve output</span>
+
+<span class="sd">                groups: (pd.Series), series of group designation</span>
+
+<span class="sd">                train_sizes: (list or np.array), list or array of floats denoting fractions of training data to evaluate for data learning curve</span>
+
+<span class="sd">                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
+
+<span class="sd">                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list</span>
+
+<span class="sd">                selector: (mastml.feature_selector), a mastml.feature_selectors instance</span>
+
+<span class="sd">                make_plot: (bool), whether or not to make the learning curve plots</span>
+
+<span class="sd">        data_learning_curve: Method that calculates the model CV score as a function of amount of training data used</span>
+<span class="sd">            Args:</span>
+<span class="sd">                model: (SklearnModel or EnsembleModel), a model made in MAST-ML</span>
+
+<span class="sd">                X: (pd.DataFrame), dataframe containing the X feature matrix</span>
+
+<span class="sd">                y: (pd.Series), series containing the target y data</span>
+
+<span class="sd">                savepath: (str), string denoting the savepath to save the learning curve output</span>
+
+<span class="sd">                groups: (pd.Series), series of group designation</span>
+
+<span class="sd">                train_sizes: (list or np.array), list or array of floats denoting fractions of training data to evaluate for data learning curve</span>
+
+<span class="sd">                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
+
+<span class="sd">                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list</span>
+
+<span class="sd">                make_plot: (bool), whether or not to make the learning curve plots</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        feature_learning_curve: Method that calculates the model CV score as a function of the number of features used</span>
+<span class="sd">            Args:</span>
+<span class="sd">                model: (SklearnModel or EnsembleModel), a model made in MAST-ML</span>
+
+<span class="sd">                X: (pd.DataFrame), dataframe containing the X feature matrix</span>
+
+<span class="sd">                y: (pd.Series), series containing the target y data</span>
+
+<span class="sd">                savepath: (str), string denoting the savepath to save the learning curve output</span>
+
+<span class="sd">                groups: (pd.Series), series of group designation</span>
+
+<span class="sd">                cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
+
+<span class="sd">                scoring: (str), string denoting name of regression metric to evaluate learning curves. See mastml.metrics.Metrics._metric_zoo for full list</span>
+
+<span class="sd">                selector: (mastml.feature_selector), a mastml.feature_selectors instance</span>
+
+<span class="sd">                make_plot: (bool), whether or not to make the learning curve plots</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        _setup_savedir: Method to create the output save directory for learning curve data</span>
+<span class="sd">            Args:</span>
+<span class="sd">                savepath: (str), string denoting the base path to save the output to</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                splitdir: (str), path where learning curve data will be saved to</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="LearningCurve.evaluate"><a class="viewcode-back" href="../../api/mastml.learning_curve.LearningCurve.html#mastml.learning_curve.LearningCurve.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">train_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">make_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">make_new_dir</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">make_new_dir</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_savedir</span><span class="p">(</span><span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">)</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">splitdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_learning_curve</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                 <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+                                 <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                                 <span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">,</span>
+                                 <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+                                 <span class="n">train_sizes</span><span class="o">=</span><span class="n">train_sizes</span><span class="p">,</span>
+                                 <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+                                 <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                                 <span class="n">make_plot</span><span class="o">=</span><span class="n">make_plot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_learning_curve</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                    <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+                                    <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                                    <span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">,</span>
+                                    <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span>
+                                    <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+                                    <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                                    <span class="n">selector</span><span class="o">=</span><span class="n">selector</span><span class="p">,</span>
+                                    <span class="n">make_plot</span><span class="o">=</span><span class="n">make_plot</span><span class="p">)</span>
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="LearningCurve.data_learning_curve"><a class="viewcode-back" href="../../api/mastml.learning_curve.LearningCurve.html#mastml.learning_curve.LearningCurve.data_learning_curve">[docs]</a>    <span class="k">def</span> <span class="nf">data_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">train_sizes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">make_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">train_sizes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cv</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;SklearnModel&#39;</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">(</span><span class="n">metrics_list</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">_metric_zoo</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">scoring</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">score_name</span> <span class="o">=</span> <span class="s1">&#39;mean_absolute_error&#39;</span>
+            <span class="n">scoring</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">greater_is_better</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Note using True b/c if False then sklearn multiplies by -1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">score_name</span> <span class="o">=</span> <span class="n">scoring</span>
+            <span class="n">scoring</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="n">scoring</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">greater_is_better</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Note using True b/c if False then sklearn multiplies by -1</span>
+
+        <span class="n">train_sizes</span><span class="p">,</span> <span class="n">train_scores</span><span class="p">,</span> <span class="n">valid_scores</span> <span class="o">=</span> <span class="n">learning_curve</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                                                 <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+                                                                 <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                                                                 <span class="n">train_sizes</span><span class="o">=</span><span class="n">train_sizes</span><span class="p">,</span>
+                                                                 <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                                                                 <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">,</span>
+                                                                 <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">)</span>
+
+        <span class="n">train_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">test_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">valid_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">train_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">train_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">test_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">valid_scores</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">datadict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_sizes&quot;</span><span class="p">:</span> <span class="n">train_sizes</span><span class="p">,</span>
+                    <span class="s2">&quot;train_mean&quot;</span><span class="p">:</span> <span class="n">train_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;train_std&quot;</span><span class="p">:</span> <span class="n">train_stdev</span><span class="p">,</span>
+                    <span class="s2">&quot;test_mean&quot;</span><span class="p">:</span> <span class="n">test_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;test_std&quot;</span><span class="p">:</span> <span class="n">test_stdev</span><span class="p">}</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">datadict</span><span class="p">)</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;data_learning_curve.xlsx&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">make_plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">Line</span><span class="p">()</span><span class="o">.</span><span class="n">plot_learning_curve</span><span class="p">(</span><span class="n">train_sizes</span><span class="o">=</span><span class="n">train_sizes</span><span class="p">,</span>
+                                       <span class="n">train_mean</span><span class="o">=</span><span class="n">train_mean</span><span class="p">,</span>
+                                       <span class="n">test_mean</span><span class="o">=</span><span class="n">test_mean</span><span class="p">,</span>
+                                       <span class="n">train_stdev</span><span class="o">=</span><span class="n">train_stdev</span><span class="p">,</span>
+                                       <span class="n">test_stdev</span><span class="o">=</span><span class="n">test_stdev</span><span class="p">,</span>
+                                       <span class="n">learning_curve_type</span><span class="o">=</span><span class="s1">&#39;data_learning_curve&#39;</span><span class="p">,</span>
+                                       <span class="n">score_name</span><span class="o">=</span><span class="n">score_name</span><span class="p">,</span>
+                                       <span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+<div class="viewcode-block" id="LearningCurve.feature_learning_curve"><a class="viewcode-back" href="../../api/mastml.learning_curve.LearningCurve.html#mastml.learning_curve.LearningCurve.feature_learning_curve">[docs]</a>    <span class="k">def</span> <span class="nf">feature_learning_curve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">selector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">make_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;SklearnModel&#39;</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="n">splits</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span>
+        <span class="n">train_inds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_inds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="ow">in</span> <span class="n">splits</span><span class="p">:</span>
+            <span class="n">train_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
+            <span class="n">test_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">Metrics</span><span class="p">(</span><span class="n">metrics_list</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">_metric_zoo</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">scoring</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">score_name</span> <span class="o">=</span> <span class="s1">&#39;mean_absolute_error&#39;</span>
+            <span class="n">scoring</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">greater_is_better</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Note using True b/c if False then sklearn multiplies by -1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">score_name</span> <span class="o">=</span> <span class="n">scoring</span>
+            <span class="n">scoring</span> <span class="o">=</span> <span class="n">make_scorer</span><span class="p">(</span><span class="n">metrics</span><span class="p">[</span><span class="n">scoring</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">greater_is_better</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1">#Note using True b/c if False then sklearn multiplies by -1</span>
+
+        <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">selector_name</span> <span class="o">=</span> <span class="s1">&#39;SequentialFeatureSelector&#39;</span>
+            <span class="n">selector</span> <span class="o">=</span> <span class="n">SklearnFeatureSelector</span><span class="p">(</span><span class="n">selector</span><span class="o">=</span><span class="s1">&#39;SequentialFeatureSelector&#39;</span><span class="p">,</span>
+                                              <span class="n">estimator</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+                                              <span class="n">n_features_to_select</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                              <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                                              <span class="n">cv</span><span class="o">=</span><span class="n">cv</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">selector_name</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">selector_name</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+        <span class="n">train_mean</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">train_stdev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_mean</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">test_stdev</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;RFE&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using RFE as feature selector does not support a custom CV or grouping scheme. Your learning &quot;</span>
+                        <span class="s2">&quot;curve will be generated properly, but will not use the custom CV or grouping scheme&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Xnew</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;You have specified an estimator for RFE that does not have a coef_ or feature_importances_ attribute. &quot;</span>
+                          <span class="s2">&quot;Acceptable models to use with RFE include: LinearRegression, Lasso, SVR, DecisionTreeRegressor, &quot;</span>
+                          <span class="s2">&quot;RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor, etc.&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">selector_name</span> <span class="o">==</span> <span class="s1">&#39;SelectKBest&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using SelectKBest as feature selector does not support a custom estimator model, CV or grouping scheme. &quot;</span>
+                        <span class="s2">&quot;Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme&quot;</span><span class="p">)</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Xnew</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+
+        <span class="c1"># save selected features for each iteration to text file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;selected_features.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">features_selected</span> <span class="o">=</span> <span class="n">Xnew</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features_selected</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="n">train_scores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">test_scores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">train_sizes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">n_features</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features_selected</span><span class="p">)):</span>
+            <span class="n">train_sizes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n_features</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Xnew_subset</span> <span class="o">=</span> <span class="n">Xnew</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="n">n_features</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">cv_number</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">Xnew_subset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Xnew_subset</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n_features</span><span class="o">+</span><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Xnew_subset</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">train_inds</span><span class="p">,</span> <span class="n">test_inds</span><span class="p">):</span>
+                <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xnew_subset</span><span class="p">[</span><span class="n">trains</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+                <span class="n">train_vals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xnew_subset</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+                <span class="n">test_vals</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xnew_subset</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+                <span class="n">train_scores</span><span class="p">[</span><span class="n">cv_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">_score_func</span><span class="p">(</span><span class="n">train_vals</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+                <span class="n">test_scores</span><span class="p">[</span><span class="n">cv_number</span><span class="p">]</span> <span class="o">=</span> <span class="n">scoring</span><span class="o">.</span><span class="n">_score_func</span><span class="p">(</span><span class="n">test_vals</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+                <span class="n">cv_number</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">train_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">train_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+            <span class="n">train_stdev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">train_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+            <span class="n">test_mean</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">test_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+            <span class="n">test_stdev</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">test_scores</span><span class="o">.</span><span class="n">values</span><span class="p">())))</span>
+
+        <span class="n">train_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_sizes</span><span class="p">)</span>
+        <span class="n">train_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_mean</span><span class="p">)</span>
+        <span class="n">train_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">train_stdev</span><span class="p">)</span>
+        <span class="n">test_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_mean</span><span class="p">)</span>
+        <span class="n">test_stdev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">test_stdev</span><span class="p">)</span>
+
+        <span class="n">datadict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train_sizes&quot;</span><span class="p">:</span> <span class="n">train_sizes</span><span class="p">,</span>
+                    <span class="s2">&quot;features selected&quot;</span><span class="p">:</span> <span class="n">features_selected</span><span class="p">,</span>
+                    <span class="s2">&quot;train_mean&quot;</span><span class="p">:</span> <span class="n">train_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;train_std&quot;</span><span class="p">:</span> <span class="n">train_stdev</span><span class="p">,</span>
+                    <span class="s2">&quot;test_mean&quot;</span><span class="p">:</span> <span class="n">test_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;test_std&quot;</span><span class="p">:</span> <span class="n">test_stdev</span><span class="p">}</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">datadict</span><span class="p">)</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;feature_learning_curve.xlsx&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">make_plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">Line</span><span class="p">()</span><span class="o">.</span><span class="n">plot_learning_curve</span><span class="p">(</span><span class="n">train_sizes</span><span class="o">=</span><span class="n">train_sizes</span><span class="p">,</span>
+                                       <span class="n">train_mean</span><span class="o">=</span><span class="n">train_mean</span><span class="p">,</span>
+                                       <span class="n">test_mean</span><span class="o">=</span><span class="n">test_mean</span><span class="p">,</span>
+                                       <span class="n">train_stdev</span><span class="o">=</span><span class="n">train_stdev</span><span class="p">,</span>
+                                       <span class="n">test_stdev</span><span class="o">=</span><span class="n">test_stdev</span><span class="p">,</span>
+                                       <span class="n">learning_curve_type</span><span class="o">=</span><span class="s1">&#39;feature_learning_curve&#39;</span><span class="p">,</span>
+                                       <span class="n">score_name</span><span class="o">=</span><span class="n">score_name</span><span class="p">,</span>
+                                       <span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_savedir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">savepath</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="s1">&#39;LearningCurve&#39;</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dirname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span> \
+                        <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">savepath</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">splitdir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">splitdir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitdir</span> <span class="o">=</span> <span class="n">splitdir</span>
+        <span class="k">return</span> <span class="n">splitdir</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2021, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

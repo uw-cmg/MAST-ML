@@ -1,0 +1,679 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mastml.models &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_4_majorchanges.html">MAST-ML version 3.x</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_4_majorchanges.html#new-changes-to-mast-ml">New changes to MAST-ML</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal environment e.g. Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-conda-environment-if-using-anaconda">Create a conda environment (if using Anaconda)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-virtualenv-environment-if-not-using-anaconda">Create a virtualenv environment (if not using Anaconda)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-pypi">Install the MAST-ML package via PyPi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-git">Install the MAST-ML package via Git</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_3_startup.html">Getting Started with MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#installing-mast-ml">Installing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#performing-your-first-mast-ml-run">Performing your first MAST-ML run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_5_tutorials.html">Overview of MAST-ML tutorials and examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_5_tutorials.html#mast-ml-tutorials">MAST-ML tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../1_data_cleaning.html">Code Documentation: Data Cleaning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1_data_cleaning.html#module-mastml.data_cleaning">mastml.data_cleaning Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataCleaning.html">DataCleaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataUtilities.html">DataUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.PPCA.html">PPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../2_data_splitters.html">Code Documentation: Data Splitters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../2_data_splitters.html#module-mastml.data_splitters">mastml.data_splitters Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.BaseSplitter.html">BaseSplitter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.Bootstrap.html">Bootstrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.JustEachGroup.html">JustEachGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveCloseCompositionsOut.html">LeaveCloseCompositionsOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutPercent.html">LeaveOutPercent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutTwinCV.html">LeaveOutTwinCV</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.NoSplit.html">NoSplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.SklearnDataSplitter.html">SklearnDataSplitter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../3_datasets.html">Code Documentation: Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../3_datasets.html#module-mastml.datasets">mastml.datasets Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FigshareDatasets.html">FigshareDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FoundryDatasets.html">FoundryDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.LocalDatasets.html">LocalDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.MatminerDatasets.html">MatminerDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.SklearnDatasets.html">SklearnDatasets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../4_error_analysis.html">Code Documentation: Error Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../4_error_analysis.html#module-mastml.error_analysis">mastml.error_analysis Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.CorrectionFactors.html">CorrectionFactors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.ErrorUtils.html">ErrorUtils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../5_feature_generators.html">Code Documentation: Feature Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../5_feature_generators.html#module-mastml.feature_generators">mastml.feature_generators Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.BaseGenerator.html">BaseGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.DataframeUtilities.html">DataframeUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.ElementalFeatureGenerator.html">ElementalFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MaterialsProjectFeatureGenerator.html">MaterialsProjectFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MatminerFeatureGenerator.html">MatminerFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotElementEncoder.html">OneHotElementEncoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotGroupGenerator.html">OneHotGroupGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.PolynomialFeatureGenerator.html">PolynomialFeatureGenerator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../6_feature_selectors.html">Code Documentation: Feature Selectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../6_feature_selectors.html#module-mastml.feature_selectors">mastml.feature_selectors Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.BaseSelector.html">BaseSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html">EnsembleModelFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html">MASTMLFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.NoSelect.html">NoSelect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.PearsonSelector.html">PearsonSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html">SklearnFeatureSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../7_hyper_opt.html">Code Documentation: Hyperparameter Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../7_hyper_opt.html#module-mastml.hyper_opt">mastml.hyper_opt Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.BayesianSearch.html">BayesianSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.GridSearch.html">GridSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.HyperOptUtils.html">HyperOptUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.RandomizedSearch.html">RandomizedSearch</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../8_learning_curve.html">Code Documentation: Learning Curve</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../8_learning_curve.html#module-mastml.learning_curve">mastml.learning_curve Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.learning_curve.LearningCurve.html">LearningCurve</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../9_mastml.html">Code Documentation: Mastml</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../9_mastml.html#module-mastml.mastml">mastml.mastml Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.mastml.Mastml.html">Mastml</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../10_metrics.html">Code Documentation: Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../10_metrics.html#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_adjusted.html">r2_score_adjusted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.Metrics.html">Metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../11_models.html">Code Documentation: Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../11_models.html#module-mastml.models">mastml.models Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.EnsembleModel.html">EnsembleModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.SklearnModel.html">SklearnModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../12_plots.html">Code Documentation: Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../12_plots.html#module-mastml.plots">mastml.plots Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.check_dimensions.html">check_dimensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.get_divisor.html">get_divisor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_axis_same.html">make_axis_same</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax.html">make_fig_ax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax_square.html">make_fig_ax_square</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_plots.html">make_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_mean.html">nice_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_names.html">nice_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_std.html">nice_std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.plot_stats.html">plot_stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max.html">recursive_max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max_and_min.html">recursive_max_and_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_min.html">recursive_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.reset_index.html">reset_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_down.html">round_down</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_up.html">round_up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.rounder.html">rounder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.stat_to_string.html">stat_to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.trim_array.html">trim_array</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Error.html">Error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Histogram.html">Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Line.html">Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Scatter.html">Scatter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../13_preprocessing.html">Code Documentation: Preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../13_preprocessing.html#module-mastml.preprocessing">mastml.preprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.BasePreprocessor.html">BasePreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.MeanStdevScaler.html">MeanStdevScaler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.NoPreprocessor.html">NoPreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.SklearnPreprocessor.html">SklearnPreprocessor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mastml.models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mastml.models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module for constructing models for use in MAST-ML.</span>
+
+<span class="sd">SklearnModel:</span>
+<span class="sd">    Class that wraps scikit-learn models to have MAST-ML type functionality. Providing the model name as a string</span>
+<span class="sd">    and the keyword arguments for the model parameters will construct the model. Note that this class also supports</span>
+<span class="sd">    construction of XGBoost models and Keras neural network models via Keras&#39; keras.wrappers.scikit_learn.KerasRegressor</span>
+<span class="sd">    model.</span>
+
+<span class="sd">EnsembleModel:</span>
+<span class="sd">    Class that constructs a model which is an ensemble of many base models (sometimes called weak learners). This</span>
+<span class="sd">    class supports construction of ensembles of most scikit-learn regression models as well as ensembles of neural</span>
+<span class="sd">    networks that are made via Keras&#39; keras.wrappers.scikit_learn.KerasRegressor class.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">sklearn.base</span>
+<span class="kn">import</span> <span class="nn">sklearn.utils</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">BaggingRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.gaussian_process</span> <span class="kn">import</span> <span class="n">GaussianProcessRegressor</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">xgboost</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;XGBoost is an optional dependency. If you want to use XGBoost models, please manually install xgboost package with &#39;</span>
+          <span class="s1">&#39;pip install xgboost. If have error with finding libxgboost.dylib library, do&#39;</span>
+          <span class="s1">&#39;brew install libomp. If do not have brew on your system, first do&#39;</span>
+          <span class="s1">&#39; ruby -e &quot;$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)&quot; from the Terminal&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SklearnModel"><a class="viewcode-back" href="../../api/mastml.models.SklearnModel.html#mastml.models.SklearnModel">[docs]</a><span class="k">class</span> <span class="nc">SklearnModel</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to wrap any sklearn estimator, and provide some new dataframe functionality</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: (str), string denoting the name of an sklearn estimator object, e.g. KernelRidge</span>
+
+<span class="sd">        kwargs: keyword pairs of values to include for model, e.g. for KernelRidge can specify kernel, alpha, gamma values</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: method that fits the model parameters to the provided training data</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (pd.DataFrame), dataframe of X features</span>
+
+<span class="sd">                y: (pd.Series), series of y target data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                fitted model</span>
+
+<span class="sd">        predict: method that evaluates model on new data to give predictions</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (pd.DataFrame), dataframe of X features</span>
+
+<span class="sd">                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                series or array of predicted values</span>
+
+<span class="sd">        help: method to output key information on class use, e.g. methods and parameters</span>
+<span class="sd">            Args:</span>
+<span class="sd">                None</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None, but outputs help to screen</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;XGBoostRegressor&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">xgboost</span><span class="o">.</span><span class="n">XGBRegressor</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s1">&#39;GaussianProcessRegressor&#39;</span><span class="p">:</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">_make_gpr_kernel</span><span class="p">(</span><span class="n">kernel_string</span><span class="o">=</span><span class="n">kernel</span><span class="p">)</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">GaussianProcessRegressor</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">all_estimators</span><span class="p">())[</span><span class="n">model</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SklearnModel.fit"><a class="viewcode-back" href="../../api/mastml.models.SklearnModel.html#mastml.models.SklearnModel.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SklearnModel.predict"><a class="viewcode-back" href="../../api/mastml.models.SklearnModel.html#mastml.models.SklearnModel.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">as_frame</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SklearnModel.get_params"><a class="viewcode-back" href="../../api/mastml.models.SklearnModel.html#mastml.models.SklearnModel.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SklearnModel.help"><a class="viewcode-back" href="../../api/mastml.models.SklearnModel.html#mastml.models.SklearnModel.help">[docs]</a>    <span class="k">def</span> <span class="nf">help</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Documentation for&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">))[</span><span class="s1">&#39;__doc__&#39;</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Class methods for,&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Class attributes for,&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">return</span></div></div>
+
+<div class="viewcode-block" id="EnsembleModel"><a class="viewcode-back" href="../../api/mastml.models.EnsembleModel.html#mastml.models.EnsembleModel">[docs]</a><span class="k">class</span> <span class="nc">EnsembleModel</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class used to construct ensemble models with a particular number and type of weak learner (base model). The</span>
+<span class="sd">    ensemble model is compatible with most scikit-learn regressor models and KerasRegressor models</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: (str), string name denoting the name of the model type to use as the base model</span>
+
+<span class="sd">        n_estimators: (int), the number of base models to include in the ensemble</span>
+
+<span class="sd">        kwargs: keyword arguments for the base model parameter names and values</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: method that fits the model parameters to the provided training data</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (pd.DataFrame), dataframe of X features</span>
+
+<span class="sd">                y: (pd.Series), series of y target data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                fitted model</span>
+
+<span class="sd">        predict: method that evaluates model on new data to give predictions</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (pd.DataFrame), dataframe of X features</span>
+
+<span class="sd">                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                series or array of predicted values</span>
+
+<span class="sd">        get_params: method to output key model parameters</span>
+<span class="sd">            Args:</span>
+<span class="sd">                deep: (bool), determines the extent of information returned, default True</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                information on model parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">n_estimators</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnsembleModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">all_estimators</span><span class="p">())[</span><span class="n">model</span><span class="p">](</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Could not find designated model type in scikit-learn model library. Note the other supported model&#39;</span>
+                  <span class="s1">&#39;type is the keras.wrappers.scikit_learn.KerasRegressor model&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="n">n_estimators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">BaggingRegressor</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_estimators</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_estimator_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+<div class="viewcode-block" id="EnsembleModel.fit"><a class="viewcode-back" href="../../api/mastml.models.EnsembleModel.html#mastml.models.EnsembleModel.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnsembleModel.predict"><a class="viewcode-back" href="../../api/mastml.models.EnsembleModel.html#mastml.models.EnsembleModel.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">as_frame</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">as_frame</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="EnsembleModel.get_params"><a class="viewcode-back" href="../../api/mastml.models.EnsembleModel.html#mastml.models.EnsembleModel.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_params</span><span class="p">(</span><span class="n">deep</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_make_gpr_kernel</span><span class="p">(</span><span class="n">kernel_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Method to transform a supplied string to a kernel object for use in GPR models</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        kernel_string: (str), a string containing the desired name of the kernel</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        kernel: sklearn.gaussian_process.kernels object</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kernel_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;WhiteKernel&#39;</span><span class="p">,</span> <span class="s1">&#39;RBF&#39;</span><span class="p">,</span> <span class="s1">&#39;ConstantKernel&#39;</span><span class="p">,</span> <span class="s1">&#39;Matern&#39;</span><span class="p">,</span> <span class="s1">&#39;RationalQuadratic&#39;</span><span class="p">,</span> <span class="s1">&#39;ExpSineSquared&#39;</span><span class="p">,</span> <span class="s1">&#39;DotProduct&#39;</span><span class="p">]</span>
+    <span class="n">kernel_operators</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">]</span>
+    <span class="c1"># Parse kernel_string to identify kernel types and any kernel operations to combine kernels</span>
+    <span class="n">kernel_types_asstr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">kernel_types_ascls</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">kernel_operators_used</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">kernel_string</span><span class="p">[:]:</span>
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">kernel_operators</span><span class="p">:</span>
+            <span class="n">kernel_operators_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="c1"># Do case for single kernel, no operators</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">kernel_types_asstr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_string</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># New method, using re</span>
+        <span class="n">unique_operators</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">unique_operators_asstr</span> <span class="o">=</span> <span class="s1">&#39;[&#39;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">unique_operators</span><span class="p">:</span>
+            <span class="n">unique_operators_asstr</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">unique_operators_asstr</span> <span class="o">+=</span> <span class="s1">&#39;]&#39;</span>
+        <span class="n">kernel_types_asstr</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">unique_operators_asstr</span><span class="p">,</span> <span class="n">kernel_string</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">kernel</span> <span class="ow">in</span> <span class="n">kernel_types_asstr</span><span class="p">:</span>
+        <span class="n">kernel_</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">gaussian_process</span><span class="o">.</span><span class="n">kernels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>
+        <span class="n">kernel_types_ascls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kernel_</span><span class="p">())</span>
+
+    <span class="c1"># Case for single kernel</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_types_ascls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">kernel_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">operator</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernel_operators_used</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kernel_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span> <span class="o">+</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kernel</span> <span class="o">+=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">operator</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">kernel_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="p">]</span> <span class="o">*</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">kernel</span> <span class="o">*=</span> <span class="n">kernel_types_ascls</span><span class="p">[</span><span class="n">kernel_count</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: You have chosen an invalid operator to construct a composite kernel. Please choose&#39;</span>
+                              <span class="s1">&#39; either &quot;+&quot; or &quot;*&quot;.&#39;</span><span class="p">)</span>
+            <span class="n">kernel_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">kernel</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2021, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

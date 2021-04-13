@@ -1,0 +1,519 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>HyperOptUtils &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="RandomizedSearch" href="mastml.hyper_opt.RandomizedSearch.html" />
+    <link rel="prev" title="GridSearch" href="mastml.hyper_opt.GridSearch.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../0_4_majorchanges.html">MAST-ML version 3.x</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_4_majorchanges.html#new-changes-to-mast-ml">New changes to MAST-ML</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal environment e.g. Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-conda-environment-if-using-anaconda">Create a conda environment (if using Anaconda)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#create-a-virtualenv-environment-if-not-using-anaconda">Create a virtualenv environment (if not using Anaconda)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package-via-pypi">Install the MAST-ML package via PyPi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../0_1_terminal_installation.html#install-the-mast-ml-package-via-git">Install the MAST-ML package via Git</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../0_3_startup.html">Getting Started with MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html#installing-mast-ml">Installing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../0_3_startup.html#performing-your-first-mast-ml-run">Performing your first MAST-ML run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../0_5_tutorials.html">Overview of MAST-ML tutorials and examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../0_5_tutorials.html#mast-ml-tutorials">MAST-ML tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../1_data_cleaning.html">Code Documentation: Data Cleaning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_data_cleaning.html#module-mastml.data_cleaning">mastml.data_cleaning Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../1_data_cleaning.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_cleaning.DataCleaning.html">DataCleaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_cleaning.DataUtilities.html">DataUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_cleaning.PPCA.html">PPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../1_data_cleaning.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../2_data_splitters.html">Code Documentation: Data Splitters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_data_splitters.html#module-mastml.data_splitters">mastml.data_splitters Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../2_data_splitters.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.BaseSplitter.html">BaseSplitter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.Bootstrap.html">Bootstrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.JustEachGroup.html">JustEachGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.LeaveCloseCompositionsOut.html">LeaveCloseCompositionsOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.LeaveOutPercent.html">LeaveOutPercent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.LeaveOutTwinCV.html">LeaveOutTwinCV</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.NoSplit.html">NoSplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.data_splitters.SklearnDataSplitter.html">SklearnDataSplitter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../2_data_splitters.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../3_datasets.html">Code Documentation: Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_datasets.html#module-mastml.datasets">mastml.datasets Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../3_datasets.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.datasets.FigshareDatasets.html">FigshareDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.datasets.FoundryDatasets.html">FoundryDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.datasets.LocalDatasets.html">LocalDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.datasets.MatminerDatasets.html">MatminerDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.datasets.SklearnDatasets.html">SklearnDatasets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../3_datasets.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../4_error_analysis.html">Code Documentation: Error Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../4_error_analysis.html#module-mastml.error_analysis">mastml.error_analysis Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../4_error_analysis.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.error_analysis.CorrectionFactors.html">CorrectionFactors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.error_analysis.ErrorUtils.html">ErrorUtils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../4_error_analysis.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../5_feature_generators.html">Code Documentation: Feature Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../5_feature_generators.html#module-mastml.feature_generators">mastml.feature_generators Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../5_feature_generators.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.BaseGenerator.html">BaseGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.DataframeUtilities.html">DataframeUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.ElementalFeatureGenerator.html">ElementalFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.MaterialsProjectFeatureGenerator.html">MaterialsProjectFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.MatminerFeatureGenerator.html">MatminerFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.OneHotElementEncoder.html">OneHotElementEncoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.OneHotGroupGenerator.html">OneHotGroupGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_generators.PolynomialFeatureGenerator.html">PolynomialFeatureGenerator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../5_feature_generators.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../6_feature_selectors.html">Code Documentation: Feature Selectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../6_feature_selectors.html#module-mastml.feature_selectors">mastml.feature_selectors Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../6_feature_selectors.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.BaseSelector.html">BaseSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.EnsembleModelFeatureSelector.html">EnsembleModelFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.MASTMLFeatureSelector.html">MASTMLFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.NoSelect.html">NoSelect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.PearsonSelector.html">PearsonSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.feature_selectors.SklearnFeatureSelector.html">SklearnFeatureSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../6_feature_selectors.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../7_hyper_opt.html">Code Documentation: Hyperparameter Optimization</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../7_hyper_opt.html#module-mastml.hyper_opt">mastml.hyper_opt Module</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../7_hyper_opt.html#classes">Classes</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="mastml.hyper_opt.BayesianSearch.html">BayesianSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.hyper_opt.GridSearch.html">GridSearch</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">HyperOptUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.hyper_opt.RandomizedSearch.html">RandomizedSearch</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../7_hyper_opt.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../8_learning_curve.html">Code Documentation: Learning Curve</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../8_learning_curve.html#module-mastml.learning_curve">mastml.learning_curve Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../8_learning_curve.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.learning_curve.LearningCurve.html">LearningCurve</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../8_learning_curve.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../9_mastml.html">Code Documentation: Mastml</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../9_mastml.html#module-mastml.mastml">mastml.mastml Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../9_mastml.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.mastml.Mastml.html">Mastml</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../9_mastml.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../10_metrics.html">Code Documentation: Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../10_metrics.html#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../10_metrics.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.r2_score_adjusted.html">r2_score_adjusted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../10_metrics.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.metrics.Metrics.html">Metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../10_metrics.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../11_models.html">Code Documentation: Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../11_models.html#module-mastml.models">mastml.models Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../11_models.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.models.EnsembleModel.html">EnsembleModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.models.SklearnModel.html">SklearnModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../11_models.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../12_plots.html">Code Documentation: Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../12_plots.html#module-mastml.plots">mastml.plots Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../12_plots.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.check_dimensions.html">check_dimensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.get_divisor.html">get_divisor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.make_axis_same.html">make_axis_same</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.make_fig_ax.html">make_fig_ax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.make_fig_ax_square.html">make_fig_ax_square</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.make_plots.html">make_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.nice_mean.html">nice_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.nice_names.html">nice_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.nice_std.html">nice_std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.plot_stats.html">plot_stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.recursive_max.html">recursive_max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.recursive_max_and_min.html">recursive_max_and_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.recursive_min.html">recursive_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.reset_index.html">reset_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.round_down.html">round_down</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.round_up.html">round_up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.rounder.html">rounder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.stat_to_string.html">stat_to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.trim_array.html">trim_array</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../12_plots.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.Error.html">Error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.Histogram.html">Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.Line.html">Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.plots.Scatter.html">Scatter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../12_plots.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../13_preprocessing.html">Code Documentation: Preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../13_preprocessing.html#module-mastml.preprocessing">mastml.preprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../13_preprocessing.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="mastml.preprocessing.BasePreprocessor.html">BasePreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.preprocessing.MeanStdevScaler.html">MeanStdevScaler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.preprocessing.NoPreprocessor.html">NoPreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="mastml.preprocessing.SklearnPreprocessor.html">SklearnPreprocessor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../13_preprocessing.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../7_hyper_opt.html">Code Documentation: Hyperparameter Optimization</a> &raquo;</li>
+        
+      <li>HyperOptUtils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/api/mastml.hyper_opt.HyperOptUtils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="hyperoptutils">
+<h1>HyperOptUtils<a class="headerlink" href="#hyperoptutils" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="mastml.hyper_opt.HyperOptUtils">
+<em class="property">class </em><code class="sig-prename descclassname">mastml.hyper_opt.</code><code class="sig-name descname">HyperOptUtils</code><span class="sig-paren">(</span><em class="sig-param">param_names</em>, <em class="sig-param">param_values</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/mastml/hyper_opt.html#HyperOptUtils"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#mastml.hyper_opt.HyperOptUtils" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Helper class providing useful methods for other hyperparameter optimization classes.</p>
+<dl>
+<dt>Args:</dt><dd><p>param_names: (list), list containing names of hyperparams to optimize</p>
+<p>param_values: (list), list containing values of hyperparams to optimize</p>
+</dd>
+<dt>Methods:</dt><dd><dl>
+<dt>_search_space_generator<span class="classifier">parses GridSearch param_dict and checks values</span></dt><dd><dl class="simple">
+<dt>Args:</dt><dd><p>params: (dict), dict of {param_name : param_value} pairs.</p>
+</dd>
+<dt>Returns:</dt><dd><p><a href="#id1"><span class="problematic" id="id2">params_</span></a>: (dict), dict of {param_name : param_value} pairs.</p>
+</dd>
+</dl>
+</dd>
+<dt>_save_output<span class="classifier">saves hyperparameter optimization output and best values to csv file</span></dt><dd><dl>
+<dt>Args:</dt><dd><p>savepath: (str), path of output directory</p>
+<p>data: (dict), dict of {estimator_name : hyper_opt.GridSearch.fit()} object, or equivalent</p>
+</dd>
+<dt>Returns:</dt><dd><p>None</p>
+</dd>
+</dl>
+</dd>
+<dt>_get_grid_param_dict<span class="classifier">configures the param_dict for GridSearch</span></dt><dd><dl class="simple">
+<dt>Args:</dt><dd><p>None</p>
+</dd>
+<dt>Returns:</dt><dd><p>param_dict: (dict), dict of {param_name : param_value} pairs.</p>
+</dd>
+</dl>
+</dd>
+<dt>_get_randomized_param_dict<span class="classifier">configures the param_dict for RandomSearch</span></dt><dd><dl class="simple">
+<dt>Args:</dt><dd><p>None</p>
+</dd>
+<dt>Returns:</dt><dd><p>param_dict: (dict), dict of {param_name : param_value} pairs.</p>
+</dd>
+</dl>
+</dd>
+<dt>_get_bayesian_param_dict<span class="classifier">configures the param_dict for BayesianSearch</span></dt><dd><dl class="simple">
+<dt>Args:</dt><dd><p>None</p>
+</dd>
+<dt>Returns:</dt><dd><p>param_dict: (dict), dict of {param_name : param_value} pairs.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mastml.hyper_opt.RandomizedSearch.html" class="btn btn-neutral float-right" title="RandomizedSearch" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mastml.hyper_opt.GridSearch.html" class="btn btn-neutral float-left" title="GridSearch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2021, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
