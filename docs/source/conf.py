@@ -29,6 +29,8 @@ author = 'UW-Madison Computational Materials Simulation Toolkit'
 # The full version, including alpha/beta/rc tags
 release = '3.0.1'
 
+master_doc = 'index'
+
 
 # -- General configuration ---------------------------------------------------
 
