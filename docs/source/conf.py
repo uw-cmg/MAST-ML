@@ -16,6 +16,7 @@
 import os
 import sys
 os.system('pip install sphinx-automodapi')
+os.system('pip install sphinx==2.2.0')
 os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../..'))
@@ -47,7 +48,7 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-latex_documents = []
+#latex_documents = []
 
 # -- Options for HTML output -------------------------------------------------
 
