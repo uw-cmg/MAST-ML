@@ -125,7 +125,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
+#htmlhelp_basename = 'MAterialsSimulationToolkitforMachineLearningMAST-MLdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -177,6 +177,3 @@ texinfo_documents = [
      author, 'MAterialsSimulationToolkitforMachineLearningMAST-ML', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

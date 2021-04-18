@@ -1,0 +1,1141 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mastml.feature_selectors &mdash; MAterials Simulation Toolkit for Machine Learning (MAST-ML) 2.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> MAterials Simulation Toolkit for Machine Learning (MAST-ML)
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../00_acknowledgements.html">Acknowledgements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_4_majorchanges.html">MAST-ML version 3.x</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_4_majorchanges.html#new-changes-to-mast-ml">New changes to MAST-ML</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_installation.html">Installing MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_hardware_data_requirements.html">Hardware and Data Requirements</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#hardware">Hardware</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_hardware_data_requirements.html#data">Data</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_1_terminal_installation.html">Terminal installation (Linux or linux-like terminal environment e.g. Mac)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-conda-environment-if-using-anaconda">Create a conda environment (if using Anaconda)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#create-a-virtualenv-environment-if-not-using-anaconda">Create a virtualenv environment (if not using Anaconda)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-pypi">Install the MAST-ML package via PyPi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_1_terminal_installation.html#install-the-mast-ml-package-via-git">Install the MAST-ML package via Git</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#set-up-juptyer-notebooks">Set up Juptyer notebooks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_1_terminal_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_2_windows_installation.html">Windows installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-python3">Install Python3</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#create-a-conda-environment">Create a conda environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#set-up-the-spyder-ide-and-jupyter-notebooks">Set up the Spyder IDE and Jupyter notebooks</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#install-the-mast-ml-package">Install the MAST-ML package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../0_2_windows_installation.html#imports-that-dont-work">Imports that don’t work</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../0_2_windows_installation.html#windows-10-install-step-by-step-guide-credit-joe-kern">Windows 10 install: step-by-step guide (credit Joe Kern)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_3_startup.html">Getting Started with MAST-ML</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#installing-mast-ml">Installing MAST-ML</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../0_3_startup.html#performing-your-first-mast-ml-run">Performing your first MAST-ML run</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../0_5_tutorials.html">Overview of MAST-ML tutorials and examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../0_5_tutorials.html#mast-ml-tutorials">MAST-ML tutorials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../1_data_cleaning.html">Code Documentation: Data Cleaning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../1_data_cleaning.html#module-mastml.data_cleaning">mastml.data_cleaning Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataCleaning.html">DataCleaning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.DataUtilities.html">DataUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_cleaning.PPCA.html">PPCA</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../1_data_cleaning.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../2_data_splitters.html">Code Documentation: Data Splitters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../2_data_splitters.html#module-mastml.data_splitters">mastml.data_splitters Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.BaseSplitter.html">BaseSplitter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.Bootstrap.html">Bootstrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.JustEachGroup.html">JustEachGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveCloseCompositionsOut.html">LeaveCloseCompositionsOut</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutPercent.html">LeaveOutPercent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.LeaveOutTwinCV.html">LeaveOutTwinCV</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.NoSplit.html">NoSplit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.data_splitters.SklearnDataSplitter.html">SklearnDataSplitter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../2_data_splitters.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../3_datasets.html">Code Documentation: Datasets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../3_datasets.html#module-mastml.datasets">mastml.datasets Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FigshareDatasets.html">FigshareDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.FoundryDatasets.html">FoundryDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.LocalDatasets.html">LocalDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.MatminerDatasets.html">MatminerDatasets</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.datasets.SklearnDatasets.html">SklearnDatasets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../3_datasets.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../4_error_analysis.html">Code Documentation: Error Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../4_error_analysis.html#module-mastml.error_analysis">mastml.error_analysis Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.CorrectionFactors.html">CorrectionFactors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.error_analysis.ErrorUtils.html">ErrorUtils</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../4_error_analysis.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../5_feature_generators.html">Code Documentation: Feature Generators</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../5_feature_generators.html#module-mastml.feature_generators">mastml.feature_generators Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.BaseGenerator.html">BaseGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.DataframeUtilities.html">DataframeUtilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.ElementalFeatureGenerator.html">ElementalFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MaterialsProjectFeatureGenerator.html">MaterialsProjectFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.MatminerFeatureGenerator.html">MatminerFeatureGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotElementEncoder.html">OneHotElementEncoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.OneHotGroupGenerator.html">OneHotGroupGenerator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_generators.PolynomialFeatureGenerator.html">PolynomialFeatureGenerator</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../5_feature_generators.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../6_feature_selectors.html">Code Documentation: Feature Selectors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../6_feature_selectors.html#module-mastml.feature_selectors">mastml.feature_selectors Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.BaseSelector.html">BaseSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html">EnsembleModelFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html">MASTMLFeatureSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.NoSelect.html">NoSelect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.PearsonSelector.html">PearsonSelector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html">SklearnFeatureSelector</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../6_feature_selectors.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../7_hyper_opt.html">Code Documentation: Hyperparameter Optimization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../7_hyper_opt.html#module-mastml.hyper_opt">mastml.hyper_opt Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.BayesianSearch.html">BayesianSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.GridSearch.html">GridSearch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.HyperOptUtils.html">HyperOptUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.hyper_opt.RandomizedSearch.html">RandomizedSearch</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../7_hyper_opt.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../8_learning_curve.html">Code Documentation: Learning Curve</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../8_learning_curve.html#module-mastml.learning_curve">mastml.learning_curve Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.learning_curve.LearningCurve.html">LearningCurve</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../8_learning_curve.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../9_mastml.html">Code Documentation: Mastml</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../9_mastml.html#module-mastml.mastml">mastml.mastml Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.mastml.Mastml.html">Mastml</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../9_mastml.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../10_metrics.html">Code Documentation: Metrics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../10_metrics.html#module-mastml.metrics">mastml.metrics Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_adjusted.html">r2_score_adjusted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_fitted.html">r2_score_fitted</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.r2_score_noint.html">r2_score_noint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.rmse_over_stdev.html">rmse_over_stdev</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.root_mean_squared_error.html">root_mean_squared_error</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.metrics.Metrics.html">Metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../10_metrics.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../11_models.html">Code Documentation: Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../11_models.html#module-mastml.models">mastml.models Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.EnsembleModel.html">EnsembleModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.models.SklearnModel.html">SklearnModel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../11_models.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../12_plots.html">Code Documentation: Plots</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../12_plots.html#module-mastml.plots">mastml.plots Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#functions">Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.check_dimensions.html">check_dimensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.get_divisor.html">get_divisor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_axis_same.html">make_axis_same</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax.html">make_fig_ax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_fig_ax_square.html">make_fig_ax_square</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.make_plots.html">make_plots</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_mean.html">nice_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_names.html">nice_names</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_range.html">nice_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.nice_std.html">nice_std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.plot_stats.html">plot_stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max.html">recursive_max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_max_and_min.html">recursive_max_and_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.recursive_min.html">recursive_min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.reset_index.html">reset_index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_down.html">round_down</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.round_up.html">round_up</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.rounder.html">rounder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.stat_to_string.html">stat_to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.trim_array.html">trim_array</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Error.html">Error</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Histogram.html">Histogram</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Line.html">Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.plots.Scatter.html">Scatter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../12_plots.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../13_preprocessing.html">Code Documentation: Preprocessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../13_preprocessing.html#module-mastml.preprocessing">mastml.preprocessing Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#classes">Classes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.BasePreprocessor.html">BasePreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.MeanStdevScaler.html">MeanStdevScaler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.NoPreprocessor.html">NoPreprocessor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../api/mastml.preprocessing.SklearnPreprocessor.html">SklearnPreprocessor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../13_preprocessing.html#class-inheritance-diagram">Class Inheritance Diagram</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MAterials Simulation Toolkit for Machine Learning (MAST-ML)</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>mastml.feature_selectors</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for mastml.feature_selectors</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module contains a collection of routines to perform feature selection.</span>
+
+<span class="sd">BaseSelector:</span>
+<span class="sd">    Base class to have MAST-ML like workflow functionality for feature selectors. All feature selection routines</span>
+<span class="sd">    should inherit this base class</span>
+
+<span class="sd">SklearnFeatureSelector:</span>
+<span class="sd">    Class to wrap feature selectors from the scikit-learn package and make them have functionality from</span>
+<span class="sd">    BaseSelector. Any scikit-learn feature selector from sklearn.feature_selection can be used by providing the</span>
+<span class="sd">    name of the selector class as a string.</span>
+
+<span class="sd">NoSelect:</span>
+<span class="sd">    Class that performs no feature selection and just uses all features in the dataset. Needed as a placeholder</span>
+<span class="sd">    when evaluating data splits in a MAST-ML run where feature selection is not performed.</span>
+
+<span class="sd">EnsembleModelFeatureSelector:</span>
+<span class="sd">    Class to selects features based on the feature importances scores obtained when fitting an ensemble-based model.</span>
+<span class="sd">    Any model with the feature_importances_ attribute will work, e.g. sklearn&#39;s RandomForestRegressor and</span>
+<span class="sd">    GradientBoostingRegressor.</span>
+
+<span class="sd">PearsonSelector:</span>
+<span class="sd">    Class that selects features based on their Pearson correlation score with the target data. Can also be used</span>
+<span class="sd">    to assess Pearson correlation between features for use to reduce dimensionality of the feature space.</span>
+
+<span class="sd">MASTMLFeatureSelector:</span>
+<span class="sd">    Class written for MAST-ML to perform more flexible forward selection than what can be found in scikit-learn.</span>
+<span class="sd">    Allows the user to specify a particular model and cross validation routine for selecting features, as well as the</span>
+<span class="sd">    ability to forcibly select certain features on the outset.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">pearsonr</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">KFold</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span> <span class="nn">mastml.metrics</span> <span class="kn">import</span> <span class="n">root_mean_squared_error</span>
+
+
+<div class="viewcode-block" id="BaseSelector"><a class="viewcode-back" href="../../api/mastml.feature_selectors.BaseSelector.html#mastml.feature_selectors.BaseSelector">[docs]</a><span class="k">class</span> <span class="nc">BaseSelector</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">,</span> <span class="n">TransformerMixin</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Base class that forms foundation of MAST-ML feature selectors</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        None. See individual selector types for input arguments</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: Does nothing, present for compatibility</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        transform: Does nothing, present for compatibility</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">        evaluate: runs the fit and transform functions to select features, saves selector-specific files and saves</span>
+<span class="sd">        list of selected features</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">                savepath: (str), string denoting savepath to save selected features and associated files (if</span>
+<span class="sd">                applicable) to.</span>
+
+<span class="sd">            Returns:</span>
+
+<span class="sd">                X_select (dataframe), dataframe of selected X features</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="BaseSelector.fit"><a class="viewcode-back" href="../../api/mastml.feature_selectors.BaseSelector.html#mastml.feature_selectors.BaseSelector.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="BaseSelector.transform"><a class="viewcode-back" href="../../api/mastml.feature_selectors.BaseSelector.html#mastml.feature_selectors.BaseSelector.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">X</span></div>
+
+<div class="viewcode-block" id="BaseSelector.evaluate"><a class="viewcode-back" href="../../api/mastml.feature_selectors.BaseSelector.html#mastml.feature_selectors.BaseSelector.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">make_new_dir</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">savepath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">X_select</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">make_new_dir</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_savedir</span><span class="p">(</span><span class="n">selector</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">savepath</span><span class="o">=</span><span class="n">savepath</span><span class="p">)</span>
+            <span class="n">savepath</span> <span class="o">=</span> <span class="n">splitdir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="n">X_select</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;selected_features.txt&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;EnsembleModelFeatureSelector&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_importances_sorted</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;EnsembleModelFeatureSelector_feature_importances.xlsx&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;PearsonSelector&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">full_correlation_matrix</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;PearsonSelector_fullcorrelationmatrix.xlsx&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highly_correlated_features</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;PearsonSelector_highlycorrelatedfeatures.xlsx&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highly_correlated_features_flagged</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;PearsonSelector_highlycorrelatedfeaturesflagged.xlsx&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features_highly_correlated_with_target</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;PearsonSelector_highlycorrelatedwithtarget.xlsx&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;MASTMLFeatureSelector&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mastml_forward_selection_df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;MASTMLFeatureSelector_featureselection_data.xlsx&#39;</span><span class="p">))</span>
+        <span class="n">X_select</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="s1">&#39;selected_features.xlsx&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X_select</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_savedir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="n">savepath</span><span class="p">):</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dirname</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span> \
+                  <span class="sa">f</span><span class="s2">&quot;_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">savepath</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">splitdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">savepath</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">splitdir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">splitdir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splitdir</span> <span class="o">=</span> <span class="n">splitdir</span>
+        <span class="k">return</span> <span class="n">splitdir</span></div>
+
+
+<div class="viewcode-block" id="SklearnFeatureSelector"><a class="viewcode-back" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html#mastml.feature_selectors.SklearnFeatureSelector">[docs]</a><span class="k">class</span> <span class="nc">SklearnFeatureSelector</span><span class="p">(</span><span class="n">BaseSelector</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Class that wraps scikit-learn feature selection methods with some new MAST-ML functionality</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        selector (str) : a string denoting the name of a sklearn.feature_selection object</span>
+
+<span class="sd">        **kwargs: the key word arguments of the designated sklearn.feature_selection object</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: performs feature selection</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        transform: performs the transform to generate output of only selected features</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                X_select: (dataframe), dataframe of selected X features</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SklearnFeatureSelector</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sklearn</span><span class="o">.</span><span class="n">feature_selection</span><span class="p">,</span> <span class="n">selector</span><span class="p">)(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># TODO: map string input of estimator (e.g. for SequentialFeatureSelector) and score_func (e.g. for</span>
+        <span class="c1">#  SelectKBest) to be objects</span>
+
+<div class="viewcode-block" id="SklearnFeatureSelector.fit"><a class="viewcode-back" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html#mastml.feature_selectors.SklearnFeatureSelector.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="SklearnFeatureSelector.transform"><a class="viewcode-back" href="../../api/mastml.feature_selectors.SklearnFeatureSelector.html#mastml.feature_selectors.SklearnFeatureSelector.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X_select</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+        <span class="n">original_cols</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">new_cols</span> <span class="o">=</span> <span class="n">X_select</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">new_cols_renamed</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">new_col</span> <span class="ow">in</span> <span class="n">new_cols</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">original_col</span> <span class="ow">in</span> <span class="n">original_cols</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">original_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">X_select</span><span class="p">[</span><span class="n">new_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                    <span class="n">new_cols_renamed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">original_col</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+        <span class="n">X_select</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">new_cols_renamed</span>
+        <span class="k">return</span> <span class="n">X_select</span></div></div>
+
+
+<div class="viewcode-block" id="NoSelect"><a class="viewcode-back" href="../../api/mastml.feature_selectors.NoSelect.html#mastml.feature_selectors.NoSelect">[docs]</a><span class="k">class</span> <span class="nc">NoSelect</span><span class="p">(</span><span class="n">BaseSelector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for having a &quot;null&quot; transform where the output is the same as the input. Needed by MAST-ML as a placeholder if</span>
+<span class="sd">    certain workflow aspects are not performed.</span>
+
+<span class="sd">    See BaseSelector for information on args and methods</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">NoSelect</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EnsembleModelFeatureSelector"><a class="viewcode-back" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html#mastml.feature_selectors.EnsembleModelFeatureSelector">[docs]</a><span class="k">class</span> <span class="nc">EnsembleModelFeatureSelector</span><span class="p">(</span><span class="n">BaseSelector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class custom-written for MAST-ML to conduct selection of features with ensemble model feature importances</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model: (mastml.models object), a MAST-ML compatable model</span>
+
+<span class="sd">        n_features_to_select: (int), the number of features to select</span>
+
+<span class="sd">        n_random_dummy: (int), the number of random dummy variable to use. default is 0 if not used</span>
+
+<span class="sd">        n_permuted_dummy: (int), the number of permuted dummy variable to use. default is 0 if not used</span>
+
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: performs feature selection</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        transform: performs the transform to generate output of only selected features</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                dataframe: (dataframe), dataframe of selected X features</span>
+
+<span class="sd">        create_dummy_variable: Inserts n_dummy_variable of dummy variables with the same standard deviation and mean of</span>
+<span class="sd">                               of the whole dataframe</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                X: dataframe that includes dummy variables and scaled with standard scaler</span>
+
+<span class="sd">        check_dummy_ranking: If dummy variable is used, prints warning when number of features selected</span>
+<span class="sd">                             is not optimal (numbers of features selected ranks below the dummy variable)</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                feature_importances_sorted: list of features sorted based on their importances</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">n_random_dummy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_permuted_dummy</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnsembleModelFeatureSelector</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span> <span class="o">=</span> <span class="n">n_random_dummy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">=</span> <span class="n">n_permuted_dummy</span>
+        <span class="c1"># Check that a correct model was passed in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;SklearnModel&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RandomForestRegressor&#39;</span><span class="p">,</span> <span class="s1">&#39;ExtraTreesRegressor&#39;</span><span class="p">,</span>
+                                                           <span class="s1">&#39;GradientBoostingRegressor&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, &#39;</span>
+                    <span class="s1">&#39;ExtraTreesRegressor, GradientBoostingRegressor&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;RandomForestRegressor&#39;</span><span class="p">,</span> <span class="s1">&#39;ExtraTreesRegressor&#39;</span><span class="p">,</span>
+                                                     <span class="s1">&#39;GradientBoostingRegressor&#39;</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Models used in EnsembleModelFeatureSelector must be one of RandomForestRegressor, &#39;</span>
+                    <span class="s1">&#39;ExtraTreesRegressor, GradientBoostingRegressor&#39;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="EnsembleModelFeatureSelector.create_dummy_variable"><a class="viewcode-back" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html#mastml.feature_selectors.EnsembleModelFeatureSelector.create_dummy_variable">[docs]</a>    <span class="k">def</span> <span class="nf">create_dummy_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">shapeX</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="c1"># Create random dummy variables based on mean and standard deviation of data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">X</span><span class="p">:</span>
+                <span class="n">mean</span> <span class="o">+=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">std</span> <span class="o">+=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+            <span class="c1"># The average of the mean of every column</span>
+            <span class="n">mean</span> <span class="o">/=</span> <span class="n">num</span>
+            <span class="c1"># The average of the std of every column</span>
+            <span class="n">std</span> <span class="o">/=</span> <span class="n">num</span>
+
+            <span class="c1"># Create dummy variables</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span><span class="p">):</span>
+                <span class="n">dummyValue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="n">mean</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">std</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">),))</span>
+                <span class="n">dummyName</span> <span class="o">=</span> <span class="s2">&quot;r_dummy&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">dummyName</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dummyValue</span><span class="p">)</span>
+
+        <span class="c1"># Create permuted dummy variables</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Checks if the n_permuted_dummy exceeds the number of features in our data</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">&gt;</span> <span class="n">shapeX</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: User input&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span><span class="p">,</span> <span class="s2">&quot;permuted dummies but data only consist of &quot;</span><span class="p">,</span>
+                      <span class="n">shapeX</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;features. Using &quot;</span><span class="p">,</span> <span class="n">shapeX</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;dummies instead&quot;</span><span class="p">)</span>
+            <span class="n">random_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">random_features</span><span class="p">:</span>
+                <span class="n">dummyValue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">random_features</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">dummyName</span> <span class="o">=</span> <span class="s2">&quot;p_dummy&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dummyValue</span><span class="p">)</span>
+                <span class="n">X</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="n">dummyName</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">dummyValue</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xcol</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span>
+        <span class="n">sc</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span></div>
+
+<div class="viewcode-block" id="EnsembleModelFeatureSelector.check_dummy_ranking"><a class="viewcode-back" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html#mastml.feature_selectors.EnsembleModelFeatureSelector.check_dummy_ranking">[docs]</a>    <span class="k">def</span> <span class="nf">check_dummy_ranking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_importances_sorted</span><span class="p">):</span>
+        <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">feature_importances_sorted</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">feature_importances_sorted</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
+                        <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">feature_importances_sorted</span><span class="p">))]</span>
+        <span class="n">feature_list_no_dummies</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">feature_list</span> <span class="k">if</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;_dummy&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Checks for random dummy scores</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">random_dummy_score</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">feature_list</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;r_dummy&quot;</span><span class="p">]</span>
+            <span class="n">mean_random_dummy_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">random_dummy_score</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">random_dummy_score</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">feature_list_no_dummies</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mean_random_dummy_score</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: The average of dummy variable ranks at &quot;</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_list_no_dummies</span><span class="p">),</span>
+                      <span class="s2">&quot;but number of feature to select is&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">)</span>
+
+        <span class="c1"># Checks for permuted dummy scores</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">permuted_dummy_score</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">feature_list</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;p_dummy&quot;</span><span class="p">]</span>
+            <span class="n">mean_permuted_dummy_score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">permuted_dummy_score</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">permuted_dummy_score</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">feature_list_no_dummies</span><span class="p">[</span><span class="n">count</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">mean_permuted_dummy_score</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: The average of permuted dummy variable ranks at &quot;</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
+                      <span class="nb">len</span><span class="p">(</span><span class="n">feature_list_no_dummies</span><span class="p">),</span>
+                      <span class="s2">&quot;but number of feature to select is&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnsembleModelFeatureSelector.fit"><a class="viewcode-back" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html#mastml.feature_selectors.EnsembleModelFeatureSelector.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="c1"># Have to save the columns name in case standard scaler is used</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Xcol</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="c1"># Add dummy variables into the data if stated by user</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_dummy_variable</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">feature_importances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">feature_importances_</span>
+        <span class="n">feature_importance_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Xcol</span><span class="p">,</span> <span class="n">feature_importances</span><span class="p">):</span>
+            <span class="n">feature_importance_dict</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">feature_importances_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(((</span><span class="n">f</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feature_importance_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_importances_sorted</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">feature_importances_sorted</span><span class="p">)</span>
+        <span class="n">sorted_features_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">feature_importances_sorted</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="n">sorted_features_list</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="c1"># If dummy is used, check where it ranks and prints a warning if n_features_to_select is is more than its rank</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_random_dummy</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_permuted_dummy</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">check_dummy_ranking</span><span class="p">(</span><span class="n">feature_importances_sorted</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EnsembleModelFeatureSelector.transform"><a class="viewcode-back" href="../../api/mastml.feature_selectors.EnsembleModelFeatureSelector.html#mastml.feature_selectors.EnsembleModelFeatureSelector.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X_select</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X_select</span></div></div>
+
+
+<div class="viewcode-block" id="PearsonSelector"><a class="viewcode-back" href="../../api/mastml.feature_selectors.PearsonSelector.html#mastml.feature_selectors.PearsonSelector">[docs]</a><span class="k">class</span> <span class="nc">PearsonSelector</span><span class="p">(</span><span class="n">BaseSelector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class custom-written for MAST-ML to conduct selection of features based on Pearson correlation coefficent between</span>
+<span class="sd">    features and target. Can also be used for dimensionality reduction by removing redundant features highly correlated</span>
+<span class="sd">    with each other.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        threshold_between_features: (float), the threshold to decide whether redundant features are removed. Should</span>
+<span class="sd">        be a decimal value between 0 and 1. Only used if remove_highly_correlated_features is True</span>
+
+<span class="sd">        threshold_with_target: (float), the threshold to decide whether a given feature is sufficiently correlated</span>
+<span class="sd">        with the target feature and thus kept as a selected feature. Should be a decimal value between 0 and 1.</span>
+
+<span class="sd">        remove_highly_correlated_features: (bool), whether to remove features highly correlated with each other</span>
+
+<span class="sd">        n_features_to_select: (int), the number of features to select</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: performs feature selection</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        transform: performs the transform to generate output of only selected features</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                dataframe: (dataframe), dataframe of selected X features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold_between_features</span><span class="p">,</span> <span class="n">threshold_with_target</span><span class="p">,</span> <span class="n">flag_highly_correlated_features</span><span class="p">,</span>
+            <span class="n">n_features_to_select</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PearsonSelector</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_between_features</span> <span class="o">=</span> <span class="n">threshold_between_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span> <span class="o">=</span> <span class="n">threshold_with_target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_highly_correlated_features</span> <span class="o">=</span> <span class="n">flag_highly_correlated_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PearsonSelector.fit"><a class="viewcode-back" href="../../api/mastml.feature_selectors.PearsonSelector.html#mastml.feature_selectors.PearsonSelector.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="n">df_features</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">n_col</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_highly_correlated_features</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">array_data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_col</span><span class="p">):</span>
+                <span class="n">col_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+                <span class="n">col</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_col</span><span class="p">):</span>
+                    <span class="n">row_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
+                    <span class="n">corr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">row_data</span><span class="p">,</span> <span class="n">col_data</span><span class="p">)</span>  <span class="c1"># Pearson Correlation</span>
+                    <span class="n">col</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+                <span class="n">array_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+
+            <span class="n">array_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">df_features</span><span class="p">[:</span><span class="n">n_col</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">df_features</span><span class="p">[:</span><span class="n">n_col</span><span class="p">])</span>
+
+            <span class="c1"># array_df.to_excel(os.path.join(savepath, &#39;Full_correlation_matrix.xlsx&#39;))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">full_correlation_matrix</span> <span class="o">=</span> <span class="n">array_df</span>
+
+            <span class="c1">#### Print features highly-correlated to each other into excel</span>
+            <span class="n">hcorr</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">highly_correlated_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])):</span>  <span class="c1"># This includes all the data in the array_df</span>
+                <span class="c1"># feature1 = array_df.iloc[:, i] # This does not work because feature1 is not the col name but a list</span>
+                <span class="c1"># of values</span>
+                <span class="n">feature1</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])):</span>  <span class="c1"># This includes all the data in the array_df</span>
+                    <span class="c1"># feature2 = array_df.iloc[:, j] # This does not work because feature2 is not the col name but a</span>
+                    <span class="c1"># list of values</span>
+                    <span class="n">feature2</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_between_features</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>  <span class="c1"># Ignore diagonal features</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">feature2</span><span class="p">,</span> <span class="n">feature1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">hcorr</span><span class="p">:</span>  <span class="c1"># Ignore the same correlations</span>
+                                <span class="n">hcorr</span><span class="p">[(</span><span class="n">feature1</span><span class="p">,</span> <span class="n">feature2</span><span class="p">)]</span> <span class="o">=</span> <span class="n">array_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                <span class="n">highly_correlated_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature2</span><span class="p">)</span>
+
+            <span class="n">hcorr_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">hcorr</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Corr&quot;</span><span class="p">])</span>
+            <span class="c1"># hcorr_df.to_excel(os.path.join(savepath, &#39;Highly_correlated_features.xlsx&#39;))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highly_correlated_features</span> <span class="o">=</span> <span class="n">hcorr_df</span>
+
+            <span class="n">highly_correlated_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">highly_correlated_features</span><span class="p">)))</span>
+
+            <span class="c1">#### Print the removed features and the new smaller dataframe with features removed</span>
+            <span class="c1"># Deep copy the original dataframe</span>
+            <span class="n">removed_features_df</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="n">new_df</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="c1"># Drop the features that can be removed</span>
+            <span class="n">all_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">removed_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">highly_correlated_features</span><span class="p">:</span>
+                    <span class="n">removed_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+                    <span class="n">new_df</span> <span class="o">=</span> <span class="n">new_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
+
+            <span class="c1"># Print the highly correlated features that were removed</span>
+            <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">all_features</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">feature</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">removed_features</span><span class="p">:</span>
+                    <span class="n">removed_features_df</span> <span class="o">=</span> <span class="n">removed_features_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">feature</span><span class="p">)</span>
+            <span class="c1"># removed_features_df.to_excel(os.path.join(savepath, &quot;Highly_correlated_features_flagged.xlsx&quot;),</span>
+            <span class="c1">#                             index=False)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">highly_correlated_features_flagged</span> <span class="o">=</span> <span class="n">removed_features_df</span>
+
+            <span class="c1"># Define self.selected_features</span>
+            <span class="n">remaining_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">new_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remaining_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="c1"># Compute Pearson correlations between each feature and target feature</span>
+        <span class="n">all_corrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">remaining_features</span><span class="p">)):</span>
+            <span class="n">feature_name</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">feature_data</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+            <span class="n">corr</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pearsonr</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">feature_data</span><span class="p">)</span>
+            <span class="n">all_corrs</span><span class="p">[</span><span class="n">feature_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">corr</span>
+        <span class="n">all_corrs</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+            <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># Sometimes the specificed threshold is too high. Make it lower until at least 1 feature is selected</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s1">&#39;WARNING: Pearson selector threshold was too high to result in selecting any features, &#39;</span>
+                <span class="s1">&#39;lowering threshold to get specified feature number&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span> <span class="o">-=</span> <span class="mf">0.05</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+                <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_col</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: Pearson selector reduce the threshold such that all features were included&#39;</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pearson selector selected features with an adjusted threshold value&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span>
+                                     <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">]</span>
+
+        <span class="c1"># Create the dataframe displaying the highly correlated features and the Pearson Correlations</span>
+        <span class="n">hcorr_with_target_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">,</span>
+                                            <span class="n">index</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">all_corrs</span><span class="p">[</span><span class="n">all_corrs</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_with_target</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span>
+                                                <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+                                            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Pearson Correlation (absolute value)&quot;</span><span class="p">])</span>
+        <span class="c1"># hcorr_with_target_df.to_excel(os.path.join(savepath, &#39;Features_highly_correlated_with_target.xlsx&#39;))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features_highly_correlated_with_target</span> <span class="o">=</span> <span class="n">hcorr_with_target_df</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="PearsonSelector.transform"><a class="viewcode-back" href="../../api/mastml.feature_selectors.PearsonSelector.html#mastml.feature_selectors.PearsonSelector.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X_select</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X_select</span></div></div>
+
+
+<div class="viewcode-block" id="MASTMLFeatureSelector"><a class="viewcode-back" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html#mastml.feature_selectors.MASTMLFeatureSelector">[docs]</a><span class="k">class</span> <span class="nc">MASTMLFeatureSelector</span><span class="p">(</span><span class="n">BaseSelector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class custom-written for MAST-ML to conduct forward selection of features with flexible model and cv scheme</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        estimator: (scikit-learn model/estimator object), a scikit-learn model/estimator</span>
+
+<span class="sd">        n_features_to_select: (int), the number of features to select</span>
+
+<span class="sd">        cv: (scikit-learn cross-validation object), a scikit-learn cross-validation object</span>
+
+<span class="sd">        manually_selected_features: (list), a list of features manually set by the user. The feature selector will</span>
+<span class="sd">        first start from this list of features and sequentially add features until n_features_to_select is met.</span>
+
+<span class="sd">    Methods:</span>
+<span class="sd">        fit: performs feature selection</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">                y: (dataframe), dataframe of y data</span>
+
+<span class="sd">                Xgroups: (dataframe), dataframe of group labels</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None</span>
+
+<span class="sd">        transform: performs the transform to generate output of only selected features</span>
+<span class="sd">            Args:</span>
+<span class="sd">                X: (dataframe), dataframe of X features</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                dataframe: (dataframe), dataframe of selected X features</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">n_features_to_select</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">manually_selected_features</span><span class="o">=</span><span class="nb">list</span><span class="p">()):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MASTMLFeatureSelector</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="k">if</span> <span class="n">cv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">KFold</span><span class="p">(</span><span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_splits</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span> <span class="o">=</span> <span class="n">manually_selected_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="n">n_features_to_select</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manually_selected_features</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MASTMLFeatureSelector.fit"><a class="viewcode-back" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html#mastml.feature_selectors.MASTMLFeatureSelector.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">Xgroups</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Xgroups</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xgroups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+            <span class="n">Xgroups</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">xgroups</span><span class="p">)</span>
+
+        <span class="n">selected_feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">selected_feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">basic_forward_selection_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">num_features_selected</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">x_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_features</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">num_features_selected</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span><span class="p">:</span>
+            <span class="c1"># Catch pandas warnings here</span>
+            <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+                <span class="n">ranked_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rank_features</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">Xgroups</span><span class="p">)</span>
+                <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_choose_top_feature</span><span class="p">(</span>
+                    <span class="n">ranked_features</span><span class="o">=</span><span class="n">ranked_features</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_name</span><span class="p">)</span>
+            <span class="c1"># if len(self.selected_feature_names) &gt; 0:</span>
+            <span class="c1">#    print(&#39;selected features&#39;)</span>
+            <span class="c1">#    print(self.selected_feature_names)</span>
+            <span class="n">selected_feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_avg_rmse</span><span class="p">)</span>
+            <span class="n">selected_feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_feature_std_rmse</span><span class="p">)</span>
+
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Number of features selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_features_selected</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Top feature added this iteration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_name</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Avg RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_avg_rmse</span>
+            <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">num_features_selected</span><span class="p">)][</span>
+                <span class="s1">&#39;Stdev RMSE using top features&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">top_feature_std_rmse</span>
+            <span class="c1"># Save for every loop of selecting features</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mastml_forward_selection_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">basic_forward_selection_dict</span><span class="p">)</span>
+            <span class="c1"># pd.DataFrame(basic_forward_selection_dict).to_csv(os.path.join(savepath,</span>
+            <span class="c1"># &#39;MASTMLFeatureSelector_data_feature_&#39;+str(num_features_selected)+&#39;.csv&#39;))</span>
+            <span class="n">num_features_selected</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Avg RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_avg_rmses</span>
+        <span class="n">basic_forward_selection_dict</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_features_to_select</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)][</span>
+            <span class="s1">&#39;Full feature set Stdev RMSEs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">selected_feature_std_rmses</span>
+        <span class="c1"># self._plot_featureselected_learningcurve(selected_feature_avg_rmses=selected_feature_avg_rmses,</span>
+        <span class="c1">#                                         selected_feature_std_rmses=selected_feature_std_rmses)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="MASTMLFeatureSelector.transform"><a class="viewcode-back" href="../../api/mastml.feature_selectors.MASTMLFeatureSelector.html#mastml.feature_selectors.MASTMLFeatureSelector.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X_select</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_featureselected_dataframe</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span> <span class="n">selected_feature_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X_select</span></div>
+
+    <span class="k">def</span> <span class="nf">_rank_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ranked_features</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">trains_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">tests_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">groups</span> <span class="o">=</span> <span class="n">groups</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">:</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_features</span><span class="p">]</span>
+                <span class="n">X__</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span>
+                <span class="n">X_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">X_</span><span class="p">,</span> <span class="n">X__</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+                <span class="k">for</span> <span class="n">trains</span><span class="p">,</span> <span class="n">tests</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">X_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">trains</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">trains</span><span class="p">])</span>
+                    <span class="n">predict_tests</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_</span><span class="p">[</span><span class="n">tests</span><span class="p">])</span>
+                    <span class="n">tests_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_mean_squared_error</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">tests</span><span class="p">],</span> <span class="n">predict_tests</span><span class="p">))</span>
+                <span class="n">avg_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
+
+                <span class="n">std_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">tests_metrics</span><span class="p">)</span>
+                <span class="n">ranked_features</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;avg_rmse&quot;</span><span class="p">:</span> <span class="n">avg_rmse</span><span class="p">,</span> <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="n">std_rmse</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">ranked_features</span>
+
+    <span class="k">def</span> <span class="nf">_choose_top_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranked_features</span><span class="p">):</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_avg_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_names_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">feature_std_rmses_sorted</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="c1"># Make dict of ranked features into list for sorting</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">feature_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">kk</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;avg_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_avg_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">kk</span> <span class="o">==</span> <span class="s1">&#39;std_rmse&#39;</span><span class="p">:</span>
+                    <span class="n">feature_std_rmses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vv</span><span class="p">)</span>
+
+        <span class="c1"># Sort feature lists so RMSE goes from min to max</span>
+        <span class="n">feature_avg_rmses_sorted</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">feature_avg_rmses</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feature_avg_rmse</span> <span class="ow">in</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ranked_features</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;avg_rmse&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">feature_avg_rmse</span><span class="p">:</span>
+                    <span class="n">feature_names_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                    <span class="n">feature_std_rmses_sorted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;std_rmse&#39;</span><span class="p">])</span>
+
+        <span class="n">top_feature_name</span> <span class="o">=</span> <span class="n">feature_names_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_avg_rmse</span> <span class="o">=</span> <span class="n">feature_avg_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">top_feature_std_rmse</span> <span class="o">=</span> <span class="n">feature_std_rmses_sorted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">top_feature_name</span><span class="p">,</span> <span class="n">top_feature_avg_rmse</span><span class="p">,</span> <span class="n">top_feature_std_rmse</span>
+
+    <span class="k">def</span> <span class="nf">_get_featureselected_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">selected_feature_names</span><span class="p">):</span>
+        <span class="c1"># Return dataframe containing only selected features</span>
+        <span class="n">X_selected</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">selected_feature_names</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">X_selected</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018-2021, University of Wisconsin-Madison Computational Materials Group
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
