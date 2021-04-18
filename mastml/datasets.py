@@ -34,9 +34,9 @@ import shutil
 import pickle
 
 import sklearn.datasets
-#from mdf_forge import Forge
+from mdf_forge import Forge
 
-#from matminer.datasets.dataset_retrieval import load_dataset, get_available_datasets
+from matminer.datasets.dataset_retrieval import load_dataset, get_available_datasets
 
 try:
     from figshare.figshare.figshare import Figshare
