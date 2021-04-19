@@ -1546,6 +1546,35 @@ class Bootstrap(BaseSplitter):
         return split
 
 class LeaveOutClusterCV(BaseSplitter):
+    """
+    Class to generate train/test split using clustering.
+    Args:
+        cluster: clustering method from sklearn.cluster used to generate train/test split
+        kwargs: takes in any other key argument for optional cluster parameters
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+            Returns:
+                (int), number of splits
+        split: method to perform split into train indices and test indices
+            Args:
+                X: (numpy array), array of X features
+                y: (numpy array), array of y data
+                groups: (numpy array), array of group labels
+            Returns:
+                (numpy array), array of train and test indices
+        labels: method that returns cluster labels of X features
+            Args:
+                    X: (numpy array), array of X features
+                    y: (numpy array), array of y data
+                    groups: (numpy array), array of group labels
+                Returns:
+                    (numpy array), array of cluster labels
+    """
+    
     def __init__(self, cluster, **kwargs):
         super(LeaveOutClusterCV, self).__init__()
 
@@ -1557,24 +1586,17 @@ class LeaveOutClusterCV(BaseSplitter):
 
         return len(np.unique(self.labels(X)))
 
-        #return self.cluster.n_clusters
-
-        #fit_cluster = self.cluster.fit(X)
-        #return len(np.unique(fit_cluster.labels_))
-
-
-
     # splits data into train and test based on clusters
     def split(self, X, y=None, groups=None):
 
-        # trains cluster
+        # trains cluster object
         fit_cluster = self.cluster.fit(X)
 
+        # checks if cluster object has either labels_ or row_labels_
         if hasattr(fit_cluster, 'labels_'):
-            # returns array of cluster labels
             labels = fit_cluster.labels_
+            
         elif hasattr(fit_cluster, 'row_labels_'):
-            # returns array of cluster labels
             labels = fit_cluster.row_labels_
 
         # set up split list to return
@@ -1600,11 +1622,11 @@ class LeaveOutClusterCV(BaseSplitter):
         # trains cluster
         fit_cluster = self.cluster.fit(X)
 
+        # checks if cluster object has either labels_ or row_labels_
         if hasattr(fit_cluster, 'labels_'):
-            # returns array of cluster labels
             labels = fit_cluster.labels_
+            
         elif hasattr(fit_cluster, 'row_labels_'):
-            # returns array of cluster labels
             labels = fit_cluster.row_labels_
 
         # return labels
