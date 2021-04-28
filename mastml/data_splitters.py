@@ -74,8 +74,6 @@ from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
 import sklearn_extra.cluster
 
-import sklearn_extra.cluster
-
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
