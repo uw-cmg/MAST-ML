@@ -72,6 +72,7 @@ from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
+import sklearn_extra.cluster
 
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -1579,7 +1580,11 @@ class LeaveOutClusterCV(BaseSplitter):
         super(LeaveOutClusterCV, self).__init__()
 
         # generate cluster object of given input
-        self.cluster = getattr(sklearn.cluster, cluster)(**kwargs)
+        try:
+            self.cluster = getattr(sklearn.cluster, cluster)(**kwargs)
+        except AttributeError:
+            self.cluster = getattr(sklearn_extra.cluster, cluster)(**kwargs)
+        
 
     # gets number of splits or clusters
     def get_n_splits(self, X, y=None, groups=None):
