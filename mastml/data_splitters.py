@@ -403,6 +403,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_subsplit = y.loc[~y.index.isin(leaveout_ind)]
                         X_leaveout = X.loc[X.index.isin(leaveout_ind)]
                         y_leaveout = y.loc[y.index.isin(leaveout_ind)]
+                        X_extra_subsplit = X_extra.loc[~X_extra.index.isin(leaveout_ind)]
 
                         dataset_stdev = np.std(y_subsplit)
 
@@ -425,7 +426,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   model_name,
                                                   selector,
                                                   preprocessor,
-                                                  X_extra,
+                                                  X_extra_subsplit,
                                                   groups,
                                                   splitouterpath,
                                                   hyperopt,
@@ -587,14 +588,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                         pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_excel(os.path.join(splitdir, 'recalibration_parameters_stdev_test.xlsx'))
 
                     # Make all leaveout data plots
-                    dataset_stdev = np.std(y)
                     if verbosity > 0:
                         make_plots(plots=plots,
                                    y_true=y_leaveout_all,
                                    y_pred=y_pred_leaveout_all,
                                    groups=groups,
                                    data_type='leaveout',
-                                   dataset_stdev=dataset_stdev,
+                                   dataset_stdev=np.std(y_leaveout_all),
                                    has_model_errors=has_model_errors,
                                    metrics=metrics,
                                    model=model,
@@ -655,8 +655,8 @@ class BaseSplitter(ms.BaseCrossValidator):
             y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residual
 
             if X_extra is not None:
-                X_extra_train = X_extra.loc[train_ind, :]
-                X_extra_test = X_extra.loc[test_ind, :]
+                X_extra_train = X_extra.loc[X_train.index.values, :]
+                X_extra_test = X_extra.loc[X_test.index.values, :]
             else:
                 X_extra_train = None
                 X_extra_test = None
