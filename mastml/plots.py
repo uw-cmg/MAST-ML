@@ -16,6 +16,9 @@ Line:
 
 """
 
+
+#TODO: fix how axes min/max made for RvE inlaid bar chart and for parity plots
+
 import warnings
 import math
 import os
@@ -146,19 +149,19 @@ class Scatter():
         fig, ax = make_fig_ax()
 
         # gather max and min
-        max1 = max(np.nanmax(y_true), np.nanmax(y_pred))
-        min1 = min(np.nanmin(y_true), np.nanmin(y_pred))
+        maxx = max(np.nanmax(y_true), np.nanmax(y_pred))
+        minn = min(np.nanmin(y_true), np.nanmin(y_pred))
 
-        maxx = max(y_true)
-        minn = min(y_true)
-        maxx = round(float(maxx), rounder(maxx - minn))
-        minn = round(float(minn), rounder(maxx - minn))
+        #maxx = max(y_true)
+        #minn = min(y_true)
+        #maxx = round(float(maxx), rounder(maxx - minn))
+        #minn = round(float(minn), rounder(maxx - minn))
         _set_tick_labels(ax, maxx, minn)
 
         ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
 
         # draw dashed horizontal line
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+        ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
         ax.set_xlabel('True ' + x_label, fontsize=14)
         ax.set_ylabel('Predicted ' + x_label, fontsize=14)
@@ -218,11 +221,11 @@ class Scatter():
         fig, ax = make_fig_ax()
 
         # gather max and min
-        max1 = max(np.nanmax(y_true_best), np.nanmax(y_pred_best), np.nanmax(y_true_worst), np.nanmax(y_pred_worst))
-        min1 = min(np.nanmin(y_true_best), np.nanmin(y_pred_best), np.nanmin(y_true_worst), np.nanmin(y_pred_worst))
+        maxx = max(np.nanmax(y_true_best), np.nanmax(y_pred_best), np.nanmax(y_true_worst), np.nanmax(y_pred_worst))
+        minn = min(np.nanmin(y_true_best), np.nanmin(y_pred_best), np.nanmin(y_true_worst), np.nanmin(y_pred_worst))
 
-        maxx = round(float(max1), rounder(max1 - min1))
-        minn = round(float(min1), rounder(max1 - min1))
+        #maxx = round(float(max1), rounder(max1 - min1))
+        #minn = round(float(min1), rounder(max1 - min1))
         _set_tick_labels(ax, maxx, minn)
 
         ax.scatter(y_true_best, y_pred_best, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7, label='Best split')
@@ -231,7 +234,7 @@ class Scatter():
         ax.legend(loc='best')
 
         # draw dashed horizontal line
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+        ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
         ax.set_xlabel('True ' + x_label, fontsize=14)
         ax.set_ylabel('Predicted ' + x_label, fontsize=14)
@@ -300,19 +303,19 @@ class Scatter():
         fig, ax = make_fig_ax(x_align=0.65)
 
         # gather max and min
-        max1 = max([max(y_true_unique), max(bests), max(worsts)])
-        min1 = min([min(y_true_unique), min(bests), min(worsts)])
+        maxx = max([max(y_true_unique), max(bests), max(worsts)])
+        minn = min([min(y_true_unique), min(bests), min(worsts)])
 
         # draw dashed horizontal line
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+        ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
         # set axis labels
         ax.set_xlabel('True '+x_label, fontsize=16)
         ax.set_ylabel('Predicted '+x_label, fontsize=16)
 
         # set tick labels
-        maxx = round(float(max1), rounder(max1-min1))
-        minn = round(float(min1), rounder(max1-min1))
+        #maxx = round(float(max1), rounder(max1-min1))
+        #minn = round(float(min1), rounder(max1-min1))
         _set_tick_labels(ax, maxx, minn)
 
         ax.scatter(y_true_unique, bests,  c='b',  alpha=0.7, label='best all points', edgecolor='darkblue', zorder=2, s=100)
@@ -369,18 +372,18 @@ class Scatter():
         fig, ax = make_fig_ax(x_align=x_align)
 
         # gather max and min
-        max1 = max(np.nanmax(df_avg.index.values.tolist()), np.nanmax(df_avg['all_y_pred']))
-        min1 = min(np.nanmin(df_avg.index.values.tolist()), np.nanmin(df_avg['all_y_pred']))
+        maxx = max(np.nanmax(df_avg.index.values.tolist()), np.nanmax(df_avg['all_y_pred']))
+        minn = min(np.nanmin(df_avg.index.values.tolist()), np.nanmin(df_avg['all_y_pred']))
 
         # draw dashed horizontal line
-        ax.plot([min1, max1], [min1, max1], 'k--', lw=2, zorder=1)
+        ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
 
         # set axis labels
         ax.set_xlabel('True ' + x_label, fontsize=16)
         ax.set_ylabel('Predicted ' + x_label, fontsize=16)
 
         # set tick labels
-        _set_tick_labels(ax, max1, min1)
+        _set_tick_labels(ax, maxx, minn)
 
         ax.errorbar(df_avg.index.values.tolist(), df_avg['all_y_pred'], yerr=df_std['all_y_pred'], fmt='o',
                     markerfacecolor='blue', markeredgecolor='black',
@@ -859,7 +862,7 @@ class Error():
         xmax = max(max(bin_values_copy) + 0.05, 1.6)
         ymax = max(1.3, max(rms_residual_values))
         ax.set_ylim(bottom=0, top=ymax)
-        axbarx.set_ylim(bottom=0, top=max(num_values_per_bin) + 50)
+        axbarx.set_ylim(bottom=0, top=round(max(num_values_per_bin) + 0.1*max(num_values_per_bin)))
         ax.set_xlim(left=0, right=xmax)
 
         ax.text(0.02, 0.9*ymax, 'R$^2$ = %3.2f ' % r2, fontdict={'fontsize': 10, 'color': 'k'})
@@ -983,7 +986,7 @@ class Error():
         xmax = max(max(bin_values_uncal) + 0.05, 1.6)
         ymax = max(1.3, max(rms_residual_values_uncal))
         ax.set_ylim(bottom=0, top=ymax)
-        axbarx.set_ylim(bottom=0, top=max(num_values_per_bin_uncal) + 50)
+        axbarx.set_ylim(bottom=0, top=round(max(num_values_per_bin_uncal) + 0.1*max(num_values_per_bin_uncal)))
         ax.set_xlim(left=0, right=xmax)
 
         ax.text(0.02, 0.9*ymax, 'R$^2$ = %3.2f ' % r2_uncal, fontdict={'fontsize': 8, 'color': 'gray'})
