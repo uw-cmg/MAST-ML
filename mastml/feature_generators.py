@@ -1139,13 +1139,9 @@ class OneHotElementEncoder(BaseGenerator):
     certain designated element
 
     Args:
-        composition_feature: (str), string denoting a chemical composition to generate elemental features from
+        composition_df: (pd.DataFrame or pd.Series), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
-        element: (str), string representing the name of an element
-
-        new_name: (str), the name of the new feature column to be generated
-
-        all_elments: (bool), whether to generate new features for all elements present from all compositions in the dataset.
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
     Methods:
         fit: pass through, needed to maintain scikit-learn class structure
@@ -1171,11 +1167,13 @@ class OneHotElementEncoder(BaseGenerator):
         return self
 
     def transform(self, X, y=None):
-        compositions = self.composition_df[self.composition_df.columns[0]]
+        if type(self.composition_df) == pd.core.frame.DataFrame:
+            compositions = self.composition_df[self.composition_df.columns[0]]
+        elif type(self.composition_df) == pd.core.series.Series:
+            compositions = self.composition_df
         X_trans = self._contains_all_elements(compositions=compositions)
         if self.remove_constant_columns is True:
             X_trans = DataframeUtilities().remove_constant_columns(dataframe=X_trans)
-        #X_trans = pd.concat([X, X_trans], axis=1)
         return X_trans, self.y
 
     def _contains_element(self, comp):
