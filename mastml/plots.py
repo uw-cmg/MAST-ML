@@ -16,9 +16,6 @@ Line:
 
 """
 
-
-#TODO: fix how axes min/max made for RvE inlaid bar chart and for parity plots
-
 import warnings
 import math
 import os
@@ -410,6 +407,10 @@ class Scatter():
                            'average predicted values': df_avg['all_y_pred'],
                            'error bar values': df_std['all_y_pred']})
         df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'))
+
+        df_stats = pd.DataFrame().from_dict(avg_stats)
+        df_stats.to_excel(os.path.join(savepath, str(data_type)+'_average_stdev_stats_summary.xlsx'), index=False)
+
         if show_figure == True:
             plt.show()
         else:
@@ -1247,95 +1248,137 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
     """
 
     if 'Histogram' in plots:
-        Histogram.plot_residuals_histogram(y_true=y_true,
+        try:
+            Histogram.plot_residuals_histogram(y_true=y_true,
+                                               y_pred=y_pred,
+                                               savepath=savepath,
+                                               file_name='residual_histogram_'+str(data_type),
+                                               show_figure=show_figure)
+        except:
+            print('Warning: unable to make Histogram.plot_residuals_histogram. Skipping...')
+    if 'Scatter' in plots:
+        try:
+            Scatter.plot_predicted_vs_true(y_true=y_true,
                                            y_pred=y_pred,
                                            savepath=savepath,
-                                           file_name='residual_histogram_'+str(data_type),
+                                           x_label='values',
+                                           data_type=data_type,
+                                           metrics_list=metrics,
                                            show_figure=show_figure)
-    if 'Scatter' in plots:
-        Scatter.plot_predicted_vs_true(y_true=y_true,
-                                       y_pred=y_pred,
-                                       savepath=savepath,
-                                       x_label='values',
-                                       data_type=data_type,
-                                       metrics_list=metrics,
-                                       show_figure=show_figure)
-        if splits_summary is True and data_type != 'leaveout':
-            Scatter.plot_best_worst_split(savepath=savepath,
-                                          data_type=data_type,
-                                          x_label='values',
-                                          metrics_list=metrics,
-                                          show_figure=show_figure)
-            # Commenting out for now as this plot can cause errors for certain datasets with many identical y_true vals
-            #Scatter.plot_best_worst_per_point(savepath=savepath,
-            #                                  data_type=data_type,
-            #                                  x_label='values',
-            #                                  metrics_list=metrics,
-            #                                  show_figure=show_figure)
-            Scatter.plot_predicted_vs_true_bars(savepath=savepath,
-                                                data_type=data_type,
-                                                x_label='values',
-                                                metrics_list=metrics,
-                                                show_figure=show_figure)
+        except:
+            print('Warning: unable to make Scatter.plot_predicted_vs_true plot. Skipping...')
+        if splits_summary is True:
+            if data_type != 'leaveout':
+                try:
+                    Scatter.plot_best_worst_split(savepath=savepath,
+                                                  data_type=data_type,
+                                                  x_label='values',
+                                                  metrics_list=metrics,
+                                                  show_figure=show_figure)
+                except:
+                    print('Warning: unable to make Scatter.plot_best_worst_split plot. Skipping...')
+                try:
+                    Scatter.plot_best_worst_per_point(savepath=savepath,
+                                                      data_type=data_type,
+                                                      x_label='values',
+                                                      metrics_list=metrics,
+                                                      show_figure=show_figure)
+                except:
+                    print('Warning: unable to make Scatter.plot_best_worst_per_point plot. Skipping...')
+            try:
+                Scatter.plot_predicted_vs_true_bars(savepath=savepath,
+                                                    data_type=data_type,
+                                                    x_label='values',
+                                                    metrics_list=metrics,
+                                                    show_figure=show_figure)
+            except:
+                print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
             if groups is not None:
-                Scatter.plot_metric_vs_group(savepath=savepath,
-                                             data_type=data_type,
-                                             show_figure=show_figure)
+                try:
+                    Scatter.plot_metric_vs_group(savepath=savepath,
+                                                 data_type=data_type,
+                                                 show_figure=show_figure)
+                except:
+                    print('Warning: unable to make Scatter.plot_metric_vs_group plot. Skipping...')
     if 'Error' in plots:
-        Error.plot_normalized_error(residuals=residuals,
-                                    savepath=savepath,
-                                    data_type=data_type,
-                                    model_errors=model_errors,
-                                    show_figure=show_figure)
-        Error.plot_cumulative_normalized_error(residuals=residuals,
-                                               savepath=savepath,
-                                               data_type=data_type,
-                                               model_errors=model_errors,
-                                               show_figure=show_figure)
+        try:
+            Error.plot_normalized_error(residuals=residuals,
+                                        savepath=savepath,
+                                        data_type=data_type,
+                                        model_errors=model_errors,
+                                        show_figure=show_figure)
+        except:
+            print('Warning: unable to make Error.plot_normalized_error plot. Skipping...')
+        try:
+            Error.plot_cumulative_normalized_error(residuals=residuals,
+                                                   savepath=savepath,
+                                                   data_type=data_type,
+                                                   model_errors=model_errors,
+                                                   show_figure=show_figure)
+        except:
+            print('Warning: unable to make Error.plot_cumulative_normalized_error plot. Skipping...')
         if has_model_errors is True:
-            Error.plot_rstat(savepath=savepath,
-                             data_type=data_type,
-                             model_errors=model_errors,
-                             residuals=residuals,
-                             show_figure=show_figure,
-                             is_calibrated=False)
-            Error.plot_real_vs_predicted_error(savepath=savepath,
-                                               model=model,
-                                               data_type=data_type,
-                                               model_errors=model_errors,
-                                               residuals=residuals,
-                                               dataset_stdev=dataset_stdev,
-                                               show_figure=show_figure,
-                                               is_calibrated=False)
-            if recalibrate_errors is True:
+            try:
                 Error.plot_rstat(savepath=savepath,
                                  data_type=data_type,
+                                 model_errors=model_errors,
                                  residuals=residuals,
-                                 model_errors=model_errors_cal,
                                  show_figure=show_figure,
-                                 is_calibrated=True)
-                Error.plot_rstat_uncal_cal_overlay(savepath=savepath,
-                                                   data_type=data_type,
-                                                   residuals=residuals,
-                                                   model_errors=model_errors,
-                                                   model_errors_cal=model_errors_cal,
-                                                   show_figure=False)
+                                 is_calibrated=False)
+            except:
+                print('Warning: unable to make Error.plot_rstat plot. Skipping...')
+            try:
                 Error.plot_real_vs_predicted_error(savepath=savepath,
                                                    model=model,
                                                    data_type=data_type,
+                                                   model_errors=model_errors,
                                                    residuals=residuals,
-                                                   model_errors=model_errors_cal,
                                                    dataset_stdev=dataset_stdev,
                                                    show_figure=show_figure,
-                                                   is_calibrated=True)
-                Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
-                                                                     model=model,
-                                                                     data_type=data_type,
-                                                                     model_errors=model_errors,
-                                                                     model_errors_cal=model_errors_cal,
-                                                                     residuals=residuals,
-                                                                     dataset_stdev=dataset_stdev,
-                                                                     show_figure=False)
+                                                   is_calibrated=False)
+            except:
+                print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
+            if recalibrate_errors is True:
+                try:
+                    Error.plot_rstat(savepath=savepath,
+                                     data_type=data_type,
+                                     residuals=residuals,
+                                     model_errors=model_errors_cal,
+                                     show_figure=show_figure,
+                                     is_calibrated=True)
+                except:
+                    print('Warning: unable to make Error.plot_rstat plot. Skipping...')
+                try:
+                    Error.plot_rstat_uncal_cal_overlay(savepath=savepath,
+                                                       data_type=data_type,
+                                                       residuals=residuals,
+                                                       model_errors=model_errors,
+                                                       model_errors_cal=model_errors_cal,
+                                                       show_figure=False)
+                except:
+                    print('Warning: unable to make Error.plot_rstat_uncal_cal_overlay plot. Skipping...')
+                try:
+                    Error.plot_real_vs_predicted_error(savepath=savepath,
+                                                       model=model,
+                                                       data_type=data_type,
+                                                       residuals=residuals,
+                                                       model_errors=model_errors_cal,
+                                                       dataset_stdev=dataset_stdev,
+                                                       show_figure=show_figure,
+                                                       is_calibrated=True)
+                except:
+                    print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
+                try:
+                    Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
+                                                                         model=model,
+                                                                         data_type=data_type,
+                                                                         model_errors=model_errors,
+                                                                         model_errors_cal=model_errors_cal,
+                                                                         residuals=residuals,
+                                                                         dataset_stdev=dataset_stdev,
+                                                                         show_figure=False)
+                except:
+                    print('Warning: unable to make Error.plot_real_vs_predicted_error_uncal_cal_overlay plot. Skipping...')
     return
 
 
