@@ -81,8 +81,8 @@ class Mastml():
         self._initialize_output()
         if self.mastml_metadata is None:
             self._initialize_metadata()
-        else:
-            self._update_metadata()
+        #else:
+        #    self._update_metadata()
         self._save_mastml_metadata()
 
     def _initialize_output(self):
@@ -104,9 +104,121 @@ class Mastml():
         self.mastml_metadata['savepath'] = self.savepath
         return
 
-    def _update_metadata(self):
+    def _update_metadata(self,
+                         outerdir,
+                         split_name,
+                         model=None,
+                         splitter=None,
+                         preprocessor=None,
+                         selector=None,
+                         hyperopt=None,
+                         train_stats=None,
+                         test_stats=None,
+                         leaveout_stats=None,
+                         X_train=None,
+                         X_test=None,
+                         X_leaveout=None,
+                         X_extra_train=None,
+                         X_extra_test=None,
+                         X_extra_leaveout=None,
+                         y_train=None,
+                         y_test=None,
+                         y_leaveout=None,
+                         y_pred_train=None,
+                         y_pred=None,
+                         y_pred_leaveout=None,
+                         residuals_train=None,
+                         residuals_test=None,
+                         residuals_leaveout=None,
+                         model_errors_train=None,
+                         model_errors_test=None,
+                         model_errors_leaveout=None,
+                         model_errors_train_cal=None,
+                         model_errors_test_cal=None,
+                         model_errors_leaveout_cal=None,
+                         dataset_stdev=None):
         # Update with new entry: (1) module, (2) class, (3) path executed, (4) paths to data used ???
-        pass
+        if outerdir not in self.mastml_metadata.keys():
+            self.mastml_metadata[outerdir] = OrderedDict()
+        if split_name not in self.mastml_metadata[outerdir].keys():
+            self.mastml_metadata[outerdir][split_name] = OrderedDict()
+        if split_name == 'split_outer_dir':
+            self.mastml_metadata[outerdir][split_name]['splitdir'] = outerdir
+        else:
+            self.mastml_metadata[outerdir][split_name]['splitdir'] = split_name
+        if model is not None:
+            try:
+                model_name = model.model.__class__.__name__
+            except:
+                model_name = model.__class__.__name__
+            self.mastml_metadata[outerdir][split_name]['model'] = model_name
+
+            if split_name == 'split_summary':
+                self.mastml_metadata[outerdir][split_name]['model_path'] = os.path.join(os.path.join(self.savepath, outerdir), model_name+'.pkl')
+            elif split_name == 'split_outer_summary':
+                self.mastml_metadata[outerdir][split_name]['model_path'] = os.path.join(outerdir, model_name+'.pkl')
+            else:
+                self.mastml_metadata[outerdir][split_name]['model_path'] = os.path.join(os.path.join(os.path.join(self.savepath, outerdir), split_name), model_name + '.pkl')
+        if splitter is not None:
+            self.mastml_metadata[outerdir][split_name]['splitter'] = splitter.splitter.__class__.__name__
+        if preprocessor is not None:
+            self.mastml_metadata[outerdir][split_name]['preprocessor'] = preprocessor.__class__.__name__
+        if selector is not None:
+            self.mastml_metadata[outerdir][split_name]['selector'] = selector.__class__.__name__
+        if hyperopt is not None:
+            self.mastml_metadata[outerdir][split_name]['hyperopt'] = hyperopt.__class__.__name__
+        if train_stats is not None:
+            self.mastml_metadata[outerdir][split_name]['train_stats'] = train_stats.to_json()
+        if test_stats is not None:
+            self.mastml_metadata[outerdir][split_name]['test_stats'] = test_stats.to_json() #to_dict
+        if leaveout_stats is not None:
+            self.mastml_metadata[outerdir][split_name]['leaveout_stats'] = leaveout_stats.to_json()
+        if X_train is not None:
+            self.mastml_metadata[outerdir][split_name]['train_columns'] = X_train.columns.tolist()
+            self.mastml_metadata[outerdir][split_name]['X_train'] = X_train.to_json()
+        if X_test is not None:
+            self.mastml_metadata[outerdir][split_name]['X_test'] = X_test.to_json()
+        if X_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['X_leaveout'] = X_leaveout.to_json()
+        if X_extra_train is not None:
+            self.mastml_metadata[outerdir][split_name]['X_extra_train'] = X_extra_train.to_json()
+        if X_extra_test is not None:
+            self.mastml_metadata[outerdir][split_name]['X_extra_test'] = X_extra_test.to_json()
+        if X_extra_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['X_extra_leaveout'] = X_extra_leaveout.to_json()
+        if y_train is not None:
+            self.mastml_metadata[outerdir][split_name]['y_train'] = y_train.to_json()
+        if y_test is not None:
+            self.mastml_metadata[outerdir][split_name]['y_test'] = y_test.to_json()
+        if y_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['y_leaveout'] = y_leaveout.to_json()
+        if y_pred_train is not None:
+            self.mastml_metadata[outerdir][split_name]['y_pred_train'] = y_pred_train.to_json()
+        if y_pred is not None:
+            self.mastml_metadata[outerdir][split_name]['y_pred'] = y_pred.to_json()
+        if y_pred_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['y_pred_leaveout'] = y_pred_leaveout.to_json()
+        if residuals_train is not None:
+            self.mastml_metadata[outerdir][split_name]['residuals_train'] = residuals_train.to_json()
+        if residuals_test is not None:
+            self.mastml_metadata[outerdir][split_name]['residuals_test'] = residuals_test.to_json()
+        if residuals_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['residuals_leaveout'] = residuals_leaveout.to_json()
+        if model_errors_train is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_train'] = model_errors_train.to_json()
+        if model_errors_test is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_test'] = model_errors_test.to_json()
+        if model_errors_leaveout is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout'] = model_errors_leaveout.to_json()
+        if model_errors_train_cal is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_train_cal'] = model_errors_train_cal.to_json()
+        if model_errors_test_cal is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_test_cal'] = model_errors_test_cal.to_json()
+        if model_errors_leaveout_cal is not None:
+            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout_cal'] = model_errors_leaveout_cal.to_json()
+        if dataset_stdev is not None:
+            self.mastml_metadata[outerdir][split_name]['dataset_stdev'] = dataset_stdev
+        return
 
     def _save_mastml_metadata(self):
         with open(os.path.join(self.savepath, 'mastml_metadata.json'), 'w') as f:
