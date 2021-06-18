@@ -28,11 +28,15 @@ MASTMLFeatureSelector:
     Allows the user to specify a particular model and cross validation routine for selecting features, as well as the
     ability to forcibly select certain features on the outset.
 
+ShapFeatureSelector:
+    Class to select features based on how much the features contributes to the model in predicting the target data.
+
 """
 
 import copy
 import os
 import warnings
+import shap
 from datetime import datetime
 
 import numpy as np
@@ -121,6 +125,10 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         if self.__class__.__name__ == 'MASTMLFeatureSelector':
             self.mastml_forward_selection_df.to_excel(
                 os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        if self.__class__.__name__ == 'ShapFeatureSelector':
+            self.feature_imp_shap.to_excel(
+                os.path.join(savepath, 'ShapFeatureSelector_selected_features.xlsx')
+            )
         X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
 
@@ -237,8 +245,7 @@ class EnsembleModelFeatureSelector(BaseSelector):
             Returns:
                 dataframe: (dataframe), dataframe of selected X features
 
-        create_dummy_variable: Inserts n_dummy_variable of dummy variables with the same standard deviation and mean of
-                               of the whole dataframe
+        create_dummy_variable: Inserts n_dummy_variable of dummy variables with the same standard deviation and mean of the whole dataframe
 
             Args:
                 X: (dataframe), dataframe of X features
@@ -246,8 +253,7 @@ class EnsembleModelFeatureSelector(BaseSelector):
             Returns:
                 X: dataframe that includes dummy variables and scaled with standard scaler
 
-        check_dummy_ranking: If dummy variable is used, prints warning when number of features selected
-                             is not optimal (numbers of features selected ranks below the dummy variable)
+        check_dummy_ranking: If dummy variable is used, prints warning when number of features selected is not optimal (numbers of features selected ranks below the dummy variable)
 
             Args:
                 feature_importances_sorted: list of features sorted based on their importances
@@ -688,3 +694,56 @@ class MASTMLFeatureSelector(BaseSelector):
         # Return dataframe containing only selected features
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
+
+class ShapFeatureSelector(BaseSelector):
+    """
+        Class custom-written for MAST-ML to conduct selection of features with SHAP
+
+        Args:
+            model: (mastml.models object), a MAST-ML compatable model
+
+            n_features_to_select: (int), the number of features to select
+
+        Methods:
+            fit: performs feature selection
+                Args:
+                    X: (dataframe), dataframe of X features
+
+                    y: (dataframe), dataframe of y data
+
+                Returns:
+                    None
+
+            transform: performs the transform to generate output of only selected features
+                Args:
+                    X: (dataframe), dataframe of X features
+
+                Returns:
+                    dataframe: (dataframe), dataframe of selected X features
+        """
+
+    def __init__(self, model, n_features_to_select):
+        super(ShapFeatureSelector, self).__init__()
+        self.model = model
+        self.n_features_to_select = n_features_to_select
+
+    def fit(self, X, y):
+        Xcol = X.columns.tolist()
+        self.model = self.model.fit(X,y)
+        explainer = shap.Explainer(self.model)
+        shap_values = explainer(X)
+
+        feature_order = np.argsort(np.sum(np.abs(shap_values.values), axis=0))
+        feature_order_reversed = [k for k in reversed(feature_order)]
+        self.feature_imp_shap = []
+        for i in feature_order_reversed:
+            self.feature_imp_shap.append(Xcol[i])
+        self.selected_features = self.feature_imp_shap[:self.n_features_to_select]
+        self.feature_imp_shap = pd.DataFrame(self.feature_imp_shap)
+
+    def transform(self, X):
+        X_select = X[self.selected_features]
+        return X_select
+
+
+
