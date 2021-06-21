@@ -1,17 +1,16 @@
 '''
 This module contains baseline test for models
 '''
-from mastml.datasets import LocalDatasets
-from mastml.models import SklearnModel, EnsembleModel
-from mastml.preprocessing import SklearnPreprocessor
-from mastml.data_splitters import SklearnDataSplitter, NoSplit, LeaveOutPercent
-from mastml.metrics import Metrics
-import mastml
 import os
-import pandas as pd
-import numpy as np
-data_path = os.path.join(mastml.__path__[0], 'data')
 
+import numpy as np
+import pandas as pd
+import scipy as sp
+import mastml
+from mastml.data_splitters import SklearnDataSplitter
+from mastml.metrics import Metrics
+
+data_path = os.path.join(mastml.__path__[0], 'data')
 
 
 class Baseline_tests():
@@ -28,7 +27,8 @@ class Baseline_tests():
 
 
     '''
-    def test_mean(self, X,y, model, metrics =["mean_absolute_error"]):
+
+    def test_mean(self, X, y, model, metrics=["mean_absolute_error"]):
         splitter = SklearnDataSplitter(splitter='RepeatedKFold', n_repeats=1, n_splits=5)
         X_splits, y_splits, train_inds, test_inds = splitter.split_asframe(X, y)
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
@@ -49,15 +49,55 @@ class Baseline_tests():
 
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
 
-        print("Real Score" , real_score)
-        print("Naive Score" , naive_score)
+        for (k, v), (k2, v2) in zip(real_score.items(), naive_score.items()):
+            print("Real " + k + ":", v, "vs", v2, ":Fake", k2)
+
         return
 
-    def test_permuted(self):
+    def test_permuted(self, X, y, model, metrics=["mean_absolute_error"]):
+        splitter = SklearnDataSplitter(splitter='RepeatedKFold', n_repeats=1, n_splits=5)
+        X_splits, y_splits, train_inds, test_inds = splitter.split_asframe(X, y)
+        for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
+            X_train = Xs[0]
+            X_test = Xs[1]
+            y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
+            y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')
+
+        # Shuffling the y-data values to make it so that the X features do not correspond to the correct y data.
+        fake_test = y_test.sample(frac=1)
+        y_predict = model.predict(X_test)
+
+        real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
+
+        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
+
+        for (k, v), (k2, v2) in zip(real_score.items(), naive_score.items()):
+            print("Real " + k + ":", v, "vs", v2, " :Fake", k2)
         return
 
-    def test_all(self):
+    def test_nearest_neighbour(self, X, y , model, metrics = ["mean_absolute_error"]):
+        splitter = SklearnDataSplitter(splitter='RepeatedKFold', n_repeats=1, n_splits=5)
+        X_splits, y_splits, train_inds, test_inds = splitter.split_asframe(X, y)
+        for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
+            X_train = Xs[0]
+            X_test = Xs[1]
+            y_train = pd.Series(np.array(ys[0]).ravel(), name='y_train')
+            y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')
+
+        # Use the nearest neighbour datapoint's y_test instead of the actual y_test
+        Xdatas = sp.spatial.cKDTree(X_train, leafsize=100)
+        XresultDistance, XresultCoordinate = Xdatas.query(X_test)
+        fake_test = []
+        for i in XresultCoordinate:
+            fake_test.append(y_train[i])
+        fake_test = pd.DataFrame(fake_test)
+        y_predict = model.predict(X_test)
+
+        real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
+
+        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
+
+        for (k,v), (k2,v2) in zip(real_score.items(), naive_score.items()):
+            print("Real " + k + ":", v, "vs", v2, " :Fake", k2)
+
         return
-
-
-
