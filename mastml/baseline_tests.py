@@ -25,6 +25,21 @@ class Baseline_tests():
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
 
 
+        test_permuted: Compares the score of the model with a permuted test value
+            Args:
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+                metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
+        test_mean: Compares the score of the model with the test value of the nearest neighbour
+            Args:
+                X: (dataframe), dataframe of X features
+
+                y: (dataframe), dataframe of y data
+
+                metrics: (list), list of metric names to evaluate true vs. pred data in each split
 
     '''
 
@@ -50,8 +65,9 @@ class Baseline_tests():
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
 
         for (k, v), (k2, v2) in zip(real_score.items(), naive_score.items()):
-            print("Real " + k + ":", v, "vs", v2, ":Fake", k2)
-
+            print(k, "score:")
+            print("Real -", v)
+            print("Fake -", v2, "\n")
         return
 
     def test_permuted(self, X, y, model, metrics=["mean_absolute_error"]):
@@ -72,7 +88,9 @@ class Baseline_tests():
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
 
         for (k, v), (k2, v2) in zip(real_score.items(), naive_score.items()):
-            print("Real " + k + ":", v, "vs", v2, " :Fake", k2)
+            print(k, "score:")
+            print("Real -", v)
+            print("Fake -", v2, "\n")
         return
 
     def test_nearest_neighbour(self, X, y , model, metrics = ["mean_absolute_error"]):
@@ -98,6 +116,7 @@ class Baseline_tests():
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
 
         for (k,v), (k2,v2) in zip(real_score.items(), naive_score.items()):
-            print("Real " + k + ":", v, "vs", v2, " :Fake", k2)
-
+            print(k , "score:")
+            print("Real -", v)
+            print("Fake -", v2, "\n")
         return
