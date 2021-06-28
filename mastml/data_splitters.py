@@ -855,8 +855,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         df_stats_train = pd.read_excel(os.path.join(splitdir, 'train_average_stdev_stats_summary.xlsx'))
 
         # Update the MASTML metadata file
+        outerdir = splitdir.split('/')[-1]
         if mastml is not None:
-            outerdir = splitdir.split('/')[-1]
             if 'split_outer' in outerdir:
                 # For nested CV or left out data runs with outer and inner splits, need the model dir one level up
                 outerdir = os.path.join(splitdir.split('/')[-2], splitdir.split('/')[-1])
