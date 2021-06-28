@@ -34,6 +34,11 @@ LeaveOutTwinCV:
     distance metric on the provided features, and flags twins as those data points within some provided distance threshold
     in the feature space.
 
+LeaveOutClusterCV:
+    Method to use a clustering algorithm to pre-cluster data into groups. Then, these different groups are used as each
+    left-out data set. Basically functions as a leave out group test where the groups are automatically obtained from
+    a clustering algorithm.
+
 Bootstrap:
     Method to perform bootstrap resampling, i.e. random leave-out with replacement.
 
@@ -66,6 +71,7 @@ except:
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
+import sklearn_extra.cluster
 
 from mastml.plots import make_plots
 from mastml.feature_selectors import NoSelect
@@ -1560,6 +1566,109 @@ class LeaveOutTwinCV(BaseSplitter):
         splits.append([twinIdx, origIdx])
         return splits
 
+
+class LeaveOutClusterCV(BaseSplitter):
+    """
+    Class to generate train/test split using clustering.
+
+    Args:
+        cluster: clustering method from sklearn.cluster used to generate train/test split
+
+        kwargs: takes in any other key argument for optional cluster parameters
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform across all splitters
+            Args:
+                X: (numpy array), array of X features
+
+                y: (numpy array), array of y data
+
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), number of splits
+
+        split: method to perform split into train indices and test indices
+            Args:
+                X: (numpy array), array of X features
+
+                y: (numpy array), array of y data
+
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+        labels: method that returns cluster labels of X features
+            Args:
+                    X: (numpy array), array of X features
+
+                    y: (numpy array), array of y data
+
+                    groups: (numpy array), array of group labels
+
+                Returns:
+                    (numpy array), array of cluster labels
+    """
+
+    def __init__(self, cluster, **kwargs):
+        super(LeaveOutClusterCV, self).__init__()
+
+        # generate cluster object of given input
+        try:
+            self.cluster = getattr(sklearn.cluster, cluster)(**kwargs)
+        except AttributeError:
+            self.cluster = getattr(sklearn_extra.cluster, cluster)(**kwargs)
+
+    # gets number of splits or clusters
+    def get_n_splits(self, X, y=None, groups=None):
+
+        return len(np.unique(self.labels(X)))
+
+    # splits data into train and test based on clusters
+    def split(self, X, y=None, groups=None):
+
+        # trains cluster object
+        fit_cluster = self.cluster.fit(X)
+
+        # checks if cluster object has either labels_ or row_labels_
+        if hasattr(fit_cluster, 'labels_'):
+            labels = fit_cluster.labels_
+
+        elif hasattr(fit_cluster, 'row_labels_'):
+            labels = fit_cluster.row_labels_
+
+        # set up split list to return
+        trains_tests = list()
+
+        # iterate over unique labels
+        for i in np.unique(labels):
+            # add X indices not in cluster to train
+            train = np.where(labels != i)
+
+            # add X indices in cluster to test
+            test = np.where(labels == i)
+
+            # append set of train_test to split
+            trains_tests.append([train, test])
+
+        return trains_tests
+
+    # returns cluster labels
+    def labels(self, X, y=None, groups=None):
+
+        # trains cluster
+        fit_cluster = self.cluster.fit(X)
+
+        # checks if cluster object has either labels_ or row_labels_
+        if hasattr(fit_cluster, 'labels_'):
+            labels = fit_cluster.labels_
+
+        elif hasattr(fit_cluster, 'row_labels_'):
+            labels = fit_cluster.row_labels_
+
+        # return labels
+        return labels
 
 class Bootstrap(BaseSplitter):
     """

@@ -47,6 +47,7 @@ setup(
         "pandas",
         "pymatgen==2021.3.9",
         "scikit-learn>=0.24.1",
+        "scikit-learn-extra",
         "scikit-optimize",
         "scipy",
         "sphinx-automodapi",
