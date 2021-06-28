@@ -5,6 +5,10 @@ BaseGenerator:
     Base class to provide MAST-ML type functionality to all feature generators. All other feature generator classes
     should inherit from this base class
 
+ElementalFractionGenerator:
+    Class written to encode element fractions in materials compositions as full 118-element vector per material, where
+    each element in the vector represents an element on the periodic table.
+
 ElementalFeatureGenerator:
     Class written for MAST-ML to generate features for material compositions based on properties of the elements
     comprising the composition. A number of mathematically derived variants are included, like arithmetic average,
@@ -1034,6 +1038,78 @@ class ElementalFeatureGenerator(BaseGenerator):
                 element_list.append(k)
 
         return element_list, atoms_per_formula_unit
+
+
+class ElementalFractionGenerator(BaseGenerator):
+    """
+    Class that is used to create 86-element vector of element fractions from material composition strings
+
+    Args:
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
+
+    Methods:
+        fit: pass through, copies input columns as pre-generated features
+            Args:
+                X: (pd.DataFrame), input dataframe containing X data
+
+                y: (pd.Series), series containing y data
+
+        transform: generate the elemental fraction vector for each composition from composition strings
+            Args:
+                None.
+
+            Returns:
+                X: (dataframe), output dataframe containing generated features
+
+                y: (series), output y data as series
+    """
+
+    def __init__(self, composition_df, remove_constant_columns=False):
+        super(BaseGenerator, self).__init__()
+        self.composition_df = composition_df
+        if type(self.composition_df) == pd.Series:
+            self.composition_df = pd.DataFrame(self.composition_df)
+        self.remove_constant_columns = remove_constant_columns
+
+    def fit(self, X=None, y=None):
+        self.y = y
+        return self
+
+    def transform(self, X=None):
+
+        df = self.generate_elementfraction_features()
+
+        # delete missing values, generation makes a lot of garbage.
+        df = DataframeUtilities().clean_dataframe(df)
+        df = df.select_dtypes(['number']).dropna(axis=1)
+
+        if self.remove_constant_columns is True:
+            df = DataframeUtilities().remove_constant_columns(dataframe=df)
+
+        return df, self.y
+
+    def generate_elementfraction_features(self):
+        el_frac_list = list()
+        compositions_list = self.composition_df[self.composition_df.columns[0]].tolist()
+        for comp_str in compositions_list:
+            # As of early 2021, there are 118 elements, though only ~80 of them can form stable non-radioactive chemical compounds.
+            el_frac_onehot = np.zeros((118,))
+            comp = Composition(comp_str)
+            elements = comp.elements
+            for el in elements:
+                el_frac_onehot[el.number-1] = comp.get_atomic_fraction(el)
+            el_frac_list.append(el_frac_onehot)
+        element_names = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',
+            'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
+            'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs',
+            'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta',
+            'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
+            'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt',
+            'Ds', 'Rg', 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
+        df = pd.DataFrame(el_frac_list, columns=element_names)
+        return df
 
 
 class PolynomialFeatureGenerator(BaseGenerator):
