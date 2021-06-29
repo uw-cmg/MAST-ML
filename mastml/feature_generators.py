@@ -79,7 +79,10 @@ import mastml
 try:
     MAGPIE_DATA_PATH = os.path.join(mastml.__path__[0], 'magpie')
 except:
-    print('the path to the magpie data files needs to be defined to perform elemental property-based feature generation')
+    try:
+        MAGPIE_DATA_PATH = os.path.join(mastml.__path__._path[0], 'magpie')
+    except:
+        print('failed to define the magpie data files path, the path to the magpie data files needs to be defined to perform elemental property-based feature generation')
 
 
 class BaseGenerator(BaseEstimator, TransformerMixin):
