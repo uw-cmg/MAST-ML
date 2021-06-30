@@ -778,7 +778,7 @@ class Error():
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
                                      show_figure=False, is_calibrated=False, well_sampled_fraction=0.025):
 
-        bin_values, rms_residual_values, num_values_per_bin, number_of_bins = ErrorUtils()._parse_error_data(model_errors=model_errors,
+        bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
                                                                                                              dataset_stdev=dataset_stdev)
 
@@ -828,8 +828,21 @@ class Error():
         bin_values_poorlysampled = bin_values_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
         num_values_per_bin_poorlysampled = num_values_per_bin_copy[np.where(num_values_per_bin_copy <= well_sampled_number)]
 
+        yerr = list()
+        for i, j, k in zip(var_sq_residual_values, num_values_per_bin, rms_residual_values):
+            if j > 1:
+                yerr.append(np.sqrt(i) / (2 * np.sqrt(j) * k))
+            else:
+                yerr.append(1)
+        yerr = np.array(yerr)
+
+        yerr_wellsampled = yerr[np.where(num_values_per_bin > well_sampled_number)[0]]
+        yerr_poorlysampled = yerr[np.where(num_values_per_bin <= well_sampled_number)[0]]
+
         ax.scatter(bin_values_wellsampled, rms_residual_values_wellsampled, s=80, color='blue', alpha=0.7)
-        ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=80, edgecolor='blue', alpha=0.7)
+        ax.scatter(bin_values_poorlysampled, rms_residual_values_poorlysampled, s=80, color='blue', alpha=0.7)
+        ax.errorbar(bin_values_wellsampled, rms_residual_values_wellsampled, yerr=yerr_wellsampled, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
+        ax.errorbar(bin_values_poorlysampled, rms_residual_values_poorlysampled, yerr=yerr_poorlysampled, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
 
         ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
@@ -894,11 +907,11 @@ class Error():
                                                        residuals, dataset_stdev, show_figure=False,
                                                        well_sampled_fraction=0.025):
 
-        bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
+        bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                                      residuals=residuals,
                                                                                                                                      dataset_stdev=dataset_stdev)
 
-        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
+        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal, ms_residual_values_cal, var_sq_residual_values_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
                                                                                                                              residuals=residuals,
                                                                                                                              dataset_stdev=dataset_stdev)
 
@@ -935,7 +948,13 @@ class Error():
         bin_values_poorlysampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
         num_values_per_bin_poorlysampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
 
-        well_sampled_number_cal = round(well_sampled_fraction*np.sum(num_values_per_bin_cal))
+        yerr_uncal = np.sqrt(var_sq_residual_values_uncal) / (2 * np.sqrt(num_values_per_bin_uncal) * rms_residual_values_uncal)
+        yerr_cal = np.sqrt(var_sq_residual_values_cal) / (2 * np.sqrt(num_values_per_bin_cal) * rms_residual_values_cal)
+
+        yerr_wellsampled_uncal = yerr_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
+        yerr_poorlysampled_uncal = yerr_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
+
+        well_sampled_number_cal = round(well_sampled_fraction * np.sum(num_values_per_bin_cal))
         rms_residual_values_wellsampled_cal = rms_residual_values_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
         bin_values_wellsampled_cal = bin_values_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)]
         num_values_per_bin_wellsampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
@@ -943,11 +962,18 @@ class Error():
         bin_values_poorlysampled_cal = bin_values_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
         num_values_per_bin_poorlysampled_cal = num_values_per_bin_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
 
+        yerr_wellsampled_cal = yerr_cal[np.where(num_values_per_bin_cal > well_sampled_number_cal)[0]]
+        yerr_poorlysampled_cal = yerr_cal[np.where(num_values_per_bin_cal <= well_sampled_number_cal)[0]]
+
         ax.scatter(bin_values_wellsampled_uncal, rms_residual_values_wellsampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.7, label='uncalibrated')
-        ax.scatter(bin_values_poorlysampled_uncal, rms_residual_values_poorlysampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.3)
+        ax.scatter(bin_values_poorlysampled_uncal, rms_residual_values_poorlysampled_uncal, s=80, color='gray', edgecolor='gray', alpha=0.7)
+        ax.errorbar(bin_values_wellsampled_uncal, rms_residual_values_wellsampled_uncal, yerr=yerr_wellsampled_uncal, ecolor='gray', capsize=2, linewidth=0, elinewidth=1)
+        ax.errorbar(bin_values_poorlysampled_uncal, rms_residual_values_poorlysampled_uncal, yerr=yerr_poorlysampled_uncal, ecolor='gray', capsize=2, linewidth=0, elinewidth=1)
 
         ax.scatter(bin_values_wellsampled_cal, rms_residual_values_wellsampled_cal, s=80, color='blue', edgecolor='blue', alpha=0.7, label='calibrated')
-        ax.scatter(bin_values_poorlysampled_cal, rms_residual_values_poorlysampled_cal, s=80, color='blue', edgecolor='blue', alpha=0.3)
+        ax.scatter(bin_values_poorlysampled_cal, rms_residual_values_poorlysampled_cal, s=80, color='blue', edgecolor='blue', alpha=0.7)
+        ax.errorbar(bin_values_wellsampled_cal, rms_residual_values_wellsampled_cal, yerr=yerr_wellsampled_cal, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
+        ax.errorbar(bin_values_poorlysampled_cal, rms_residual_values_poorlysampled_cal, yerr=yerr_poorlysampled_cal, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
 
         ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)

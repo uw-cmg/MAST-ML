@@ -200,8 +200,9 @@ class ErrorUtils():
                 weights.append(np.count_nonzero(digitized == i))
 
         # Calculate RMS of the absolute residuals
-        RMS_abs_res = [np.sqrt((abs_res[digitized == bins_present[i]] ** 2).mean()) for i in
-                       range(0, len(bins_present))]
+        RMS_abs_res = [np.sqrt((abs_res[digitized == bins_present[i]] ** 2).mean()) for i in range(0, len(bins_present))]
+        MS_abs_res = [(abs_res[digitized == bins_present[i]] ** 2).mean() for i in range(0, len(bins_present))]
+        Var_squarederr_res = [np.std((abs_res[digitized == bins_present[i]] ** 2)) ** 2 for i in range(0, len(bins_present))]
 
         # Set the x-values to the midpoint of each bin
         bin_width = bins[1] - bins[0]
@@ -213,9 +214,11 @@ class ErrorUtils():
         #TODO this is temporary
         bin_values = np.array(binned_model_errors)
         rms_residual_values = np.array(RMS_abs_res)
+        ms_residual_values = np.array(MS_abs_res)
+        var_sq_residual_values = np.array(Var_squarederr_res)
         num_values_per_bin = np.array(weights)
 
-        return bin_values, rms_residual_values, num_values_per_bin, number_of_bins
+        return bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
 
     @classmethod
     def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners', remove_outlier_learners=False):
