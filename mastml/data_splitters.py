@@ -1116,13 +1116,23 @@ class BaseSplitter(ms.BaseCrossValidator):
         for splitdir in splitdirs:
             stats_files_dict[os.path.join(savepath, splitdir)] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
 
-        # Find best/worst splits based on RMSE value
-        #TODO: this needs to be more general to work with other metrics
-        rmse_best = 10**20
+        # Find best/worst splits based on specified best run metric
+        all_metrics = Metrics(metrics_list=[best_run_metric])._metric_zoo()
+        greater_is_better = all_metrics[best_run_metric][0]
+
+        if greater_is_better == False:
+            metric_best = 10**20
+        else:
+            metric_best = 0
         for split, stats_dict in stats_files_dict.items():
-            if stats_dict[best_run_metric] < rmse_best:
-                best_split = split
-                rmse_best = stats_dict[best_run_metric]
+            if greater_is_better == False:
+                if stats_dict[best_run_metric] < metric_best:
+                    best_split = split
+                    metric_best = stats_dict[best_run_metric]
+            else:
+                if stats_dict[best_run_metric] > metric_best:
+                    best_split = split
+                    metric_best = stats_dict[best_run_metric]
 
         # Get the preprocessor, model, and features for the best split
         best_split_dict = dict()
@@ -1669,6 +1679,7 @@ class LeaveOutClusterCV(BaseSplitter):
 
         # return labels
         return labels
+
 
 class Bootstrap(BaseSplitter):
     """
