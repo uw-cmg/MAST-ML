@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.models import SklearnModel
 from mastml.data_splitters import NoSplit, SklearnDataSplitter, LeaveCloseCompositionsOut, LeaveOutPercent, \
-    Bootstrap, JustEachGroup, LeaveOutTwinCV
+    Bootstrap, JustEachGroup, LeaveOutTwinCV, LeaveOutClusterCV
 
 class TestSplitters(unittest.TestCase):
 
@@ -82,6 +82,17 @@ class TestSplitters(unittest.TestCase):
         splitter = JustEachGroup()
         model = SklearnModel(model='LinearRegression')
         splitter.evaluate(X=X, y=y, models=[model], groups=X['groups'], savepath=os.getcwd(), plots=list())
+        for d in splitter.splitdirs:
+            self.assertTrue(os.path.exists(d))
+            shutil.rmtree(d)
+        return
+
+    def test_leaveoutcluster(self):
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(5, 10)))
+        y = pd.Series(np.random.uniform(low=0.0, high=100, size=(5,)))
+        splitter = LeaveOutClusterCV(cluster='KMeans', n_clusters=5)
+        model = SklearnModel(model='LinearRegression')
+        splitter.evaluate(X=X, y=y, models=[model], savepath=os.getcwd(), plots=list())
         for d in splitter.splitdirs:
             self.assertTrue(os.path.exists(d))
             shutil.rmtree(d)

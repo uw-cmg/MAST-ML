@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath('../../../'))
 
 from mastml.datasets import SklearnDatasets, LocalDatasets, FoundryDatasets, MatminerDatasets
 import mastml
-mastml_path = mastml.__path__[0]
+mastml_path = mastml.__path__._path[0]
 
 class TestDatasets(unittest.TestCase):
 
