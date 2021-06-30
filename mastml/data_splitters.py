@@ -1149,6 +1149,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         best_split_dict['features'] = os.path.join(best_split, 'selected_features.txt')
         best_split_dict['X_train'] = os.path.join(best_split, 'X_train.xlsx')
 
+        # Remove the saved models and preprocessors from other split dirs that are not the best (save storage space)
+        for splitdir in splitdirs:
+            if os.path.join(savepath, splitdir) != best_split:
+                os.remove(os.path.join(os.path.join(savepath, splitdir), model_name))
+                os.remove(os.path.join(os.path.join(savepath, splitdir), preprocessor_name))
+
         return best_split_dict
 
     def _get_average_recalibration_params(self, savepath, data_type):
