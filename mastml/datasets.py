@@ -131,6 +131,10 @@ class LocalDatasets():
 
         testdata_columns: (list), list of strings containing column names denoting sets of left-out data. Entries should be marked with a 0 (not left out) or 1 (left out)
 
+        average_duplicates: (bool), whether to average duplicate entries from the imported data.
+
+        average_duplicates_col: (str), string denoting column name to perform averaging of duplicate entries. Needs to be specified if average_duplicates is True.
+
         as_frame: (bool), whether to return data as pandas dataframe (otherwise will be numpy array)
 
     Methods:
@@ -158,13 +162,15 @@ class LocalDatasets():
     """
 
     def __init__(self, file_path, feature_names=None, target=None, extra_columns=None, group_column=None,
-                 testdata_columns=None, as_frame=False):
+                 testdata_columns=None, average_duplicates=False, average_duplicates_col=None, as_frame=False):
         self.file_path = file_path
         self.feature_names = feature_names
         self.target = target
         self.extra_columns = extra_columns
         self.group_column = group_column
         self.testdata_columns = testdata_columns
+        self.average_duplicates = average_duplicates
+        self.average_duplicates_col = average_duplicates_col
         self.as_frame = as_frame
         if self.extra_columns is None:
             self.extra_columns = list()
@@ -209,6 +215,13 @@ class LocalDatasets():
 
         # Import data from file
         df = self._import()
+
+        # Average duplicate entries, if specified
+        if self.average_duplicates == True:
+            if self.average_duplicates_col is not None:
+                df = df.groupby(df[self.average_duplicates_col]).mean().reset_index()
+            else:
+                print('Error: you need to specify average_duplicates_col if average_duplicates is True')
 
         # Assign default values to input_features and target_feature
         self._get_features(df=df)
