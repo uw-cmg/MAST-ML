@@ -408,8 +408,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_subsplit = y.loc[~y.index.isin(leaveout_ind)]
                         X_leaveout = X.loc[X.index.isin(leaveout_ind)]
                         y_leaveout = y.loc[y.index.isin(leaveout_ind)]
-                        X_extra_subsplit = X_extra.loc[~X_extra.index.isin(leaveout_ind)]
-                        X_extra_leaveout = X_extra.loc[X_extra.index.isin(leaveout_ind)]
+                        if X_extra is not None:
+                            X_extra_subsplit = X_extra.loc[~X_extra.index.isin(leaveout_ind)]
+                            X_extra_leaveout = X_extra.loc[X_extra.index.isin(leaveout_ind)]
+                        else:
+                            X_extra_subsplit = None
+                            X_extra_leaveout = None
 
                         dataset_stdev = np.std(y_subsplit)
 
@@ -577,15 +581,17 @@ class BaseSplitter(ms.BaseCrossValidator):
                     X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir)
                     X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir)
                     X_leaveout_all = self._collect_df_data(filename='X_leaveout', savepath=splitdir)
-                    X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir)
-                    X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir)
-                    X_extra_leaveout_all = self._collect_df_data(filename='X_extra_leaveout', savepath=splitdir)
+                    if X_extra is not None:
+                        X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir)
+                        X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir)
+                        X_extra_leaveout_all = self._collect_df_data(filename='X_extra_leaveout', savepath=splitdir)
                     self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist())
                     self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist())
                     self._save_split_data(df=X_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_leaveout_all.columns.tolist())
-                    self._save_split_data(df=X_extra_train_all, filename='X_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist())
-                    self._save_split_data(df=X_extra_test_all, filename='X_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist())
-                    self._save_split_data(df=X_extra_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist())
+                    if X_extra is not None:
+                        self._save_split_data(df=X_extra_train_all, filename='X_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist())
+                        self._save_split_data(df=X_extra_test_all, filename='X_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist())
+                        self._save_split_data(df=X_extra_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist())
                     self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test')
                     self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir,  columns='y_train')
                     self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred')
@@ -658,9 +664,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                 X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
                                                 X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
                                                 X_leaveout=pd.DataFrame(np.array(X_leaveout_all), columns=X_leaveout_all.columns.tolist()),
-                                                X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()),
-                                                X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()),
-                                                X_extra_leaveout=pd.DataFrame(np.array(X_extra_leaveout_all), columns=X_extra_leaveout_all.columns.tolist()),
+                                                X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra else None,
+                                                X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra else None,
+                                                X_extra_leaveout=pd.DataFrame(np.array(X_extra_leaveout_all), columns=X_extra_leaveout_all.columns.tolist()) if X_extra else None,
                                                 y_train=y_train_all,
                                                 y_test=y_test_all,
                                                 y_leaveout=y_leaveout_all,
@@ -760,14 +766,16 @@ class BaseSplitter(ms.BaseCrossValidator):
         residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir)
         X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir)
         X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir)
-        X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir)
-        X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir)
+        if X_extra is not None:
+            X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir)
+            X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir)
 
         # Save the data gathered over all the splits
         self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist())
         self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist())
-        self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist())
-        self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist())
+        if X_extra is not None:
+            self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist())
+            self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist())
         self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test')
         self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train')
         self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred')
@@ -851,8 +859,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                        model_errors_cal=model_errors_train_all_cal,
                        splits_summary=True)
 
-        df_stats = pd.read_excel(os.path.join(splitdir, 'test_average_stdev_stats_summary.xlsx'))
-        df_stats_train = pd.read_excel(os.path.join(splitdir, 'train_average_stdev_stats_summary.xlsx'))
+        try:
+            df_stats = pd.read_excel(os.path.join(splitdir, 'test_average_stdev_stats_summary.xlsx'))
+        except:
+            df_stats = None
+        try:
+            df_stats_train = pd.read_excel(os.path.join(splitdir, 'train_average_stdev_stats_summary.xlsx'))
+        except:
+            df_stats_train = None
 
         # Update the MASTML metadata file
         outerdir = splitdir.split('/')[-1]
@@ -871,8 +885,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                     test_stats=df_stats,
                                     X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
                                     X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
-                                    X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()),
-                                    X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()),
+                                    X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra else None,
+                                    X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra else None,
                                     y_train=y_train_all,
                                     y_test=y_test_all,
                                     y_pred_train=y_pred_train_all,
