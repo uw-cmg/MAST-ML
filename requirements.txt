@@ -12,5 +12,6 @@ pandas
 pymatgen==2021.3.9
 scikit-learn
 scikit-optimize
+scikit-learn-extra
 scipy
 sphinx-automodapi
