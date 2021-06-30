@@ -5,9 +5,9 @@ name: Python Package
 
 on:
   push:
-    branches: [ dev_Ryan_2020-12-21 ]
+    branches: [ master, dev_Ryan_2020-12-21 ]
   pull_request:
-    branches: [ dev_Ryan_2020-12-21 ]
+    branches: [ master, dev_Ryan_2020-12-21 ]
 
 jobs:
   build:
