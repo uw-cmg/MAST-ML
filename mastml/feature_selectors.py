@@ -29,7 +29,7 @@ MASTMLFeatureSelector:
     ability to forcibly select certain features on the outset.
 
 ShapFeatureSelector:
-    Class to select features based on how much the features contributes to the model in predicting the target data.
+    Class to select features based on how much each of the features contribute to the model in predicting the target data.
 
 """
 
@@ -46,6 +46,7 @@ from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 from mastml.metrics import root_mean_squared_error
 
@@ -127,8 +128,12 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
         if self.__class__.__name__ == 'ShapFeatureSelector':
             self.feature_imp_shap.to_excel(
-                os.path.join(savepath, 'ShapFeatureSelector_selected_features.xlsx')
+                os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx')
             )
+            if (self.make_plot == True):
+                shap.plots.beeswarm(self.shap_values, max_display= self.max_display , show=False)
+                plt.tight_layout()
+                plt.savefig(os.path.join(savepath,'SHAP_features_selected.png'))
         X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
 
@@ -704,6 +709,10 @@ class ShapFeatureSelector(BaseSelector):
 
             n_features_to_select: (int), the number of features to select
 
+            make_plot: Saves the plot of SHAP value if True, default is False
+
+            max_display: maximum number of feature to display in the plot
+
         Methods:
             fit: performs feature selection
                 Args:
@@ -722,18 +731,20 @@ class ShapFeatureSelector(BaseSelector):
                     dataframe: (dataframe), dataframe of selected X features
         """
 
-    def __init__(self, model, n_features_to_select):
+    def __init__(self, model, n_features_to_select, make_plot = False, max_display = 10):
         super(ShapFeatureSelector, self).__init__()
         self.model = model
+        self.make_plot = make_plot
         self.n_features_to_select = n_features_to_select
+        self.max_display = max_display
 
     def fit(self, X, y):
         Xcol = X.columns.tolist()
         self.model = self.model.fit(X,y)
         explainer = shap.Explainer(self.model)
-        shap_values = explainer(X)
+        self.shap_values = explainer(X)
 
-        feature_order = np.argsort(np.sum(np.abs(shap_values.values), axis=0))
+        feature_order = np.argsort(np.sum(np.abs(self.shap_values.values), axis=0))
         feature_order_reversed = [k for k in reversed(feature_order)]
         self.feature_imp_shap = []
         for i in feature_order_reversed:
