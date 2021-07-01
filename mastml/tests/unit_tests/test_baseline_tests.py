@@ -1,10 +1,9 @@
 import unittest
-import os
-import sys
 from mastml.datasets import LocalDatasets
 from mastml.models import SklearnModel
 from mastml.preprocessing import SklearnPreprocessor
 from mastml.baseline_tests import Baseline_tests
+from mastml.datasets import SklearnDatasets
 
 from mastml.feature_selectors import NoSelect, EnsembleModelFeatureSelector, PearsonSelector, MASTMLFeatureSelector
 from sklearn.ensemble import RandomForestRegressor
@@ -91,6 +90,23 @@ class test_baseline(unittest.TestCase):
         baseline.test_nearest_neighbour_cdist(X=X, y=y, model=model, d_metric="euclidean")
         return
 
+    def test_baseline_classifier_random(self):
+        X, y = SklearnDatasets(as_frame=True).load_iris()
+        model = SklearnModel(model="KNeighborsClassifier")
+        model.fit(X,y)
+
+        baseline = Baseline_tests()
+        baseline.test_classifier_random(X, y, model)
+        return
+
+    def test_baseline_classifier_dominant(self):
+        X, y = SklearnDatasets(as_frame=True).load_iris()
+        model = SklearnModel(model="KNeighborsClassifier")
+        model.fit(X,y)
+
+        baseline = Baseline_tests()
+        baseline.test_classifier_random(X, y, model)
+        return
 
 if __name__=='__main__':
     unittest.main()
