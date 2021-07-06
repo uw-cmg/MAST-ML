@@ -370,11 +370,12 @@ class EnsembleModelFeatureSelector(BaseSelector):
         self.feature_importances_sorted = pd.DataFrame(feature_importances_sorted)
         sorted_features_list = [f[1] for f in feature_importances_sorted]
         self.selected_features = sorted_features_list[0:self.n_features_to_select]
-        return self
 
         # If dummy is used, check where it ranks and prints a warning if n_features_to_select is is more than its rank
         if self.n_random_dummy != 0 or self.n_permuted_dummy != 0:
             self.check_dummy_ranking(feature_importances_sorted)
+        return self
+
 
     def transform(self, X):
         X_select = X[self.selected_features]
@@ -751,6 +752,7 @@ class ShapFeatureSelector(BaseSelector):
             self.feature_imp_shap.append(Xcol[i])
         self.selected_features = self.feature_imp_shap[:self.n_features_to_select]
         self.feature_imp_shap = pd.DataFrame(self.feature_imp_shap)
+        return self
 
     def transform(self, X):
         X_select = X[self.selected_features]
