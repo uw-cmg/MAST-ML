@@ -1,19 +1,20 @@
 import unittest
+import os
 from mastml.datasets import LocalDatasets
 from mastml.models import SklearnModel
 from mastml.preprocessing import SklearnPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.datasets import SklearnDatasets
 
-from mastml.feature_selectors import NoSelect, EnsembleModelFeatureSelector, PearsonSelector, MASTMLFeatureSelector
-from sklearn.ensemble import RandomForestRegressor
+import mastml
+mastml_path = mastml.__path__._path[0]
 
 class test_baseline(unittest.TestCase):
 
     def test_baseline_mean(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -33,7 +34,7 @@ class test_baseline(unittest.TestCase):
     def test_baseline_permute(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -53,7 +54,7 @@ class test_baseline(unittest.TestCase):
     def test_baseline_nearest_neighbor_kdTree(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -73,7 +74,7 @@ class test_baseline(unittest.TestCase):
     def test_baseline_nearest_neighbor_cdist(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
