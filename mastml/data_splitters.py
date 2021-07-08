@@ -644,7 +644,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    splits_summary=True)
 
                     # Update the MASTML metadata file
-                    df_stats_leaveout = pd.read_excel(os.path.join(splitdir, 'leaveout_average_stdev_stats_summary.xlsx'))
+                    try:
+                        df_stats_leaveout = pd.read_excel(os.path.join(splitdir, 'leaveout_average_stdev_stats_summary.xlsx'))
+                    except:
+                        df_stats_leaveout = None
 
                     if mastml is not None:
                         outerdir = splitdir.split('/')[-1]
