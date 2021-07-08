@@ -28,6 +28,8 @@ import scipy.stats as stats
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import classification_report
 
 from mastml.metrics import Metrics
 from mastml.error_analysis import ErrorUtils
@@ -1230,6 +1232,92 @@ class Line():
         return
 
 
+class Classification():
+    '''
+    Classification plots
+
+    Args:
+        None
+
+    Methods:
+        plot_classification_report: Method used to plot the classification report
+
+        Args:
+            savepath: (str), path to save the plotted learning curve to
+
+            data_type: (str), string denoting the data type, e.g. train, test, leftout
+
+            y_true: (pd.Series), series of true y data
+
+            y_pred: (pd.Series), series of predicted y data
+
+            show_figure: (bool), whether or not to show the figure output (e.g. when using Jupyter notebook)
+
+        Returns:
+            None
+
+    '''
+
+    def createClassificationReport(savepath, report_dict, show_figure=False, data_type=''):
+        # Parse report_dict data for export
+        class_metrics = list(report_dict.items())[:-3]
+        all_metric_names = list(class_metrics[0][1].keys())
+        class_names = [x[0] for x in class_metrics]
+        all_class_values = [list(x[1].values()) for x in class_metrics]
+        class_values_no_support = np.array([list(x[1].values())[:-1] for x in class_metrics])
+        metrics = list(report_dict.items())[-3:]
+        meta_names = [m[0] for m in metrics]
+        meta_values = np.array([([m[1]] if isinstance(m[1], float) else list(m[1].values())) for m in metrics], dtype=object)
+        report_as_array = []
+
+        report_as_array.append([""]+all_metric_names)
+        for i in range(len(class_names)):
+            report_as_array.append([class_names[i]] + all_class_values[i])
+        for i in range(len(meta_names)):
+            report_as_array.append([meta_names[i]] + meta_values[i])
+
+        # EXCEL
+        pd.DataFrame(report_as_array).to_excel(os.path.join(savepath, 'classification_report_'+str(data_type)+'.xlsx'), index=False, header=None)
+
+        # PLOT
+        plot_metric_names = all_metric_names[:-1]
+
+        dimensions = max(5, len(class_names))
+        fig, ax = plt.subplots(figsize=(dimensions, dimensions))
+        im = ax.imshow(class_values_no_support)
+        ax.set_xticks(np.arange(len(plot_metric_names)))
+        ax.set_yticks(np.arange(len(class_names)))
+        ax.set_xticklabels(plot_metric_names)
+        ax.set_yticklabels(class_names)
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                rotation_mode="anchor")
+        font = {'family': 'serif',
+                'weight': 'normal',
+                'size': 10,
+                }
+
+        for i in range(len(class_names)):
+            for j in range(len(plot_metric_names)):
+                text = ax.text(j, i, round(class_values_no_support[i, j], 3),
+                               ha="center",
+                               va="center",
+                               color="w",
+                               fontdict=font)
+
+        ax.set_title("Classification Report")
+        fig.tight_layout()
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="15%", pad=0.05)
+        plt.colorbar(im, cax=cax)
+        fig.savefig(os.path.join(savepath, 'classification_report_'+str(data_type)+'.png'), bbox_inches='tight')
+        plt.show() if show_figure else plt.close()
+
+    @classmethod
+    def plot_classification_report(cls, savepath, data_type, y_true, y_pred, show_figure):
+        report = classification_report(y_true=y_true, y_pred=y_pred, output_dict=True)
+        Classification.createClassificationReport(savepath, report, show_figure, data_type)
+
+
 def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
     """
@@ -1405,6 +1493,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                                          show_figure=False)
                 except:
                     print('Warning: unable to make Error.plot_real_vs_predicted_error_uncal_cal_overlay plot. Skipping...')
+    if 'Classification' in plots:
+        Classification.plot_classification_report(savepath=savepath, data_type=data_type, y_true=y_true, y_pred=y_pred, show_figure=show_figure)
     return
 
 
