@@ -1,6 +1,10 @@
-'''
+"""
 This module contains baseline test for models
-'''
+
+Baseline_tests:
+    Class that contains the tests for the models
+
+"""
 import os
 
 import numpy as np
