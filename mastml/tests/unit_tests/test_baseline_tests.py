@@ -5,9 +5,11 @@ from mastml.models import SklearnModel
 from mastml.preprocessing import SklearnPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.datasets import SklearnDatasets
+from sklearn.model_selection import train_test_split
 
 import mastml
-mastml_path = mastml.__path__._path[0]
+# mastml_path = mastml.__path__._path[0]
+mastml_path = mastml.__path__[0]
 
 class test_baseline(unittest.TestCase):
 
@@ -25,10 +27,11 @@ class test_baseline(unittest.TestCase):
         preprocessor = SklearnPreprocessor(preprocessor='StandardScaler', as_frame=True)
         model = SklearnModel(model='LinearRegression')
         X = preprocessor.evaluate(X,y)
-        model.fit(X=X, y=y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X=X_train, y=y_train)
 
         baseline = Baseline_tests()
-        baseline.test_mean(X=X, y=y , model=model)
+        baseline.test_mean(X_train, X_test, y_train, y_test, model)
         return
 
     def test_baseline_permute(self):
@@ -45,10 +48,11 @@ class test_baseline(unittest.TestCase):
         preprocessor = SklearnPreprocessor(preprocessor='StandardScaler', as_frame=True)
         model = SklearnModel(model='LinearRegression')
         X = preprocessor.evaluate(X,y)
-        model.fit(X=X, y=y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X = X_train, y = y_train)
 
         baseline = Baseline_tests()
-        baseline.test_permuted(X=X, y=y , model=model)
+        baseline.test_permuted(X_train, X_test, y_train, y_test, model)
         return
 
     def test_baseline_nearest_neighbor_kdTree(self):
@@ -65,10 +69,11 @@ class test_baseline(unittest.TestCase):
         preprocessor = SklearnPreprocessor(preprocessor='StandardScaler', as_frame=True)
         model = SklearnModel(model='LinearRegression')
         X = preprocessor.evaluate(X,y)
-        model.fit(X=X, y=y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X = X_train, y = y_train)
 
         baseline = Baseline_tests()
-        baseline.test_nearest_neighbour_kdtree(X=X, y=y, model=model)
+        baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train.tolist(), y_test, model)
         return
 
     def test_baseline_nearest_neighbor_cdist(self):
@@ -85,28 +90,30 @@ class test_baseline(unittest.TestCase):
         preprocessor = SklearnPreprocessor(preprocessor='StandardScaler', as_frame=True)
         model = SklearnModel(model='LinearRegression')
         X = preprocessor.evaluate(X,y)
-        model.fit(X=X, y=y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X = X_train, y = y_train)
 
         baseline = Baseline_tests()
-        baseline.test_nearest_neighbour_cdist(X=X, y=y, model=model, d_metric="euclidean")
+        baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train.tolist(), y_test, model)
         return
 
     def test_baseline_classifier_random(self):
         X, y = SklearnDatasets(as_frame=True).load_iris()
         model = SklearnModel(model="KNeighborsClassifier")
-        model.fit(X,y)
-
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X_train,y_train)
         baseline = Baseline_tests()
-        baseline.test_classifier_random(X, y, model)
+        baseline.test_classifier_random(X_train, X_test, y_train, y_test, model)
         return
 
     def test_baseline_classifier_dominant(self):
         X, y = SklearnDatasets(as_frame=True).load_iris()
         model = SklearnModel(model="KNeighborsClassifier")
-        model.fit(X,y)
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        model.fit(X_train,y_train)
 
         baseline = Baseline_tests()
-        baseline.test_classifier_random(X, y, model)
+        baseline.test_classifier_random(X_train, X_test, y_train, y_test, model)
         return
 
 if __name__=='__main__':
