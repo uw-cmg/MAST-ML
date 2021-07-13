@@ -57,6 +57,9 @@ from math import ceil
 import warnings
 import shutil
 from scipy.spatial.distance import minkowski
+
+from mastml.baseline_tests import Baseline_tests
+
 try:
     import keras
 except:
@@ -330,7 +333,7 @@ class BaseSplitter(ms.BaseCrossValidator):
     def evaluate(self, X, y, models, mastml=None, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
-                 recalibrate_errors=False, verbosity=1):
+                 recalibrate_errors=False, verbosity=1, baseline_test = []):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -447,7 +450,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   error_method,
                                                   remove_outlier_learners,
                                                   recalibrate_errors,
-                                                  verbosity=verbosity)
+                                                  verbosity=verbosity,
+                                                  baseline_test = baseline_test)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath,
@@ -708,7 +712,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               error_method,
                                               remove_outlier_learners,
                                               recalibrate_errors,
-                                              verbosity=verbosity)
+                                              verbosity=verbosity,
+                                              baseline_test= baseline_test)
 
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            preprocessor=preprocessor,
@@ -723,7 +728,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             remove_outlier_learners, recalibrate_errors, verbosity):
+                             remove_outlier_learners, recalibrate_errors, verbosity, baseline_test):
         split_count = 0
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
             model_orig = copy.deepcopy(model)
@@ -754,7 +759,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
                                  hyperopt_orig, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
-                                 verbosity)
+                                 verbosity, baseline_test)
             split_count += 1
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -904,7 +909,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
                         metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
-                        error_method, remove_outlier_learners, verbosity):
+                        error_method, remove_outlier_learners, verbosity, baseline_test):
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -1064,6 +1069,37 @@ class BaseSplitter(ms.BaseCrossValidator):
                                     model_errors_test=model_errors_test,
                                     dataset_stdev=dataset_stdev)
             mastml._save_mastml_metadata()
+
+            if (baseline_test != []):
+
+                baseline = Baseline_tests()
+                columns = ["Metric", "Real_score", "Fake_score"]
+                # ["test_mean", "test_permuted", "test_nearest_neighbour_kdTree", "test_nearest_neighbour_cdist", "test_classifier_random", "test_classifier_dominant"]
+                for i in baseline_test:
+
+                    if (i == "test_mean"):
+                        df_res = baseline.test_mean(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_mean", splitpath, columns)
+
+                    elif (i == "test_permuted"):
+                        baseline.test_permuted(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_permuted", splitpath, columns)
+
+                    elif (i == "test_nearest_neighbour_kdTree"):
+                        baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_nearest_neighbour_kdTree", splitpath, columns)
+
+                    elif (i == "test_nearest_neighbour_cdist"):
+                        baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_nearest_neighbour_cdist", splitpath, columns)
+
+                    elif (i == "test_classifier_random"):
+                        baseline.test_classifier_random(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_classifier_random", splitpath, columns)
+
+                    elif (i == "test_classifier_dominant"):
+                        baseline.test_classifier_dominant(X_train, X_test, y_train, y_test, model, metrics)
+                        self._save_split_data(df_res, "test_classifier_dominant", splitpath, columns)
 
         return
 
