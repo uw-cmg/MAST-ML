@@ -9,6 +9,9 @@ sys.path.insert(0, os.path.abspath('../../../'))
 from mastml.feature_selectors import NoSelect, EnsembleModelFeatureSelector, PearsonSelector, MASTMLFeatureSelector, ShapFeatureSelector
 from sklearn.ensemble import RandomForestRegressor
 
+import mastml
+mastml_path = mastml.__path__._path[0]
+
 class TestSelectors(unittest.TestCase):
 
     def test_noselect(self):
@@ -65,31 +68,10 @@ class TestSelectors(unittest.TestCase):
         os.remove('selected_features.txt')
         return
 
-    def test_shap_selector(self):
-        target = 'E_regression.1'
-        extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
-                          target=target,
-                          extra_columns=extra_columns,
-                          group_column='Material compositions 1',
-                          testdata_columns=None,
-                          as_frame=True)
-        data_dict = d.load_data()
-        X = data_dict['X']
-        y = data_dict['y']
-        model = RandomForestRegressor()
-        selector = ShapFeatureSelector(model=model, n_features_to_select=15, make_plot=True)
-        Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
-        self.assertEqual(Xselect.shape, (408, 15))
-        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx')))
-        os.remove(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx'))
-        os.remove('selected_features.txt')
-        return
-
     def test_featureselector_with_random_score(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -107,10 +89,33 @@ class TestSelectors(unittest.TestCase):
         os.remove('selected_features.txt')
         return
 
+    def test_shap_selector(self):
+        target = 'E_regression.1'
+        extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
+                          target=target,
+                          extra_columns=extra_columns,
+                          group_column='Material compositions 1',
+                          testdata_columns=None,
+                          as_frame=True)
+        data_dict = d.load_data()
+        X = data_dict['X']
+        y = data_dict['y']
+        model = RandomForestRegressor()
+        selector = ShapFeatureSelector(model=model, n_features_to_select=15, make_plot=True)
+        Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
+        self.assertEqual(Xselect.shape, (408, 15))
+        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx')))
+        os.remove(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx'))
+        # os.remove('SHAP_features_selected.png')
+        os.remove('selected_features.xlsx')
+        os.remove('selected_features.txt')
+        return
+
     def test_featureselector_with_permutated_score(self):
         target = 'E_regression.1'
         extra_columns = ['Material compositions 1', 'Material compositions 2', 'Hop activation barrier', 'E_regression']
-        d = LocalDatasets(file_path='mastml/data/figshare_7418492/All_Model_Data.xlsx',
+        d = LocalDatasets(file_path=os.path.join(mastml_path, 'data/figshare_7418492/All_Model_Data.xlsx'),
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -127,6 +132,8 @@ class TestSelectors(unittest.TestCase):
         os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
         os.remove('selected_features.txt')
         return
+
+
 
 if __name__=='__main__':
     unittest.main()
