@@ -133,8 +133,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             )
             if (self.make_plot == True):
                 shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                plt.tight_layout()
-                plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'))
+                plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi = 150, bbox_inches = "tight")
 
         X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
