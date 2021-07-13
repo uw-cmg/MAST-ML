@@ -31,6 +31,8 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_mean(X_train, X_test, y_train, y_test, model)
+        os.remove("data_preprocessed_.xlsx")
+        os.remove("StandardScaler.pkl")
         return
 
     def test_baseline_permute(self):
@@ -52,6 +54,8 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_permuted(X_train, X_test, y_train, y_test, model)
+        os.remove("data_preprocessed_.xlsx")
+        os.remove("StandardScaler.pkl")
         return
 
     def test_baseline_nearest_neighbor_kdTree(self):
@@ -73,6 +77,8 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train.tolist(), y_test, model)
+        os.remove("data_preprocessed_.xlsx")
+        os.remove("StandardScaler.pkl")
         return
 
     def test_baseline_nearest_neighbor_cdist(self):
@@ -94,6 +100,8 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train.tolist(), y_test, model)
+        os.remove("data_preprocessed_.xlsx")
+        os.remove("StandardScaler.pkl")
         return
 
     def test_baseline_classifier_random(self):
