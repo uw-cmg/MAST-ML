@@ -8,8 +8,7 @@ from mastml.datasets import SklearnDatasets
 from sklearn.model_selection import train_test_split
 
 import mastml
-# mastml_path = mastml.__path__._path[0]
-mastml_path = mastml.__path__[0]
+mastml_path = mastml.__path__._path[0]
 
 class test_baseline(unittest.TestCase):
 
