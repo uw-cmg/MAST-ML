@@ -28,6 +28,9 @@ class Baseline_tests():
 
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
 
+            Returns:
+                A dataframe of the results of the model for the selected metrics
+
 
         test_permuted: Compares the score of the model with a permuted test value
             Args:
@@ -37,6 +40,9 @@ class Baseline_tests():
 
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
 
+            Returns:
+                A dataframe of the results of the model for the selected metrics
+
         test_nearest_neighbour_kdTree: Compares the score of the model with the test value of the nearest neighbour found using kdTree
             Args:
                 X: (dataframe), dataframe of X features
@@ -44,6 +50,9 @@ class Baseline_tests():
                 y: (dataframe), dataframe of y data
 
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
+            Returns:
+                A dataframe of the results of the model for the selected metrics
 
         test_nearest_neighbour_cdist: Compares the score of the model with the test value of the nearest neighbour found using cdist
             Args:
@@ -55,6 +64,9 @@ class Baseline_tests():
 
                 d_metric: Metric to use to calculate the distance. Default is euclidean
 
+            Returns:
+                A dataframe of the results of the model for the selected metrics
+
         test_classifier_random: Compares the score of the model with a test value of a random class
             Args:
                 X: (dataframe), dataframe of X features
@@ -63,6 +75,9 @@ class Baseline_tests():
 
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
 
+            Returns:
+                A dataframe of the results of the model for the selected metrics
+
         test_classifier_dominant: Compares the score of the model with a test value of the dominant class (ie highest count)
             Args:
                 X: (dataframe), dataframe of X features
@@ -70,6 +85,9 @@ class Baseline_tests():
                 y: (dataframe), dataframe of y data
 
                 metrics: (list), list of metric names to evaluate true vs. pred data in each split
+
+            Returns:
+                A dataframe of the results of the model for the selected metrics
 
 
         print_results: Prints the comparison between the naive score and the real score
