@@ -1082,23 +1082,23 @@ class BaseSplitter(ms.BaseCrossValidator):
                         self._save_split_data(df_res, "test_mean", splitpath, columns)
 
                     elif (i == "test_permuted"):
-                        baseline.test_permuted(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_permuted(X_train, X_test, y_train, y_test, model, metrics)
                         self._save_split_data(df_res, "test_permuted", splitpath, columns)
 
                     elif (i == "test_nearest_neighbour_kdTree"):
-                        baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train, y_test, model, metrics)
                         self._save_split_data(df_res, "test_nearest_neighbour_kdTree", splitpath, columns)
 
                     elif (i == "test_nearest_neighbour_cdist"):
-                        baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train, y_test, model, metrics)
                         self._save_split_data(df_res, "test_nearest_neighbour_cdist", splitpath, columns)
 
                     elif (i == "test_classifier_random"):
-                        baseline.test_classifier_random(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_classifier_random(X_train, X_test, y_train, y_test, model, metrics)
                         self._save_split_data(df_res, "test_classifier_random", splitpath, columns)
 
                     elif (i == "test_classifier_dominant"):
-                        baseline.test_classifier_dominant(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_classifier_dominant(X_train, X_test, y_train, y_test, model, metrics)
                         self._save_split_data(df_res, "test_classifier_dominant", splitpath, columns)
 
         return
