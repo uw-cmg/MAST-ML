@@ -142,6 +142,13 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
+                baseline_tests: (list), list of arrays containing base line tests to run.
+
+                distance_metric: (str), distance metric to use in baseline_tests test_nearest_neighbour_cdist method
+
+                mahalamobis_distance: (bool). whether to perform domain evaluation of test data using mahalamobis distance
+
+
             Returns:
                 None
 
@@ -185,6 +192,12 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
 
+                baseline_tests: (list), list of arrays containing base line tests to run.
+
+                distance_metric: (str), distance metric to use in baseline_test's test_nearest_neighbour_cdist method
+
+                mahalamobis_distance: (bool). whether to perform domain evaluation of test data using mahalamobis distance
+
             Returns:
                 None
 
@@ -227,6 +240,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                 remove_outlier_learners: (bool), whether to remove weak learners from ensemble models whose predictions are found to be outliers. Default False.
 
                 verbosity: (int), the output plotting verbosity. Default is 1. Valid choices are 0, 1, 2, and 3.
+
+                baseline_tests: (list), list of arrays containing base line tests to run.
+
+                distance_metric: (str), distance metric to use in baseline_test's test_nearest_neighbour_cdist method
+
+                mahalamobis_distance: (bool). whether to perform domain evaluation of test data using mahalamobis distance
 
             Returns:
                 None
@@ -333,7 +352,8 @@ class BaseSplitter(ms.BaseCrossValidator):
     def evaluate(self, X, y, models, mastml=None, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
-                 recalibrate_errors=False, verbosity=1, baseline_test = []):
+                 recalibrate_errors=False, verbosity=1, baseline_test = [], distance_metric="euclidean",
+                 domain_mahalamobis=False):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -451,7 +471,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                   remove_outlier_learners,
                                                   recalibrate_errors,
                                                   verbosity=verbosity,
-                                                  baseline_test = baseline_test)
+                                                  baseline_test = baseline_test,
+                                                  distance_metric = distance_metric,
+                                                  domain_mahalamobis = domain_mahalamobis)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath,
@@ -713,7 +735,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               remove_outlier_learners,
                                               recalibrate_errors,
                                               verbosity=verbosity,
-                                              baseline_test= baseline_test)
+                                              baseline_test= baseline_test,
+                                              distance_metric=distance_metric,
+                                              domain_mahalamobis=domain_mahalamobis)
 
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            preprocessor=preprocessor,
@@ -728,7 +752,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             remove_outlier_learners, recalibrate_errors, verbosity, baseline_test):
+                             remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric, domain_mahalamobis):
         split_count = 0
         for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
             model_orig = copy.deepcopy(model)
@@ -759,7 +783,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
                                  hyperopt_orig, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
-                                 verbosity, baseline_test)
+                                 verbosity, baseline_test, distance_metric, domain_mahalamobis)
             split_count += 1
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
@@ -909,7 +933,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
                         metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
-                        error_method, remove_outlier_learners, verbosity, baseline_test):
+                        error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric, distance_mahalamobis):
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -1090,7 +1114,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         self._save_split_data(df_res, "test_nearest_neighbour_kdTree", splitpath, columns)
 
                     elif (i == "test_nearest_neighbour_cdist"):
-                        df_res = baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train, y_test, model, metrics)
+                        df_res = baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train, y_test, model, metrics,distance_metric)
                         self._save_split_data(df_res, "test_nearest_neighbour_cdist", splitpath, columns)
 
                     elif (i == "test_classifier_random"):
