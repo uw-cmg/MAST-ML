@@ -78,7 +78,7 @@ from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
-
+from mastml.functions import parallel
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
@@ -726,9 +726,11 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             remove_outlier_learners, recalibrate_errors, verbosity):
-        split_count = 0
-        for Xs, ys, train_ind, test_ind in zip(X_splits, y_splits, train_inds, test_inds):
+                             remove_outlier_learners, recalibrate_errors, verbosity, par=None):
+
+        # Lane started fucking around with code
+        def _evaluate_split_sets_lane(data):
+            Xs, ys, train_ind, test_ind, split_count = data
             model_orig = copy.deepcopy(model)
             selector_orig = copy.deepcopy(selector)
             preprocessor_orig = copy.deepcopy(preprocessor)
@@ -758,7 +760,19 @@ class BaseSplitter(ms.BaseCrossValidator):
                                  hyperopt_orig, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
                                  verbosity)
-            split_count += 1
+
+        split_counts = list(range(len(y_splits)))
+        data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
+
+        # Parallel
+        if par:
+            parallel(_evaluate_split_sets_lane, data)
+
+        # Serial
+        else:
+            [_evaluate_split_sets_lane(i) for i in data]
+
+        # Lane stopped fucking around with code
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         y_test_all = self._collect_data(filename='y_test', savepath=splitdir)
