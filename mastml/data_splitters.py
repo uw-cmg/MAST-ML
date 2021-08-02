@@ -726,7 +726,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             remove_outlier_learners, recalibrate_errors, verbosity, par=None):
+                             remove_outlier_learners, recalibrate_errors, verbosity):
 
         # Lane started fucking around with code
         def _evaluate_split_sets_lane(data):
@@ -765,7 +765,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
         # Parallel
-        if par:
+        if self.par:
             parallel(_evaluate_split_sets_lane, data)
 
         # Serial
@@ -1259,6 +1259,12 @@ class SklearnDataSplitter(BaseSplitter):
     """
 
     def __init__(self, splitter, **kwargs):
+
+        # Compensate for parallel mode
+        if 'par' in kwargs.keys():
+            self.par = kwargs['par']
+            del(kwargs['par'])  # Remove key to not break self.splitter
+
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
 
