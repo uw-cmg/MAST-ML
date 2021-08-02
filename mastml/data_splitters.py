@@ -1267,9 +1267,9 @@ class SklearnDataSplitter(BaseSplitter):
     def __init__(self, splitter, **kwargs):
 
         # Compensate for parallel mode
-        if hasattr(self, 'par'):
+        if 'par' in kwargs.keys():
             self.par = kwargs['par']
-            del(kwargs['par'])  # Remove key to not break self.splitter
+            del kwargs['par']  # Remove key to not break self.splitter
 
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
