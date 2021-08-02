@@ -764,7 +764,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
         # Parallel
-        if self.par:
+        if hasattr(self, 'par'):
             parallel(_evaluate_split_sets_lane, data)
 
         # Serial
@@ -1125,7 +1125,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             col_name = filename
 
         # Condition to evaluate in parallel
-        if self.par:
+        if hasattr(self, 'par'):
             data = parallel(lambda d: np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]), dirs)
         else:
             for d in dirs:
@@ -1136,8 +1136,12 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _collect_df_data(self, filename, savepath):
         dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and '.xlsx' not in d]
         data = list()
-        for d in dirs:
-            data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'))
+
+        if hasattr(self, 'par'):
+            data = parallel(lambda d: pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'), dirs)
+        else:
+            for d in dirs:
+                data.append(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'))
         df = pd.concat(data)
         return df
 
@@ -1263,7 +1267,7 @@ class SklearnDataSplitter(BaseSplitter):
     def __init__(self, splitter, **kwargs):
 
         # Compensate for parallel mode
-        if 'par' in kwargs.keys():
+        if hasattr(self, 'par'):
             self.par = kwargs['par']
             del(kwargs['par'])  # Remove key to not break self.splitter
 
