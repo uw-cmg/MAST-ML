@@ -728,7 +728,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity):
 
-        # Lane started fucking around with code
         def _evaluate_split_sets_lane(data):
             Xs, ys, train_ind, test_ind, split_count = data
             model_orig = copy.deepcopy(model)
@@ -771,8 +770,6 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Serial
         else:
             [_evaluate_split_sets_lane(i) for i in data]
-
-        # Lane stopped fucking around with code
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         y_test_all = self._collect_data(filename='y_test', savepath=splitdir)
@@ -1126,8 +1123,13 @@ class BaseSplitter(ms.BaseCrossValidator):
             col_name = 'num_removed_learners'
         else:
             col_name = filename
-        for d in dirs:
-            data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]))
+
+        # Condition to evaluate in parallel
+        if self.par:
+            data = parallel(lambda d: np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]), dirs)
+        else:
+            for d in dirs:
+                data.append(np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]))
         df = pd.Series(np.concatenate(data).ravel())
         return df
 
