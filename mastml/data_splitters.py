@@ -764,7 +764,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
         # Parallel
-        if hasattr(self, 'par'):
+        if self.parallel_run is True:
             parallel(_evaluate_split_sets_lane, data)
 
         # Serial
@@ -1125,7 +1125,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             col_name = filename
 
         # Condition to evaluate in parallel
-        if hasattr(self, 'par'):
+        if self.parallel_run is True:
             data = parallel(lambda d: np.array(pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl')[col_name]), dirs)
         else:
             for d in dirs:
@@ -1137,7 +1137,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and '.xlsx' not in d]
         data = list()
 
-        if hasattr(self, 'par'):
+        # Condition to evaluate in parallel
+        if self.parallel_run is True:
             data = parallel(lambda d: pd.read_excel(os.path.join(savepath, os.path.join(d, filename)+'.xlsx'), engine='openpyxl'), dirs)
         else:
             for d in dirs:
@@ -1267,9 +1268,10 @@ class SklearnDataSplitter(BaseSplitter):
     def __init__(self, splitter, **kwargs):
 
         # Compensate for parallel mode
-        if 'par' in kwargs.keys():
-            self.par = kwargs['par']
-            del kwargs['par']  # Remove key to not break self.splitter
+        self.parallel_run = False  # To make sure future conditionals work
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
 
         super(SklearnDataSplitter, self).__init__()
         self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
