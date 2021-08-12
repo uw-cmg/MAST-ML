@@ -51,6 +51,7 @@ setup(
         "scikit-optimize",
         "scipy",
         "sphinx-automodapi",
+        "pathos",
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
