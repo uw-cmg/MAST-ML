@@ -1268,7 +1268,7 @@ class SklearnDataSplitter(BaseSplitter):
     def __init__(self, splitter, **kwargs):
 
         # Compensate for parallel mode
-        self.parallel_run = False  # To make sure future conditionals work
+        self.parallel_run = False
         if 'parallel_run' in kwargs.keys():
             self.parallel_run = kwargs['parallel_run']
             del kwargs['parallel_run']  # Remove key to not break self.splitter
@@ -1329,7 +1329,8 @@ class NoSplit(BaseSplitter):
 
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        self.parallel_run = False  # No splits so no parallel
         super(NoSplit, self).__init__()
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -1370,7 +1371,12 @@ class JustEachGroup(BaseSplitter):
 
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
         super(JustEachGroup, self).__init__()
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -1405,7 +1411,14 @@ class LeaveCloseCompositionsOut(BaseSplitter):
 
     """
 
-    def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None):
+    def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None, **kwargs):
+
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
         super(LeaveCloseCompositionsOut, self).__init__()
         if nn_kwargs is None:
             nn_kwargs = {}
@@ -1474,7 +1487,14 @@ class LeaveOutPercent(BaseSplitter):
 
     """
 
-    def __init__(self, percent_leave_out=0.2, n_repeats=5):
+    def __init__(self, percent_leave_out=0.2, n_repeats=5, **kwargs):
+
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
         super(LeaveOutPercent, self).__init__()
         self.percent_leave_out = percent_leave_out
         self.n_repeats = n_repeats
@@ -1527,7 +1547,15 @@ class LeaveOutTwinCV(BaseSplitter):
                 (numpy array), array of train and test indices
     """
 
-    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=False, ceiling=0):
+    def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=False, ceiling=0, **kwargs):
+
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
+        super(LeaveOutTwinCV, self).__init__()
         params = locals()
         self.threshold = threshold
         self.splitter = self.__class__.__name__
@@ -1673,6 +1701,13 @@ class LeaveOutClusterCV(BaseSplitter):
     """
 
     def __init__(self, cluster, **kwargs):
+
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
         super(LeaveOutClusterCV, self).__init__()
 
         # generate cluster object of given input
@@ -1775,7 +1810,14 @@ class Bootstrap(BaseSplitter):
     indices = True
 
     def __init__(self, n, n_bootstraps=3, train_size=.5, test_size=None,
-                 n_train=None, n_test=None, random_state=0):
+                 n_train=None, n_test=None, random_state=0, **kwargs):
+
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
         super(Bootstrap, self).__init__()
         self.n = n
         self.n_bootstraps = n_bootstraps
