@@ -728,7 +728,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity):
 
-        def _evaluate_split_sets_lane(data):
+        def _evaluate_split_sets_serial(data):
             Xs, ys, train_ind, test_ind, split_count = data
             model_orig = copy.deepcopy(model)
             selector_orig = copy.deepcopy(selector)
@@ -765,11 +765,11 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Parallel
         if self.parallel_run is True:
-            parallel(_evaluate_split_sets_lane, data)
+            parallel(_evaluate_split_sets_serial, data)
 
         # Serial
         else:
-            [_evaluate_split_sets_lane(i) for i in data]
+            [_evaluate_split_sets_serial(i) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         y_test_all = self._collect_data(filename='y_test', savepath=splitdir)
