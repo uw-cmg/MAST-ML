@@ -30,6 +30,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import classification_report
+from sklearn.exceptions import NotFittedError
 
 from mastml.metrics import Metrics
 from mastml.error_analysis import ErrorUtils
@@ -1317,8 +1318,26 @@ class Classification():
         report = classification_report(y_true=y_true, y_pred=y_pred, output_dict=True)
         Classification.createClassificationReport(savepath, report, show_figure, data_type)
 
+    @classmethod
+    def doProba(cls, model, X_test):
+        print("="*4 + "doProba" + "="*4)
+        print("model:")
+        print(model)
+        # print("X_test:")
+        # print(X_test)
+        print(f"hasattr(model, 'predict_proba') {hasattr(model, 'predict_proba')}")
 
-def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
+        if hasattr(model, 'predict_proba'):
+            try:
+                print("predict_proba")
+                foo = model.predict_proba(X_test)
+                print(foo)
+            except NotFittedError as e:
+                print(e)
+        print("="*18)
+
+
+def make_plots(plots, y_true, y_pred, X_test, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
     """
     Helper function to make collections of different types of plots after a single or multiple data splits are evaluated.
@@ -1495,6 +1514,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                     print('Warning: unable to make Error.plot_real_vs_predicted_error_uncal_cal_overlay plot. Skipping...')
     if 'Classification' in plots:
         Classification.plot_classification_report(savepath=savepath, data_type=data_type, y_true=y_true, y_pred=y_pred, show_figure=show_figure)
+        Classification.doProba(model=model, X_test=X_test)
     return
 
 
