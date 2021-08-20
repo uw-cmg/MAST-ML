@@ -1238,6 +1238,9 @@ class SklearnDataSplitter(BaseSplitter):
 
         kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
+
     Methods:
         get_n_splits: method to calculate the number of splits to perform
             Args:
@@ -1312,6 +1315,9 @@ class NoSplit(BaseSplitter):
     Args:
         None (only object instance)
 
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
+
     Methods:
         get_n_splits: method to calculate the number of splits to perform
             Args:
@@ -1349,6 +1355,9 @@ class JustEachGroup(BaseSplitter):
 
     Args:
         None (only object instance)
+
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform
@@ -1401,6 +1410,9 @@ class LeaveCloseCompositionsOut(BaseSplitter):
 
     Consequently, this splitter requires a list of compositions as the input to `split` rather
     than the features.
+
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     Args:
         composition_df (pd.DataFrame): dataframe containing the vector of material compositions to analyze
@@ -1466,6 +1478,9 @@ class LeaveOutPercent(BaseSplitter):
 
         n_repeats (int): number of repeated splits to perform (must be >= 1)
 
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
+
     Methods:
         get_n_splits: method to return the number of splits to perform
             Args:
@@ -1522,6 +1537,9 @@ class LeaveOutTwinCV(BaseSplitter):
 
         auto_threshold: (boolean), true if threshold should be automatically increased until twins corresponding to the ceiling parameter are found. Default False.
         ceiling: (float), fraction of total data to find as twins. Default 0.
+
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
@@ -1665,6 +1683,9 @@ class LeaveOutClusterCV(BaseSplitter):
 
         kwargs: takes in any other key argument for optional cluster parameters
 
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
+
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
             Args:
@@ -1803,6 +1824,9 @@ class Bootstrap(BaseSplitter):
             If None, n_test is set as the complement of n_train.
 
         random_state: (int or RandomState), Pseudo number generator state used for random sampling.
+
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     """
 
