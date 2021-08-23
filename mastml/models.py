@@ -89,6 +89,10 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         else:
             return self.model.predict(X).ravel()
 
+    def predict_proba(self, X):
+        if hasattr(self.model, 'predict_proba'):
+            return self.model.predict_proba(X)
+
     def get_params(self, deep=True):
         return self.model.get_params(deep)
 

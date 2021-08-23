@@ -561,6 +561,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                             make_plots(plots=plots,
                                        y_true=y_leaveout,
                                        y_pred=y_pred_leaveout,
+                                       X_test=X_leaveout,
                                        groups=groups,
                                        data_type='leaveout',
                                        dataset_stdev=dataset_stdev,
@@ -656,6 +657,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         make_plots(plots=plots,
                                    y_true=y_leaveout_all,
                                    y_pred=y_pred_leaveout_all,
+                                   X_test=X_leaveout_all,
                                    groups=groups,
                                    data_type='leaveout',
                                    dataset_stdev=np.std(y_leaveout_all),
@@ -671,7 +673,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    splits_summary=True)
 
                     # Update the MASTML metadata file
-                    df_stats_leaveout = pd.read_excel(os.path.join(splitdir, 'leaveout_average_stdev_stats_summary.xlsx'))
+                    try:
+                        df_stats_leaveout = pd.read_excel(os.path.join(splitdir, 'leaveout_average_stdev_stats_summary.xlsx'))
+                    except:
+                        df_stats_leaveout = None
 
                     if mastml is not None:
                         outerdir = splitdir.split('/')[-1]
@@ -863,6 +868,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_test_all,
                        y_pred=y_pred_all,
+                       X_test=X_train_all,
                        groups=groups,
                        data_type='test',
                        dataset_stdev=dataset_stdev,
@@ -883,6 +889,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_train_all,
                        y_pred=y_pred_train_all,
+                       X_test=X_test_all,
                        groups=groups,
                        data_type='train',
                        dataset_stdev=dataset_stdev,
@@ -1024,6 +1031,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_test,
                        y_pred=y_pred,
+                       X_test=X_test,
                        groups=groups,
                        data_type='test',
                        dataset_stdev=dataset_stdev,
@@ -1043,6 +1051,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             make_plots(plots=plots,
                        y_true=y_train,
                        y_pred=y_pred_train,
+                       X_test=X_test,
                        groups=groups,
                        data_type='train',
                        dataset_stdev=dataset_stdev,
