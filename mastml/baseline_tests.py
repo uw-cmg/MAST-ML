@@ -14,7 +14,10 @@ from scipy.spatial.distance import cdist
 import mastml
 from mastml.metrics import Metrics
 
-data_path = os.path.join(mastml.__path__[0], 'data')
+try:
+    data_path = os.path.join(mastml.__path__[0], 'data')
+except Exception:
+    data_path = os.path.join(mastml.__path__._path[0], 'data')
 
 
 class Baseline_tests():
