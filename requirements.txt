@@ -9,6 +9,7 @@ mdf-toolbox
 numpy
 openpyxl
 pandas
+pathos
 pymatgen==2021.3.9
 scikit-learn
 scikit-optimize
