@@ -1271,7 +1271,8 @@ class SklearnDataSplitter(BaseSplitter):
 
         super(SklearnDataSplitter, self).__init__()
         split_args = kwargs.copy()
-        split_args.pop('parallel_run')
+        if 'parallel_run' in split_args:
+            split_args.pop('parallel_run')
         self.splitter = getattr(sklearn.model_selection, splitter)(**split_args)
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -1681,7 +1682,9 @@ class LeaveOutClusterCV(BaseSplitter):
 
         # generate cluster object of given input
         clust_args = kwargs.copy()
-        clust_args.pop('parallel_run')
+        if 'parallel_run' in clust_args:
+            clust_args.pop('parallel_run')
+
         try:
             self.cluster = getattr(sklearn.cluster, cluster)(**clust_args)
         except AttributeError:
