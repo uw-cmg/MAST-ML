@@ -85,7 +85,7 @@ class BaseSplitter(ms.BaseCrossValidator):
     Class functioning as a base splitter with methods for organizing output and evaluating any mastml data splitter
 
     Args:
-        None
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     Methods:
         split_asframe: method to perform split into train indices and test indices, but return as dataframes
@@ -310,7 +310,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                 None, but outputs help to screen
     """
 
-    def __init__(self):
+    def __init__(self, parallel_run=False):
+
+        self.parallel_run = parallel_run
         super(BaseSplitter, self).__init__()
         self.splitter = self.__class__.__name__
 
@@ -1238,9 +1240,6 @@ class SklearnDataSplitter(BaseSplitter):
 
         kwargs : key word arguments for the sklearn.model_selection object, e.g. n_splits=5 for KFold()
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Methods:
         get_n_splits: method to calculate the number of splits to perform
             Args:
@@ -1270,14 +1269,10 @@ class SklearnDataSplitter(BaseSplitter):
 
     def __init__(self, splitter, **kwargs):
 
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
-
         super(SklearnDataSplitter, self).__init__()
-        self.splitter = getattr(sklearn.model_selection, splitter)(**kwargs)
+        split_args = kwargs.copy()
+        split_args.pop('parallel_run')
+        self.splitter = getattr(sklearn.model_selection, splitter)(**split_args)
 
     def get_n_splits(self, X=None, y=None, groups=None):
         return self.splitter.get_n_splits(X, y, groups)
@@ -1314,9 +1309,6 @@ class NoSplit(BaseSplitter):
 
     Args:
         None (only object instance)
-
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
 
     Methods:
         get_n_splits: method to calculate the number of splits to perform
@@ -1356,9 +1348,6 @@ class JustEachGroup(BaseSplitter):
     Args:
         None (only object instance)
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Methods:
         get_n_splits: method to calculate the number of splits to perform
             Args:
@@ -1381,11 +1370,6 @@ class JustEachGroup(BaseSplitter):
     """
 
     def __init__(self, **kwargs):
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
         super(JustEachGroup, self).__init__()
 
     def get_n_splits(self, X=None, y=None, groups=None):
@@ -1411,9 +1395,6 @@ class LeaveCloseCompositionsOut(BaseSplitter):
     Consequently, this splitter requires a list of compositions as the input to `split` rather
     than the features.
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Args:
         composition_df (pd.DataFrame): dataframe containing the vector of material compositions to analyze
 
@@ -1424,12 +1405,6 @@ class LeaveCloseCompositionsOut(BaseSplitter):
     """
 
     def __init__(self, composition_df, dist_threshold=0.1, nn_kwargs=None, **kwargs):
-
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
 
         super(LeaveCloseCompositionsOut, self).__init__()
         if nn_kwargs is None:
@@ -1478,9 +1453,6 @@ class LeaveOutPercent(BaseSplitter):
 
         n_repeats (int): number of repeated splits to perform (must be >= 1)
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Methods:
         get_n_splits: method to return the number of splits to perform
             Args:
@@ -1503,12 +1475,6 @@ class LeaveOutPercent(BaseSplitter):
     """
 
     def __init__(self, percent_leave_out=0.2, n_repeats=5, **kwargs):
-
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
 
         super(LeaveOutPercent, self).__init__()
         self.percent_leave_out = percent_leave_out
@@ -1538,9 +1504,6 @@ class LeaveOutTwinCV(BaseSplitter):
         auto_threshold: (boolean), true if threshold should be automatically increased until twins corresponding to the ceiling parameter are found. Default False.
         ceiling: (float), fraction of total data to find as twins. Default 0.
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
             Args:
@@ -1566,12 +1529,6 @@ class LeaveOutTwinCV(BaseSplitter):
     """
 
     def __init__(self, threshold=0, ord=2, debug=False, auto_threshold=False, ceiling=0, **kwargs):
-
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
 
         super(LeaveOutTwinCV, self).__init__()
         params = locals()
@@ -1683,9 +1640,6 @@ class LeaveOutClusterCV(BaseSplitter):
 
         kwargs: takes in any other key argument for optional cluster parameters
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     Methods:
         get_n_splits: method to calculate the number of splits to perform across all splitters
             Args:
@@ -1723,19 +1677,15 @@ class LeaveOutClusterCV(BaseSplitter):
 
     def __init__(self, cluster, **kwargs):
 
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
-
         super(LeaveOutClusterCV, self).__init__()
 
         # generate cluster object of given input
+        clust_args = kwargs.copy()
+        clust_args.pop('parallel_run')
         try:
-            self.cluster = getattr(sklearn.cluster, cluster)(**kwargs)
+            self.cluster = getattr(sklearn.cluster, cluster)(**clust_args)
         except AttributeError:
-            self.cluster = getattr(sklearn_extra.cluster, cluster)(**kwargs)
+            self.cluster = getattr(sklearn_extra.cluster, cluster)(**clust_args)
 
     # gets number of splits or clusters
     def get_n_splits(self, X, y=None, groups=None):
@@ -1825,9 +1775,6 @@ class Bootstrap(BaseSplitter):
 
         random_state: (int or RandomState), Pseudo number generator state used for random sampling.
 
-    Attributes:
-        parallel_run: an attribute definining wheteher to run splits with all available computer cores
-
     """
 
     # Static marker to be able to introspect the CV type
@@ -1835,12 +1782,6 @@ class Bootstrap(BaseSplitter):
 
     def __init__(self, n, n_bootstraps=3, train_size=.5, test_size=None,
                  n_train=None, n_test=None, random_state=0, **kwargs):
-
-        # Compensate for parallel mode
-        self.parallel_run = False
-        if 'parallel_run' in kwargs.keys():
-            self.parallel_run = kwargs['parallel_run']
-            del kwargs['parallel_run']  # Remove key to not break self.splitter
 
         super(Bootstrap, self).__init__()
         self.n = n
