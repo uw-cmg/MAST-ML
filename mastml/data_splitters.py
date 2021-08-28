@@ -783,8 +783,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 score_name = 'mean_absolute_error'
                 scoring = make_scorer(metrics['mean_absolute_error'][1], greater_is_better=True)
 
-                all_splits_features = []  # Records features that are selected from the learning curve at
-                # every split
+                all_splits_features = []  # Records features that are selected from the learning curve at every split
                 cv = KFold(n_splits=5, shuffle=True)
                 feature_score_dic = {}
                 splits = cv.split(X, y)
@@ -832,7 +831,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         else:
                             if (i - test_mean.tolist().index(store) >= 5):
                                 storeIndex = test_mean.tolist().index(store) + 1
-                                print("Selecting feature cutoff at", storeIndex)
+                                # print("Selecting feature cutoff at", storeIndex)
                                 break
 
                     # Record the features selected in this learning curve of the split
@@ -865,13 +864,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                     mean_score_dic[k] = np.mean(feature_score_dic[k])
 
                 for k in occurence_dic:
-                    score_occurence_dic[mean_score_dic[k]] = [occurence_dic[k]]
-                    score_occurence_dic[mean_score_dic[k]].append(stdev_score_dic[k])
-                score_occurence_dic
+                    score_occurence_dic[k] = [occurence_dic[k]]
+                    score_occurence_dic[k].append(mean_score_dic[k])
+                    score_occurence_dic[k].append(stdev_score_dic[k])
 
                 # Sort by occurence, then by feature importances score
-                score_occurence_list = sorted(score_occurence_dic.items(), key=lambda x: (x[1][0], x[0]),
-                                              reverse=True)
+                score_occurence_list = sorted(score_occurence_dic.items(), key=lambda x: (x[1][0],x[1][1]), reverse=True)
 
                 # If there are features with the same occurence, choose the feature with the higher feature
                 # score to smoothen graph
@@ -880,19 +878,25 @@ class BaseSplitter(ms.BaseCrossValidator):
                 std_score = []
                 for i in score_occurence_list:
                     if i[1][0] in occurence_list:
-                        if i[0] > score_list[occurence_list.index(i[1][0])]:
-                            score_list[occurence_list.index(i[1])] = i[0]
-                            std_score[occurence_list.index(i[1])] = i[1][1]
+                        if i[1][1] > score_list[occurence_list.index(i[1][0])]:
+                            score_list[occurence_list.index(i[1][0])] = i[1][1]
+                            std_score[occurence_list.index(i[1][0])] = i[1][2]
                     else:
-                        score_list.append(i[0])
+                        score_list.append(i[1][1])
                         occurence_list.append(i[1][0])
-                        std_score.append(i[1][1])
+                        std_score.append(i[1][2])
                 score_list = np.array(score_list)
                 std_score = np.array(std_score)
 
                 plot_avg_score_vs_occurence(split_savepath, occurence_list, score_list, std_score)
                 plot_feature_occurence(split_savepath, list(occurence_dic.keys()), list(occurence_dic.values()))
 
+                #Make a spreadsheet that contains the feature, its occurence, its feature score
+                feature_spreadsheet = []
+                for i in (score_occurence_list):
+                    feature_spreadsheet.append((i[0], i[1][0], i[1][1], i[1][2]))
+                    self._save_split_data(pd.DataFrame(feature_spreadsheet), "feature_spreadsheet", split_savepath,
+                                          columns=['feature', 'occurence', 'feature importance score', 'std_deviation'])
         return
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
