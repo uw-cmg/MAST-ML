@@ -1336,6 +1336,25 @@ class Classification():
                 print(e)
         print("="*18)
 
+def plot_feature_occurence(savepath, feature, occurence):
+    plt.tick_params(axis='y', labelsize=10)
+    plt.barh(feature, occurence)
+    plt.xlabel("Occurence")
+    plt.ylabel("Feature")
+    plt.title("Occurence of Features")
+    plt.savefig(os.path.join(savepath, 'Feature_Occurence.png'))
+    plt.clf()
+    return
+
+def plot_avg_score_vs_occurence(savepath, occurence_list, score_list, std_score):
+    plt.plot(occurence_list, score_list, marker='o')
+    plt.fill_between(occurence_list, score_list - std_score, score_list + std_score, alpha=0.1, color='blue')
+    plt.title('Avg Score vs Occurence')
+    plt.xlabel('Occurence')
+    plt.ylabel('Avg Score')
+    plt.savefig(os.path.join(savepath + '/AvgScoreVsOccurence.png'))
+    plt.clf()
+    return
 
 def make_plots(plots, y_true, y_pred, X_test, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
