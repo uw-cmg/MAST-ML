@@ -758,3 +758,61 @@ class ShapFeatureSelector(BaseSelector):
     def transform(self, X):
         X_select = X[self.selected_features]
         return X_select
+
+def selected_features_correlation(X, savepath, features_x_path, features_y_path):
+    '''
+    Function to get the correlation between two sets of features selected from two different methods of feature selection
+
+    Args:
+        X: (pd.DataFrame), dataframe of X features
+
+        savepath: (str), string denoting the path to save output to
+
+        features_x_path: (str), string denoting the path to the first selected_features.txt
+
+        features_y_path: (str), string denoting the path to the second selected_features.txt
+
+    Returns:
+        None.
+
+    '''
+    with open(os.path.join(features_x_path, 'selected_features.txt')) as f:
+        x_selected_features = [line.rstrip() for line in f]
+
+    with open(os.path.join(features_y_path, 'selected_features.txt')) as f:
+        y_selected_features = [line.rstrip() for line in f]
+
+    array_data = list()
+    for i in range(len(x_selected_features)):
+        col_data = X[x_selected_features].iloc[:,i]
+        col = list()
+        for j in range(len(y_selected_features)):
+            row_data = X[y_selected_features].iloc[:,j]
+            corr, _ = pearsonr(row_data, col_data)
+            col.append(corr)
+        array_data.append(col)
+    array_df = pd.DataFrame(array_data, index=x_selected_features[:len(x_selected_features)], 
+                            columns=y_selected_features[:len(y_selected_features)])
+    array_df.to_excel(os.path.join(savepath, 'pearson')+'.xlsx', index=True)
+    hCorr = dict()
+    same_features = list()
+    for i in range(len(array_df)):
+        for j in range(len(array_df.iloc[0, :])):
+            if (abs(array_df.iloc[i][j]) > 0.7):
+                if (array_df.index[i] != array_df.columns[j]):
+                    if ((array_df.columns[j], array_df.index[i]) not in hCorr):
+                        hCorr[(array_df.index[i], array_df.columns[j])] = array_df.iloc[i][j]
+                else:
+                    if array_df.index[i] not in same_features:
+                        same_features.append(array_df.index[i])
+
+    hCorr_sorted = sorted(hCorr.items(), key=lambda x: (x[1]), reverse=True)
+    arr = []
+    for i in hCorr_sorted:
+        arr.append((i[0][0], i[0][1], i[1]))
+    arr_df = pd.DataFrame(arr, columns=['feature_1', 'feature_2', 'correlation'])
+    arr_df.to_excel(os.path.join(savepath, 'related_features') + '.xlsx', index=True)
+
+    with open(os.path.join(savepath, 'same_features.txt'), 'w') as f:
+        for feature in same_features:
+            f.write(str(feature) + '\n')
