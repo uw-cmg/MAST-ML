@@ -73,13 +73,16 @@ from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 import sklearn_extra.cluster
 
-from mastml.plots import make_plots
+from mastml.plots import make_plots, plot_feature_occurence, plot_avg_score_vs_occurence
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
+from mastml.models import SklearnModel
 from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.domain import Domain
+from sklearn.metrics import make_scorer
+from sklearn.model_selection import KFold
 
 from mastml.functions import parallel
 
@@ -353,7 +356,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test = [], distance_metric="euclidean",
-                 domain_distance=False):
+                 domain_distance=None, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -473,7 +476,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              verbosity=verbosity,
                                                              baseline_test = baseline_test,
                                                              distance_metric = distance_metric,
-                                                             domain_distance= domain_distance)
+                                                             domain_distance= domain_distance,
+                                                             **kwargs)
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath,
@@ -742,8 +746,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               verbosity=verbosity,
                                               baseline_test= baseline_test,
                                               distance_metric=distance_metric,
-                                              domain_distance=domain_distance)
-
+                                              domain_distance=domain_distance,
+                                              **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            preprocessor=preprocessor,
                                                            best_run_metric=best_run_metric,
@@ -753,12 +757,149 @@ class BaseSplitter(ms.BaseCrossValidator):
                     shutil.copy(best_split_dict['model'], splitdir)
                     shutil.copy(best_split_dict['features'], splitdir)
 
+        # plot_ensemble_feature_graphs = False
+        # for i in selectors:
+        #     if i.__class__.__name__ == 'EnsembleModelFeatureSelector':
+        #         plot_ensemble_feature_graphs = True
+        dirs = [d for d in os.listdir(savepath) if 'EnsembleModelFeatureSelector' in d]
+        print(dirs)
+        # Plot feature_occurence curve and average score against occurence if selector is EnsembleModelFeatureSelector
+        # if plot_ensemble_feature_graphs and dirs != None:
+        if dirs != None:
+            for i in dirs:
+                split_savepath = os.path.join(savepath, i)
+                split_name = [d for d in os.listdir(split_savepath) if
+                              'split' in d and '.png' not in d and '.xlsx' not in d]
+                split_path = []
+                for i in split_name:
+                    split_path.append(os.path.join(split_savepath, i))
+
+                feature_df = []  # List of all the dataframe of feature_importances for all the splits
+                for i in split_path:
+                    feature_df.append(
+                        pd.read_excel(os.path.join(i, 'EnsembleModelFeatureSelector_importances') + '.xlsx',
+                                      engine='openpyxl'))
+
+                metrics = Metrics(metrics_list=None)._metric_zoo()
+                score_name = 'mean_absolute_error'
+                scoring = make_scorer(metrics['mean_absolute_error'][1], greater_is_better=True)
+
+                all_splits_features = []  # Records features that are selected from the learning curve at
+                # every split
+                cv = KFold(n_splits=5, shuffle=True)
+                feature_score_dic = {}
+                splits = cv.split(X, y)
+                train_inds = list()
+                test_inds = list()
+                for train, test in splits:
+                    train_inds.append(train)
+                    test_inds.append(test)
+
+                for f in feature_df:
+                    features_selected = list(f[1])
+                    features_selected_score = list(f[0])
+                    Xnew = X[features_selected]
+                    model = SklearnModel(model='RandomForestRegressor')
+
+                    test_scores = dict()
+                    test_mean = list()
+                    y = np.array(y)
+
+                    # Run a learning curve for each split
+                    for n_features in range(len(features_selected)):
+                        Xnew_subset = Xnew.iloc[:, 0:n_features + 1]
+
+                        cv_number = 1
+                        Xnew_subset = np.array(Xnew_subset)
+                        if n_features + 1 == 1:
+                            Xnew_subset.reshape(-1, 1)
+
+                        for trains, tests in zip(train_inds, test_inds):
+                            model = model.fit(Xnew_subset[trains], y[trains])
+                            test_vals = model.predict(Xnew_subset[tests])
+                            test_scores[cv_number] = scoring._score_func(test_vals, y[tests])
+                            cv_number += 1
+                        test_mean.append(np.mean(list(test_scores.values())))
+                    test_mean = np.array(test_mean)
+
+                    store = test_mean[0]
+                    storeIndex = -1
+                    for i in range(1, len(test_mean)):
+                        change = (store - test_mean[i]) / store
+                        #         print("Change between" , test_mean.tolist().index(store)+ 1 , "and" , i+1 ,
+                        #         "=" , change)
+                        if (change >= 0.1):
+                            store = test_mean[i]
+                        else:
+                            if (i - test_mean.tolist().index(store) >= 5):
+                                storeIndex = test_mean.tolist().index(store) + 1
+                                print("Selecting feature cutoff at", storeIndex)
+                                break
+
+                    # Record the features selected in this learning curve of the split
+                    for i in range(storeIndex):
+                        feature_name = features_selected[i]
+                        feature_score = features_selected_score[i]
+
+                        if feature_name not in feature_score_dic:
+                            feature_score_dic[feature_name] = [feature_score]
+                        else:
+                            feature_score_dic[feature_name].append(feature_score)
+
+                    all_splits_features.append([features_selected[i] for i in range(storeIndex)])
+
+                # Record the occurence of the features
+                occurence_dic = {}
+                for i in all_splits_features:
+                    for j in i:
+                        if j not in occurence_dic:
+                            occurence_dic[j] = 1
+
+                        else:
+                            occurence_dic[j] += 1
+
+                stdev_score_dic = {}
+                mean_score_dic = {}
+                score_occurence_dic = {}
+                for k in feature_score_dic:
+                    stdev_score_dic[k] = np.std(feature_score_dic[k])
+                    mean_score_dic[k] = np.mean(feature_score_dic[k])
+
+                for k in occurence_dic:
+                    score_occurence_dic[mean_score_dic[k]] = [occurence_dic[k]]
+                    score_occurence_dic[mean_score_dic[k]].append(stdev_score_dic[k])
+                score_occurence_dic
+
+                # Sort by occurence, then by feature importances score
+                score_occurence_list = sorted(score_occurence_dic.items(), key=lambda x: (x[1][0], x[0]),
+                                              reverse=True)
+
+                # If there are features with the same occurence, choose the feature with the higher feature
+                # score to smoothen graph
+                occurence_list = []
+                score_list = []
+                std_score = []
+                for i in score_occurence_list:
+                    if i[1][0] in occurence_list:
+                        if i[0] > score_list[occurence_list.index(i[1][0])]:
+                            score_list[occurence_list.index(i[1])] = i[0]
+                            std_score[occurence_list.index(i[1])] = i[1][1]
+                    else:
+                        score_list.append(i[0])
+                        occurence_list.append(i[1][0])
+                        std_score.append(i[1][1])
+                score_list = np.array(score_list)
+                std_score = np.array(std_score)
+
+                plot_avg_score_vs_occurence(split_savepath, occurence_list, score_list, std_score)
+                plot_feature_occurence(split_savepath, list(occurence_dic.keys()), list(occurence_dic.values()))
+
         return
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
-                             remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric, domain_distance):
-
+                             remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
+                             domain_distance, **kwargs):
         def _evaluate_split_sets_serial(data):
             Xs, ys, train_ind, test_ind, split_count = data
             model_orig = copy.deepcopy(model)
@@ -789,7 +930,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
                                  hyperopt_orig, metrics, plots, group,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
-                                 verbosity, baseline_test, distance_metric, domain_distance)
+                                 verbosity, baseline_test, distance_metric, domain_distance, **kwargs)
 
         split_counts = list(range(len(y_splits)))
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
@@ -944,7 +1085,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                     X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra is not None else None,
                                     y_train=y_train_all,
                                     y_test=y_test_all,
-                                    y_test_domain=y_test_domain_all if domain_distance is not False else None,
+                                    y_test_domain=y_test_domain_all if domain_distance is not None else None,
                                     y_pred_train=y_pred_train_all,
                                     y_pred=y_pred_all,
                                     residuals_train=residuals_train_all,
@@ -960,8 +1101,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
                         metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
-                        error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric, domain_distance):
-
+                        error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric,
+                        domain_distance, **kwargs):
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
 
@@ -1127,7 +1268,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         if (domain_distance is not None):
             y_test_domain = Domain()
-            df_res = y_test_domain.distance(X_train, X_test, y_test)
+            df_res = y_test_domain.distance(X_train, X_test, domain_distance, **kwargs)
             self._save_split_data(df_res, "y_test_domain", splitpath, columns=["y_test_domain"])
 
             # Make combined spreadsheet that contains: y_test, y_pred, X_extra_test, y_domain_test
