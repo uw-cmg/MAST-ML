@@ -762,7 +762,6 @@ class BaseSplitter(ms.BaseCrossValidator):
         #     if i.__class__.__name__ == 'EnsembleModelFeatureSelector':
         #         plot_ensemble_feature_graphs = True
         dirs = [d for d in os.listdir(savepath) if 'EnsembleModelFeatureSelector' in d]
-        print(dirs)
         # Plot feature_occurence curve and average score against occurence if selector is EnsembleModelFeatureSelector
         # if plot_ensemble_feature_graphs and dirs != None:
         if dirs != None:
