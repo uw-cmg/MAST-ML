@@ -73,7 +73,7 @@ from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 import sklearn_extra.cluster
 
-from mastml.plots import make_plots, plot_feature_occurence, plot_avg_score_vs_occurence
+from mastml.plots import make_plots, plot_feature_occurrence, plot_avg_score_vs_occurrence
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
@@ -762,7 +762,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         #     if i.__class__.__name__ == 'EnsembleModelFeatureSelector':
         #         plot_ensemble_feature_graphs = True
         dirs = [d for d in os.listdir(savepath) if 'EnsembleModelFeatureSelector' in d]
-        # Plot feature_occurence curve and average score against occurence if selector is EnsembleModelFeatureSelector
+        # Plot feature_occurence curve and average score against occurrence if selector is EnsembleModelFeatureSelector
         # if plot_ensemble_feature_graphs and dirs != None:
         if dirs != None:
             for i in dirs:
@@ -846,7 +846,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     all_splits_features.append([features_selected[i] for i in range(storeIndex)])
 
-                # Record the occurence of the features
+                # Record the occurrence of the features
                 occurence_dic = {}
                 for i in all_splits_features:
                     for j in i:
@@ -868,10 +868,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                     score_occurence_dic[k].append(mean_score_dic[k])
                     score_occurence_dic[k].append(stdev_score_dic[k])
 
-                # Sort by occurence, then by feature importances score
+                # Sort by occurrence, then by feature importances score
                 score_occurence_list = sorted(score_occurence_dic.items(), key=lambda x: (x[1][0],x[1][1]), reverse=True)
 
-                # If there are features with the same occurence, choose the feature with the higher feature
+                # If there are features with the same occurrence, choose the feature with the higher feature
                 # score to smoothen graph
                 occurence_list = []
                 score_list = []
@@ -888,15 +888,15 @@ class BaseSplitter(ms.BaseCrossValidator):
                 score_list = np.array(score_list)
                 std_score = np.array(std_score)
 
-                plot_avg_score_vs_occurence(split_savepath, occurence_list, score_list, std_score)
-                plot_feature_occurence(split_savepath, list(occurence_dic.keys()), list(occurence_dic.values()))
+                plot_avg_score_vs_occurrence(split_savepath, occurence_list, score_list, std_score)
+                plot_feature_occurrence(split_savepath, list(occurence_dic.keys()), list(occurence_dic.values()))
 
-                #Make a spreadsheet that contains the feature, its occurence, its feature score
+                #Make a spreadsheet that contains the feature, its occurrence, its feature score
                 feature_spreadsheet = []
                 for i in (score_occurence_list):
                     feature_spreadsheet.append((i[0], i[1][0], i[1][1], i[1][2]))
                     self._save_split_data(pd.DataFrame(feature_spreadsheet), "feature_spreadsheet", split_savepath,
-                                          columns=['feature', 'occurence', 'feature importance score', 'std_deviation'])
+                                          columns=['feature', 'occurrence', 'feature importance score', 'std_deviation'])
         return
 
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,

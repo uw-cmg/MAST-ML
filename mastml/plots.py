@@ -1336,23 +1336,51 @@ class Classification():
                 print(e)
         print("="*18)
 
-def plot_feature_occurence(savepath, feature, occurence):
+def plot_feature_occurrence(savepath, feature, occurrence):
+    """
+    Function to plot the occurrence of each feature in all of the splits
+
+    Args:
+        savepath: (str), string denoting the path to save output to
+
+        feature: (list) the list of features
+
+        occurrence: (list) the list of occurrence of each feature
+
+    Returns:
+        None.
+    """
     plt.tick_params(axis='y', labelsize=10)
-    plt.barh(feature, occurence)
-    plt.xlabel("Occurence")
+    plt.barh(feature, occurrence)
+    plt.xlabel("Occurrence")
     plt.ylabel("Feature")
-    plt.title("Occurence of Features")
-    plt.savefig(os.path.join(savepath, 'Feature_Occurence.png'))
+    plt.title("Occurrence of Features")
+    plt.savefig(os.path.join(savepath, 'Feature_Occurrence.png'))
     plt.clf()
     return
 
-def plot_avg_score_vs_occurence(savepath, occurence_list, score_list, std_score):
-    plt.plot(occurence_list, score_list, marker='o')
-    plt.fill_between(occurence_list, score_list - std_score, score_list + std_score, alpha=0.1, color='blue')
-    plt.title('Avg Score vs Occurence')
-    plt.xlabel('Occurence')
+def plot_avg_score_vs_occurrence(savepath, occurrence, score, std_score):
+    """
+    Function to plot the average score of each feature against their occurrence in all of the splits
+
+    Args:
+        savepath: (str), string denoting the path to save output to
+
+        occurrence: (list), the list of occurrence of each feature
+
+        score: (list), the list of the feature ranking score of each feature
+
+        std_score(list), the list of standard deviation of the feature ranking score
+
+    Returns:
+        None.
+    """
+    plt.plot(occurrence, score, marker='o')
+    plt.fill_between(occurrence, score - std_score, score + std_score, alpha=0.1, color='blue')
+    plt.title('Avg Score vs Occurrence')
+    plt.xlabel('Occurrence')
     plt.ylabel('Avg Score')
-    plt.savefig(os.path.join(savepath + '/AvgScoreVsOccurence.png'))
+    plt.savefig(os.path.join(savepath + '/AvgScoreVsOccurrence.png'))
     plt.clf()
     return
 
