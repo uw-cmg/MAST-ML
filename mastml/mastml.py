@@ -123,6 +123,7 @@ class Mastml():
                          X_extra_leaveout=None,
                          y_train=None,
                          y_test=None,
+                         y_test_domain=None,
                          y_leaveout=None,
                          y_pred_train=None,
                          y_pred=None,
@@ -198,6 +199,8 @@ class Mastml():
             self.mastml_metadata[outerdir][split_name]['y_pred'] = y_pred.to_json()
         if y_pred_leaveout is not None:
             self.mastml_metadata[outerdir][split_name]['y_pred_leaveout'] = y_pred_leaveout.to_json()
+        if y_test_domain is not None:
+            self.mastml_metadata[outerdir][split_name]['y_test_domain'] = y_test_domain.to_json()
         if residuals_train is not None:
             self.mastml_metadata[outerdir][split_name]['residuals_train'] = residuals_train.to_json()
         if residuals_test is not None:
