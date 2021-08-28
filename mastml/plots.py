@@ -1356,8 +1356,8 @@ def plot_avg_score_vs_occurence(savepath, occurence_list, score_list, std_score)
     plt.clf()
     return
 
-def make_plots(plots, y_true, y_pred, X_test, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
-               savepath, data_type, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
+def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
+               savepath, data_type, X_test=None, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
     """
     Helper function to make collections of different types of plots after a single or multiple data splits are evaluated.
 
