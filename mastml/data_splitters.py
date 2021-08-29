@@ -151,6 +151,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
 
+                **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
             Returns:
                 None
@@ -201,6 +202,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
 
+                **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
+
             Returns:
                 None
 
@@ -249,6 +252,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 distance_metric: (str), distance metric to use in baseline_test's test_nearest_neighbour_cdist method
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
+
+                **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
             Returns:
                 None
