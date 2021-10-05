@@ -5,17 +5,3 @@ results/
 dist/
 mastml.egg-info/
 .DS_Store
-
-# ignore these, added by avery for local use only; should not be commited
-.husky/
-examples/*.ipynb
-examples/*.py
-examples/dot-py/
-output/
-multiToSingle.py
-drive/
-*.ipynb
-figshare/
-format_class.py
-my_excel_file.xlsx
-plot.png
