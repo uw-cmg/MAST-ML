@@ -72,3 +72,7 @@ MAST-ML can also be installed via pip:
 ```
 pip install mastml
 ```
+
+## Getting Started
+
+You can start by running some of the example notebooks located in the `example` folder. Click [here](/examples) for more information.
