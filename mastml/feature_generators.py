@@ -1080,9 +1080,9 @@ class ElementalFractionGenerator(BaseGenerator):
         self.y = y
         return self
 
-    def transform(self, X=None):
+    def transform(self, X=None, fraction=True):
 
-        df = self.generate_elementfraction_features()
+        df = self.generate_elementfraction_features(fraction=fraction)
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
@@ -1093,7 +1093,7 @@ class ElementalFractionGenerator(BaseGenerator):
 
         return df, self.y
 
-    def generate_elementfraction_features(self):
+    def generate_elementfraction_features(self, fraction=True):
         el_frac_list = list()
         compositions_list = self.composition_df[self.composition_df.columns[0]].tolist()
         for comp_str in compositions_list:
@@ -1102,7 +1102,11 @@ class ElementalFractionGenerator(BaseGenerator):
             comp = Composition(comp_str)
             elements = comp.elements
             for el in elements:
-                el_frac_onehot[el.number-1] = comp.get_atomic_fraction(el)
+                if fraction:
+                    el_frac_onehot[el.number-1] = comp.get_atomic_fraction(el)
+                else:
+                    # if not fraction, we want to give the actual atomic counts
+                    el_frac_onehot[el.number-1] = comp.get_atomic_count(el)
             el_frac_list.append(el_frac_onehot)
         element_names = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',
             'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
