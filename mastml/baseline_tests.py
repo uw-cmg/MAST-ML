@@ -16,7 +16,7 @@ from mastml.metrics import Metrics
 
 try:
     data_path = os.path.join(mastml.__path__[0], 'data')
-except Exception:
+except:
     data_path = os.path.join(mastml.__path__._path[0], 'data')
 
 
@@ -111,7 +111,7 @@ class Baseline_tests():
         y_predict = model.predict(X_test)
 
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
-        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
+        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=fake_test)
         return self.to_excel(real_score, naive_score)
 
     def test_permuted(self, X_train, X_test, y_train, y_test, model, metrics=["mean_absolute_error"]):
@@ -136,7 +136,7 @@ class Baseline_tests():
         y_predict = model.predict(X_test)
 
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
-        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
+        naive_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=fake_test)
         return self.to_excel(real_score, naive_score)
 
 
