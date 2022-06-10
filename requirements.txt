@@ -1,5 +1,6 @@
 citrination-client
 dlhub_sdk
+foundry-ml
 globus_nexus_client
 globus_sdk
 matminer
@@ -10,7 +11,7 @@ numpy
 openpyxl
 pandas
 pathos
-pymatgen==2021.3.9
+pymatgen
 scikit-learn
 scikit-optimize
 scikit-learn-extra
