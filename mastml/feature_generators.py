@@ -72,7 +72,7 @@ except:
 
 try:
     import pymatgen
-    from pymatgen import Element, Composition
+    from pymatgen.core import Element, Composition
     from pymatgen.ext.matproj import MPRester
 except:
     print('pymatgen is an optional dependency. To install pymatgen, do pip install pymatgen')
