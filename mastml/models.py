@@ -148,7 +148,15 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     def __init__(self, model, n_estimators, **kwargs):
         super(EnsembleModel, self).__init__()
         try:
-            model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+            if model == 'XGBoostRegressor':
+                model = xgboost.XGBRegressor(**kwargs)
+            elif model == 'GaussianProcessRegressor':
+                kernel = kwargs['kernel']
+                kernel = _make_gpr_kernel(kernel_string=kernel)
+                del kwargs['kernel']
+                model = GaussianProcessRegressor(kernel=kernel, **kwargs)
+            else:
+                model = dict(sklearn.utils.all_estimators())[model](**kwargs)
         except:
             print('Could not find designated model type in scikit-learn model library. Note the other supported model'
                   'type is the keras.wrappers.scikit_learn.KerasRegressor model')
