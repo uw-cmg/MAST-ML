@@ -14,8 +14,23 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 
 ## Run example notebooks in Google Colab:
 
-* Tutorial 1: Getting Started with MAST-ML
+* Tutorial 1: Getting Started with MAST-ML:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_1_GettingStarted.ipynb)
+
+* Tutorial 2: Data Import and Cleaning:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_2_DataImport.ipynb)
+
+* Tutorial 3: Feature Engineering:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_3_FeatureEngineering.ipynb)
+
+* Tutorial 4: Models and Data Splitting Tests:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_4_Models_and_Tests.ipynb)
+
+* Tutorial 5: Left out data, nested cross validation, and optimized models:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_5_NestedCV_and_OptimizedModels.ipynb)
+
+* Tutorial 6: Model error analysis and uncertainty quantification:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_6_ErrorAnalysis_UncertaintyQuantification.ipynb)
 
 
 ## MAST-ML version 3.x Major Updates
