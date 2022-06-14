@@ -210,7 +210,12 @@ class LocalDatasets():
                     break
         return
 
-    def load_data(self):
+    def load_data(self, copy=False, savepath=None):
+        if copy == True:
+            if savepath is not None:
+                fname = os.path.normpath(self.file_path).split(os.path.sep)[-1]
+                shutil.copy(self.file_path, os.path.join(savepath, fname))
+
         data_dict = dict()
 
         # Import data from file
