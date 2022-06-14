@@ -966,8 +966,21 @@ class Error():
         bin_values_poorlysampled_uncal = bin_values_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
         num_values_per_bin_poorlysampled_uncal = num_values_per_bin_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
 
-        yerr_uncal = np.sqrt(var_sq_residual_values_uncal) / (2 * np.sqrt(num_values_per_bin_uncal) * rms_residual_values_uncal)
-        yerr_cal = np.sqrt(var_sq_residual_values_cal) / (2 * np.sqrt(num_values_per_bin_cal) * rms_residual_values_cal)
+        yerr_uncal = list()
+        for i, j, k in zip(var_sq_residual_values_uncal, num_values_per_bin_uncal, rms_residual_values_uncal):
+            if j > 1:
+                yerr_uncal.append(np.sqrt(i) / (2 * np.sqrt(j) * k))
+            else:
+                yerr_uncal.append(1)
+        yerr_uncal = np.array(yerr_uncal)
+
+        yerr_cal = list()
+        for i, j, k in zip(var_sq_residual_values_cal, num_values_per_bin_cal, rms_residual_values_cal):
+            if j > 1:
+                yerr_cal.append(np.sqrt(i) / (2 * np.sqrt(j) * k))
+            else:
+                yerr_cal.append(1)
+        yerr_cal = np.array(yerr_cal)
 
         yerr_wellsampled_uncal = yerr_uncal[np.where(num_values_per_bin_uncal > well_sampled_number_uncal)[0]]
         yerr_poorlysampled_uncal = yerr_uncal[np.where(num_values_per_bin_uncal <= well_sampled_number_uncal)[0]]
