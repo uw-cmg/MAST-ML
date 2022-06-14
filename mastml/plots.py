@@ -139,7 +139,8 @@ class Scatter():
 
     """
     @classmethod
-    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False):
+    def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False,
+                               ebars=None):
 
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
@@ -152,13 +153,13 @@ class Scatter():
         maxx = max(np.nanmax(y_true), np.nanmax(y_pred))
         minn = min(np.nanmin(y_true), np.nanmin(y_pred))
 
-        #maxx = max(y_true)
-        #minn = min(y_true)
-        #maxx = round(float(maxx), rounder(maxx - minn))
-        #minn = round(float(minn), rounder(maxx - minn))
         _set_tick_labels(ax, maxx, minn)
 
         ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
+        if ebars is not None:
+            ax.errorbar(y_true, y_pred, yerr=ebars, fmt='o',
+                        markerfacecolor='blue', markeredgecolor='black',
+                        markersize=10, alpha=0.7, capsize=3)
 
         # draw dashed horizontal line
         ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
@@ -172,11 +173,17 @@ class Scatter():
         stats_dict = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
 
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
-        fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
-
-        df = pd.DataFrame({'y true': y_true,
-                           'y pred': y_pred})
-        df.to_excel(os.path.join(savepath, 'parity_plot_'+str(data_type)+'.xlsx'), index=False)
+        if ebars is not None:
+            fig.savefig(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+            df = pd.DataFrame({'y true': y_true,
+                               'y pred': y_pred,
+                               'y err': ebars})
+            df.to_excel(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+        else:
+            fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+            df = pd.DataFrame({'y true': y_true,
+                               'y pred': y_pred})
+            df.to_excel(os.path.join(savepath, 'parity_plot_' + str(data_type) + '.xlsx'), index=False)
 
         if show_figure == True:
             plt.show()
@@ -339,7 +346,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False):
+    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False, ebars=None):
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -375,6 +382,9 @@ class Scatter():
                                'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist]),
                                'all_data_inds': np.array([item for sublist in all_data_inds for item in sublist])})
 
+        if ebars is not None:
+            df_all['ebars'] = np.array(ebars)
+
         df_all_grouped = df_all.groupby('all_data_inds', sort=False)
         df_avg = df_all_grouped.mean()
         df_std = df_all_grouped.std()
@@ -400,7 +410,12 @@ class Scatter():
         # set tick labels
         _set_tick_labels(ax, maxx, minn)
 
-        ax.errorbar(trues, preds, yerr=df_std['all_y_pred'], fmt='o',
+        if ebars is not None:
+            ax.errorbar(trues, preds, yerr=df_avg['ebars'], fmt='o',
+                        markerfacecolor='blue', markeredgecolor='black',
+                        markersize=10, alpha=0.7, capsize=3)
+        else:
+            ax.errorbar(trues, preds, yerr=df_std['all_y_pred'], fmt='o',
                     markerfacecolor='blue', markeredgecolor='black',
                     markersize=10, alpha=0.7, capsize=3)
 
@@ -419,12 +434,20 @@ class Scatter():
 
         plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
-        fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        if ebars is not None:
+            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
 
-        df = pd.DataFrame({'y true': trues,
-                           'average predicted values': preds,
-                           'error bar values': df_std['all_y_pred']})
-        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'), index=False)
+            df = pd.DataFrame({'y true': trues,
+                               'average predicted values': preds,
+                               'error bar values': df_avg['ebars']})
+            df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+        else:
+            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+
+            df = pd.DataFrame({'y true': trues,
+                               'average predicted values': preds,
+                               'error bar values': df_std['all_y_pred']})
+            df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'), index=False)
 
         df_stats = pd.DataFrame().from_dict(avg_stats)
         df_stats.to_excel(os.path.join(savepath, str(data_type)+'_average_stdev_stats_summary.xlsx'), index=False)
@@ -1472,7 +1495,17 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                            x_label='values',
                                            data_type=data_type,
                                            metrics_list=metrics,
-                                           show_figure=show_figure)
+                                           show_figure=show_figure,
+                                           ebars=None)
+            if recalibrate_errors == True:
+                Scatter.plot_predicted_vs_true(y_true=y_true,
+                                               y_pred=y_pred,
+                                               savepath=savepath,
+                                               x_label='values',
+                                               data_type=data_type,
+                                               metrics_list=metrics,
+                                               show_figure=show_figure,
+                                               ebars=model_errors_cal)
         except:
             print('Warning: unable to make Scatter.plot_predicted_vs_true plot. Skipping...')
         if splits_summary is True:
@@ -1499,6 +1532,13 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                     x_label='values',
                                                     metrics_list=metrics,
                                                     show_figure=show_figure)
+                if recalibrate_errors == True:
+                    Scatter.plot_predicted_vs_true_bars(savepath=savepath,
+                                                        data_type=data_type,
+                                                        x_label='values',
+                                                        metrics_list=metrics,
+                                                        show_figure=show_figure,
+                                                        ebars=model_errors_cal)
             except:
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
             if groups is not None:
