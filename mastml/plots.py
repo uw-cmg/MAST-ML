@@ -174,6 +174,10 @@ class Scatter():
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
         fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
 
+        df = pd.DataFrame({'y true': y_true,
+                           'y pred': y_pred})
+        df.to_excel(os.path.join(savepath, 'parity_plot_'+str(data_type)+'.xlsx'), index=False)
+
         if show_figure == True:
             plt.show()
         else:
@@ -343,27 +347,35 @@ class Scatter():
 
         y_true_list = list()
         y_pred_list = list()
+        data_ind_list = list()
         for splitdir in splitdirs:
             y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
             if data_type == 'test':
                 y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
+                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_inds.xlsx'), engine='openpyxl'))
             elif data_type == 'train':
                 y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
+                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_inds.xlsx'), engine='openpyxl'))
             elif data_type == 'leaveout':
                 y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx'), engine='openpyxl'))
+                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.xlsx'), engine='openpyxl'))
 
         all_y_true = list()
         all_y_pred = list()
-        for yt, y_pred in zip(y_true_list, y_pred_list):
+        all_data_inds = list()
+        for yt, y_pred, data_inds in zip(y_true_list, y_pred_list, data_ind_list):
             yt = np.array(check_dimensions(yt))
             y_pred = np.array(check_dimensions(y_pred))
+            data_inds = np.array(check_dimensions(data_inds))
             all_y_true.append(yt)
             all_y_pred.append(y_pred)
+            all_data_inds.append(data_inds)
 
         df_all = pd.DataFrame({'all_y_true': np.array([item for sublist in all_y_true for item in sublist]),
-                               'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist])})
+                               'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist]),
+                               'all_data_inds': np.array([item for sublist in all_data_inds for item in sublist])})
 
-        df_all_grouped = df_all.groupby(df_all['all_y_true'], sort=False)
+        df_all_grouped = df_all.groupby('all_data_inds', sort=False)
         df_avg = df_all_grouped.mean()
         df_std = df_all_grouped.std()
 
@@ -371,9 +383,12 @@ class Scatter():
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
 
+        trues = df_avg['all_y_true']
+        preds = df_avg['all_y_pred']
+
         # gather max and min
-        maxx = max(np.nanmax(df_avg.index.values.tolist()), np.nanmax(df_avg['all_y_pred']))
-        minn = min(np.nanmin(df_avg.index.values.tolist()), np.nanmin(df_avg['all_y_pred']))
+        maxx = max(np.nanmax(trues), np.nanmax(preds))
+        minn = min(np.nanmin(trues), np.nanmin(preds))
 
         # draw dashed horizontal line
         ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
@@ -385,7 +400,7 @@ class Scatter():
         # set tick labels
         _set_tick_labels(ax, maxx, minn)
 
-        ax.errorbar(df_avg.index.values.tolist(), df_avg['all_y_pred'], yerr=df_std['all_y_pred'], fmt='o',
+        ax.errorbar(trues, preds, yerr=df_std['all_y_pred'], fmt='o',
                     markerfacecolor='blue', markeredgecolor='black',
                     markersize=10, alpha=0.7, capsize=3)
 
@@ -406,10 +421,10 @@ class Scatter():
 
         fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
 
-        df = pd.DataFrame({'y true': df_avg.index.values.tolist(),
-                           'average predicted values': df_avg['all_y_pred'],
+        df = pd.DataFrame({'y true': trues,
+                           'average predicted values': preds,
                            'error bar values': df_std['all_y_pred']})
-        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'))
+        df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'), index=False)
 
         df_stats = pd.DataFrame().from_dict(avg_stats)
         df_stats.to_excel(os.path.join(savepath, str(data_type)+'_average_stdev_stats_summary.xlsx'), index=False)

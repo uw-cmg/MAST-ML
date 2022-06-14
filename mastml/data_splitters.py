@@ -459,6 +459,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                         splitouterpath = os.path.join(splitdir, 'split_outer_' + str(split_outer_count))
                         # make the feature selector directory for this split directory
                         os.mkdir(splitouterpath)
+
+                        # Save the left-out data indices
+                        pd.DataFrame({'leaveout_inds': leaveout_ind}).to_excel(os.path.join(splitouterpath, 'leaveout_inds.xlsx'), index=False)
+
                         outerdir = self._evaluate_split_sets(X_splits,
                                                              y_splits,
                                                              train_inds,
@@ -794,6 +798,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             splitpath = os.path.join(splitdir, 'split_' + str(split_count))
             os.mkdir(splitpath)
+
+            # Save the test data indices and train data indices
+            pd.DataFrame({'test_inds': test_ind}).to_excel(os.path.join(splitpath, 'test_inds.xlsx'), index=False)
+            pd.DataFrame({'train_inds': train_ind}).to_excel(os.path.join(splitpath, 'train_inds.xlsx'), index=False)
 
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
                                  hyperopt_orig, metrics, plots, group,
