@@ -987,10 +987,16 @@ class Error():
         axbarx.set_ylabel('Counts', fontsize=12)
 
         total_samples = sum(num_values_per_bin)
-        axbarx.text(0.95, round(0.67 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples), fontsize=12)
 
-        xmax = max(max(bin_values_copy) + 0.05, 1.6)
-        ymax = max(1.3, max(rms_residual_values))
+        #xmax = max(max(bin_values_copy) + 0.05, 1.6)
+        #ymax = max(1.3, max(rms_residual_values))
+
+        xmax = round(max(bin_values_copy) * 1.10, 2)
+        ymax = round(max(rms_residual_values) * 1.10, 2)
+
+        axbarx.text(0.6 * xmax, round(0.9 * max(num_values_per_bin)), 'Total counts = ' + str(total_samples),
+                    fontsize=10)
+
         ax.set_ylim(bottom=0, top=ymax)
         axbarx.set_ylim(bottom=0, top=round(max(num_values_per_bin) + 0.1*max(num_values_per_bin)))
         ax.set_xlim(left=0, right=xmax)
@@ -1139,8 +1145,15 @@ class Error():
         axbarx.tick_params(labelsize=0, axis='x')
         axbarx.set_ylabel('Counts', fontsize=12)
 
-        xmax = max(max(bin_values_uncal) + 0.05, 1.6)
-        ymax = max(1.3, max(rms_residual_values_uncal))
+        #xmax = max(max(bin_values_uncal) + 0.05, 1.6)
+        #ymax = max(1.3, max(rms_residual_values_uncal))
+
+        xmax = round(max([max(bin_values_uncal), max(bin_values_cal)]) * 1.10, 2)
+        ymax = round(max([max(rms_residual_values_uncal), max(rms_residual_values_cal)]) * 1.10, 2)
+
+        axbarx.text(0.6 * xmax, round(0.9 * max(num_values_per_bin_uncal)), 'Total counts = ' + str(sum(num_values_per_bin_uncal)),
+                    fontsize=10)
+
         ax.set_ylim(bottom=0, top=ymax)
         axbarx.set_ylim(bottom=0, top=round(max(num_values_per_bin_uncal) + 0.1*max(num_values_per_bin_uncal)))
         ax.set_xlim(left=0, right=xmax)
