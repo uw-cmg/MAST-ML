@@ -73,18 +73,14 @@ from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
 import sklearn_extra.cluster
 
-from mastml.plots import make_plots, plot_feature_occurrence, plot_avg_score_vs_occurrence
+from mastml.plots import make_plots
 from mastml.feature_selectors import NoSelect
 from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
-from mastml.models import SklearnModel
 from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.domain import Domain
-from sklearn.metrics import make_scorer
-from sklearn.model_selection import KFold
-
-from mastml.functions import parallel
+from mastml.mastml import parallel
 
 class BaseSplitter(ms.BaseCrossValidator):
     """

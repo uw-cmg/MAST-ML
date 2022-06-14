@@ -11,6 +11,8 @@ import os
 from datetime import datetime
 from collections import OrderedDict
 import json
+from pathos.multiprocessing import ProcessingPool as Pool
+from functools import partial
 
 class Mastml():
     """
@@ -235,3 +237,23 @@ class Mastml():
     @property
     def get_mastml_metadata(self):
         return self.mastml_metadata
+
+def parallel(func, x, *args, **kwargs):
+    '''
+    Run some function in parallel.
+
+    inputs:
+        func = The function to apply.
+        x = The list of items to apply function on.
+
+    outputs:
+        data = List of items returned by func.
+    '''
+
+    pool = Pool(os.cpu_count())
+    part_func = partial(func, *args, **kwargs)
+
+    with Pool(os.cpu_count()) as pool:
+        data = list(pool.imap(part_func, x))
+
+    return data
