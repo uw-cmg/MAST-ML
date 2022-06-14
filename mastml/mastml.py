@@ -94,7 +94,7 @@ class Mastml():
                 print(f"{self.savepath} not empty. Renaming...")
                 now = datetime.now()
                 self.savepath = self.savepath.rstrip(os.sep)  # remove trailing slash
-                self.savepath = f"{self.savepath}_{now.month:02d}_{now.day:02d}" \
+                self.savepath = f"{self.savepath}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
                          f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         os.makedirs(self.savepath)
         return

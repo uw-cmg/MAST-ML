@@ -1202,7 +1202,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             model_name = model.__class__.__name__
 
         dirname = model_name+'_'+self.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+        dirname = f"{dirname}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
             f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
@@ -1409,7 +1409,7 @@ class SklearnDataSplitter(BaseSplitter):
             dirname = model_name + '_' + model.base_estimator_ + '_' + self.splitter.__class__.__name__ + '_' +preprocessor.__class__.__name__+'_'+ selector.__class__.__name__
         else:
             dirname = model_name +'_'+self.splitter.__class__.__name__+'_'+preprocessor.__class__.__name__+'_'+selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+        dirname = f"{dirname}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
             f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
