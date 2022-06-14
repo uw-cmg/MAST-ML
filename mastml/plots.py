@@ -49,10 +49,6 @@ matplotlib.rc('figure', autolayout=True)  # turn on autolayout
 
 warnings.filterwarnings(action="ignore")
 
-# adding dpi as a constant global so it can be changed later
-DPI = 250
-
-
 class Scatter():
     """
     Class to generate scatter plots, such as parity plots showing true vs. predicted data values
@@ -140,7 +136,7 @@ class Scatter():
     """
     @classmethod
     def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False,
-                               ebars=None):
+                               ebars=None, file_extension='.csv', image_dpi=250):
 
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
@@ -180,10 +176,13 @@ class Scatter():
                                'y err': ebars})
             df.to_excel(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
         else:
-            fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+            fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
             df = pd.DataFrame({'y true': y_true,
                                'y pred': y_pred})
-            df.to_excel(os.path.join(savepath, 'parity_plot_' + str(data_type) + '.xlsx'), index=False)
+            if file_extension == '.xlsx':
+                df.to_excel(os.path.join(savepath, 'parity_plot_' + str(data_type) + '.xlsx'), index=False)
+            elif file_extension == '.csv':
+                df.to_csv(os.path.join(savepath, 'parity_plot_' + str(data_type) + '.csv'), index=False)
 
         if show_figure == True:
             plt.show()
@@ -192,7 +191,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_best_worst_split(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
+    def plot_best_worst_split(cls, savepath, data_type, x_label, metrics_list, show_figure=False, file_extension='.csv', image_dpi=250):
 
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
@@ -211,16 +210,29 @@ class Scatter():
             if stats_dict['root_mean_squared_error'] > rmse_worst:
                 worst_split = split
                 rmse_worst = stats_dict['root_mean_squared_error']
-        if data_type == 'test':
-            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_test.xlsx'), engine='openpyxl')
-            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred.xlsx'), engine='openpyxl')
-            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_test.xlsx'), engine='openpyxl')
-            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred.xlsx'), engine='openpyxl')
-        elif data_type == 'train':
-            y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_train.xlsx'), engine='openpyxl')
-            y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.xlsx'), engine='openpyxl')
-            y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_train.xlsx'), engine='openpyxl')
-            y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.xlsx'), engine='openpyxl')
+        if file_extension == '.xlsx':
+            if data_type == 'test':
+                y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_test.xlsx'), engine='openpyxl')
+                y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred.xlsx'), engine='openpyxl')
+                y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_test.xlsx'), engine='openpyxl')
+                y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred.xlsx'), engine='openpyxl')
+            elif data_type == 'train':
+                y_true_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_train.xlsx'), engine='openpyxl')
+                y_pred_best = pd.read_excel(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.xlsx'), engine='openpyxl')
+                y_true_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_train.xlsx'), engine='openpyxl')
+                y_pred_worst = pd.read_excel(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.xlsx'), engine='openpyxl')
+        elif file_extension == '.csv':
+            if data_type == 'test':
+                y_true_best = pd.read_csv(os.path.join(os.path.join(savepath, best_split), 'y_test.csv'))
+                y_pred_best = pd.read_csv(os.path.join(os.path.join(savepath, best_split), 'y_pred.csv'))
+                y_true_worst = pd.read_csv(os.path.join(os.path.join(savepath, worst_split), 'y_test.csv'))
+                y_pred_worst = pd.read_csv(os.path.join(os.path.join(savepath, worst_split), 'y_pred.csv'))
+            elif data_type == 'train':
+                y_true_best = pd.read_csv(os.path.join(os.path.join(savepath, best_split), 'y_train.csv'))
+                y_pred_best = pd.read_csv(os.path.join(os.path.join(savepath, best_split), 'y_pred_train.csv'))
+                y_true_worst = pd.read_csv(os.path.join(os.path.join(savepath, worst_split), 'y_train.csv'))
+                y_pred_worst = pd.read_csv(os.path.join(os.path.join(savepath, worst_split), 'y_pred_train.csv'))
+
 
         # Make the dataframe/array 1D if it isn't
         y_true_best = check_dimensions(y_true_best)
@@ -235,8 +247,6 @@ class Scatter():
         maxx = max(np.nanmax(y_true_best), np.nanmax(y_pred_best), np.nanmax(y_true_worst), np.nanmax(y_pred_worst))
         minn = min(np.nanmin(y_true_best), np.nanmin(y_pred_best), np.nanmin(y_true_worst), np.nanmin(y_pred_worst))
 
-        #maxx = round(float(max1), rounder(max1 - min1))
-        #minn = round(float(min1), rounder(max1 - min1))
         _set_tick_labels(ax, maxx, minn)
 
         ax.scatter(y_true_best, y_pred_best, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7, label='Best split')
@@ -257,7 +267,7 @@ class Scatter():
         plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize': 12, 'color': 'red'})
 
         # Save data to excel file and image
-        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_split_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_split_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
@@ -266,7 +276,7 @@ class Scatter():
 
     #TODO: this method runs into issues when the y_true data have multiple instances where the y data have the same value, leading to size mismatch errors
     @classmethod
-    def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False):
+    def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False, file_extension='.csv', image_dpi=250):
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -274,12 +284,20 @@ class Scatter():
 
         y_true_list = list()
         y_pred_list = list()
-        for splitdir in splitdirs:
-            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
-            if data_type == 'test':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
-            elif data_type == 'train':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
+        if file_extension == '.xlsx':
+            for splitdir in splitdirs:
+                y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
+                if data_type == 'test':
+                    y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
+                elif data_type == 'train':
+                    y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
+        elif file_extension == '.csv':
+            for splitdir in splitdirs:
+                y_true_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.csv')))
+                if data_type == 'test':
+                    y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred.csv')))
+                elif data_type == 'train':
+                    y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.csv')))
 
         all_y_true = list()
         all_y_pred = list()
@@ -338,7 +356,7 @@ class Scatter():
         plot_stats(fig, stats_dict_worst, x_align=0.65, y_align=0.50, font_dict={'fontsize': 10, 'color': 'r'})
 
         # Save data to excel file and image
-        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_eachpoint_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'parity_plot_best_worst_eachpoint_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
@@ -346,7 +364,8 @@ class Scatter():
         return
 
     @classmethod
-    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False, ebars=None):
+    def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False, ebars=None,
+                                    file_extension='.csv', image_dpi=250):
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -355,17 +374,32 @@ class Scatter():
         y_true_list = list()
         y_pred_list = list()
         data_ind_list = list()
-        for splitdir in splitdirs:
-            y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
-            if data_type == 'test':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
-                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_inds.xlsx'), engine='openpyxl'))
-            elif data_type == 'train':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
-                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_inds.xlsx'), engine='openpyxl'))
-            elif data_type == 'leaveout':
-                y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx'), engine='openpyxl'))
-                data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.xlsx'), engine='openpyxl'))
+        if file_extension == '.xlsx':
+            for splitdir in splitdirs:
+                y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
+                if data_type == 'test':
+                    y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
+                    data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_inds.xlsx'), engine='openpyxl'))
+                elif data_type == 'train':
+                    y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
+                    data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_inds.xlsx'), engine='openpyxl'))
+                elif data_type == 'leaveout':
+                    y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx'), engine='openpyxl'))
+                    data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.xlsx'), engine='openpyxl'))
+        elif file_extension == '.csv':
+            for splitdir in splitdirs:
+                y_true_list.append(
+                    pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_' + str(data_type) + '.csv')))
+                if data_type == 'test':
+                    y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred.csv')))
+                    data_ind_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'test_inds.csv')))
+                elif data_type == 'train':
+                    y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.csv')))
+                    data_ind_list.append(
+                        pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'train_inds.csv')))
+                elif data_type == 'leaveout':
+                    y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.csv')))
+                    data_ind_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.csv')))
 
         all_y_true = list()
         all_y_pred = list()
@@ -421,7 +455,10 @@ class Scatter():
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            if file_extension == '.xlsx':
+                stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            elif file_extension == '.csv':
+                stats_files_dict[splitdir] = pd.read_csv(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.csv')).to_dict('records')[0]
             metrics_list = list(stats_files_dict[splitdir].keys())
 
         avg_stats = dict()
@@ -435,22 +472,31 @@ class Scatter():
         plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
         if ebars is not None:
-            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
 
             df = pd.DataFrame({'y true': trues,
                                'average predicted values': preds,
                                'error bar values': df_avg['ebars']})
-            df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+            if file_extension == '.xlsx':
+                df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+            elif file_extension == '.csv':
+                df.to_csv(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.csv'), index=False)
         else:
-            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
 
             df = pd.DataFrame({'y true': trues,
                                'average predicted values': preds,
                                'error bar values': df_std['all_y_pred']})
-            df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'), index=False)
+            if file_extension == '.xlsx':
+                df.to_excel(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.xlsx'), index=False)
+            elif file_extension == '.csv':
+                df.to_csv(os.path.join(savepath, 'parity_plot_allsplits_average_' + str(data_type) + '.csv'), index=False)
 
         df_stats = pd.DataFrame().from_dict(avg_stats)
-        df_stats.to_excel(os.path.join(savepath, str(data_type)+'_average_stdev_stats_summary.xlsx'), index=False)
+        if file_extension == '.xlsx':
+            df_stats.to_excel(os.path.join(savepath, str(data_type)+'_average_stdev_stats_summary.xlsx'), index=False)
+        elif file_extension == '.csv':
+            df_stats.to_csv(os.path.join(savepath, str(data_type) + '_average_stdev_stats_summary.csv'), index=False)
 
         if show_figure == True:
             plt.show()
@@ -459,7 +505,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_metric_vs_group(cls, savepath, data_type, show_figure):
+    def plot_metric_vs_group(cls, savepath, data_type, show_figure, image_dpi=250):
 
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
@@ -493,7 +539,7 @@ class Scatter():
             ax.set_xticklabels(labels=groups, fontsize=14)
             plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
-            fig.savefig(os.path.join(savepath, str(metric)+'_value_per_group_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+            fig.savefig(os.path.join(savepath, str(metric)+'_value_per_group_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
             if show_figure == True:
                 plt.show()
             else:
@@ -622,7 +668,7 @@ class Error():
 
     """
     @classmethod
-    def plot_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False):
+    def plot_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False, file_extension='.csv', image_dpi=250):
 
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -650,21 +696,23 @@ class Error():
                          "residuals": residuals,
                          "model normalized residuals (plotted y green values)": density_residuals(x),
                          "model errors (plotted y purple values)": density_errors(x)}
-            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'normalized_error_data_'+str(data_type)+'.xlsx'))
         else:
             # Save data to csv file
             data_dict = {"x values": x,
                          # "analytical gaussian": norm.pdf(x, mu, sigma),
                          "model normalized residuals (plotted y green values)": density_residuals(x)}
-            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'normalized_error_data_'+str(data_type)+'.xlsx'))
             maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
             miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
 
+        if file_extension == '.xlsx':
+            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'normalized_error_data_'+str(data_type)+'.xlsx'))
+        elif file_extension == '.csv':
+            pd.DataFrame(data_dict).to_csv(os.path.join(savepath, 'normalized_error_data_' + str(data_type) + '.csv'))
         ax.legend(loc=0, fontsize=12, frameon=False)
         ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
         ax.set_ylabel("Probability density", fontsize=18)
         _set_tick_labels_different(ax, maxx, minn, maxy, miny)
-        fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
         if show_figure is True:
             plt.show()
         else:
@@ -672,7 +720,7 @@ class Error():
         return
 
     @classmethod
-    def plot_cumulative_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False):
+    def plot_cumulative_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False, file_extension='.csv', image_dpi=250):
 
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
@@ -705,18 +753,18 @@ class Error():
                 "Model Residuals (sorted, green data)": X_residuals,
                 "Model error values (r value: (ytrue-ypred)/(model error avg))": rstat,
                 "Model errors (sorted, purple values)": X_errors}
-            # Save this way to avoid issue with different array sizes in data_dict
-            df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
-            df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
         else:
             # Save data to csv file
             data_dict = {  # "x analytical": X_analytic,
                 # "analytical gaussian": n_analytic,
                 "Model Residuals (sorted, green data)": X_residuals,
                 "model residuals": n_residuals}
-            # Save this way to avoid issue with different array sizes in data_dict
-            df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
+        # Save this way to avoid issue with different array sizes in data_dict
+        df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
+        if file_extension == '.xlsx':
             df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
+        elif file_extension == '.csv':
+            df.to_csv(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.csv'), index=False)
 
         ax.legend(loc=0, fontsize=14, frameon=False)
         xlabels = np.linspace(2, 3, 3)
@@ -738,7 +786,7 @@ class Error():
         _set_tick_labels_different(ax, maxx, minn, maxy, miny)
 
         mark_inset(ax, axin, loc1=1, loc2=2)
-        fig.savefig(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
         if show_figure is True:
             plt.show()
         else:
@@ -746,7 +794,7 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False):
+    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False, image_dpi=250):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -772,7 +820,7 @@ class Error():
         if is_calibrated == True:
             calibrate = 'calibrated'
 
-        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -782,7 +830,7 @@ class Error():
 
     @classmethod
     def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
-                                     show_figure=False):
+                                     show_figure=False, image_dpi=250):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -807,7 +855,7 @@ class Error():
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
-        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -817,7 +865,7 @@ class Error():
 
     @classmethod
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, is_calibrated=False, well_sampled_fraction=0.025):
+                                     show_figure=False, is_calibrated=False, well_sampled_fraction=0.025, image_dpi=250):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
@@ -934,7 +982,7 @@ class Error():
             calibrate = 'calibrated'
 
         fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
-                    dpi=300, bbox_inches='tight')
+                    dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -946,7 +994,7 @@ class Error():
     @classmethod
     def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, model_errors_cal,
                                                        residuals, dataset_stdev, show_figure=False,
-                                                       well_sampled_fraction=0.025):
+                                                       well_sampled_fraction=0.025, image_dpi=250):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                                      residuals=residuals,
@@ -1084,7 +1132,7 @@ class Error():
         ax.legend(loc='lower right', fontsize=8)
 
         fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
-                    dpi=300, bbox_inches='tight')
+                    dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -1141,7 +1189,7 @@ class Histogram():
 
     """
     @classmethod
-    def plot_histogram(cls, df, savepath, file_name, x_label, show_figure=False):
+    def plot_histogram(cls, df, savepath, file_name, x_label, show_figure=False, file_extension='.csv', image_dpi=250):
         # Make the dataframe 1D if it isn't
         df = check_dimensions(df)
 
@@ -1162,9 +1210,13 @@ class Histogram():
         plot_stats(fig, dict(df.describe()), x_align=x_align, y_align=0.90, fontsize=12)
 
         # Save data to excel file and image
-        df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
-        df.describe().to_excel(os.path.join(savepath, file_name + '_statistics.xlsx'))
-        fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=DPI, bbox_inches='tight')
+        if file_extension == '.xlsx':
+            df.to_excel(os.path.join(savepath, file_name + '.xlsx'))
+            df.describe().to_excel(os.path.join(savepath, file_name + '_statistics.xlsx'))
+        elif file_extension == '.csv':
+            df.to_csv(os.path.join(savepath, file_name + '.csv'))
+            df.describe().to_csv(os.path.join(savepath, file_name + '_statistics.csv'))
+        fig.savefig(os.path.join(savepath, file_name + '.png'), dpi=image_dpi, bbox_inches='tight')
         if show_figure == True:
             plt.show()
         else:
@@ -1172,7 +1224,7 @@ class Histogram():
         return
 
     @classmethod
-    def plot_residuals_histogram(cls, y_true, y_pred, savepath, show_figure=False, file_name='residual_histogram'):
+    def plot_residuals_histogram(cls, y_true, y_pred, savepath, show_figure=False, file_extension='.csv', image_dpi=250, file_name='residual_histogram'):
         y_true = check_dimensions(y_true)
         y_pred = check_dimensions(y_pred)
         residuals = y_pred-y_true
@@ -1180,7 +1232,9 @@ class Histogram():
                            savepath=savepath,
                            file_name=file_name,
                            x_label='Residuals',
-                           show_figure=show_figure)
+                           show_figure=show_figure,
+                           file_extension=file_extension,
+                           image_dpi=image_dpi)
         return
 
     @classmethod
@@ -1237,7 +1291,7 @@ class Line():
     '''
     @classmethod
     def plot_learning_curve(cls, train_sizes, train_mean, test_mean, train_stdev, test_stdev, score_name,
-                            learning_curve_type, savepath):
+                            learning_curve_type, savepath, image_dpi=250):
 
         # Set image aspect ratio (do custom for learning curve):
         w, h = figaspect(0.75)
@@ -1280,7 +1334,7 @@ class Line():
             raise ValueError(
                 'The param "learning_curve_type" must be either "data_learning_curve" or "feature_learning_curve"')
         ax.set_ylabel(score_name, fontsize=16)
-        fig.savefig(os.path.join(savepath, learning_curve_type + '.png'), dpi=DPI, bbox_inches='tight')
+        fig.savefig(os.path.join(savepath, learning_curve_type + '.png'), dpi=image_dpi, bbox_inches='tight')
         return
 
 
@@ -1436,7 +1490,8 @@ def plot_avg_score_vs_occurrence(savepath, occurrence, score, std_score):
     return
 
 def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
-               savepath, data_type, X_test=None, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False):
+               savepath, data_type, X_test=None, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False,
+               file_extension='.csv', image_dpi=250):
     """
     Helper function to make collections of different types of plots after a single or multiple data splits are evaluated.
 
@@ -1484,7 +1539,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                y_pred=y_pred,
                                                savepath=savepath,
                                                file_name='residual_histogram_'+str(data_type),
-                                               show_figure=show_figure)
+                                               show_figure=show_figure,
+                                               file_extension=file_extension,
+                                               image_dpi=image_dpi)
         except:
             print('Warning: unable to make Histogram.plot_residuals_histogram. Skipping...')
     if 'Scatter' in plots:
@@ -1496,7 +1553,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                            data_type=data_type,
                                            metrics_list=metrics,
                                            show_figure=show_figure,
-                                           ebars=None)
+                                           ebars=None,
+                                           file_extension=file_extension,
+                                           image_dpi=image_dpi)
             if recalibrate_errors == True:
                 Scatter.plot_predicted_vs_true(y_true=y_true,
                                                y_pred=y_pred,
@@ -1505,7 +1564,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                data_type=data_type,
                                                metrics_list=metrics,
                                                show_figure=show_figure,
-                                               ebars=model_errors_cal)
+                                               ebars=model_errors_cal,
+                                               file_extension=file_extension,
+                                               image_dpi=image_dpi)
         except:
             print('Warning: unable to make Scatter.plot_predicted_vs_true plot. Skipping...')
         if splits_summary is True:
@@ -1515,7 +1576,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                   data_type=data_type,
                                                   x_label='values',
                                                   metrics_list=metrics,
-                                                  show_figure=show_figure)
+                                                  show_figure=show_figure,
+                                                  file_extension=file_extension,
+                                                  image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Scatter.plot_best_worst_split plot. Skipping...')
                 try:
@@ -1523,7 +1586,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                       data_type=data_type,
                                                       x_label='values',
                                                       metrics_list=metrics,
-                                                      show_figure=show_figure)
+                                                      show_figure=show_figure,
+                                                    file_extension=file_extension,
+                                                    image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Scatter.plot_best_worst_per_point plot. Skipping...')
             try:
@@ -1531,21 +1596,26 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                     data_type=data_type,
                                                     x_label='values',
                                                     metrics_list=metrics,
-                                                    show_figure=show_figure)
+                                                    show_figure=show_figure,
+                                                    file_extension=file_extension,
+                                                    image_dpi=image_dpi)
                 if recalibrate_errors == True:
                     Scatter.plot_predicted_vs_true_bars(savepath=savepath,
                                                         data_type=data_type,
                                                         x_label='values',
                                                         metrics_list=metrics,
                                                         show_figure=show_figure,
-                                                        ebars=model_errors_cal)
+                                                        ebars=model_errors_cal,
+                                                        file_extension=file_extension,
+                                                        image_dpi=image_dpi)
             except:
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
             if groups is not None:
                 try:
                     Scatter.plot_metric_vs_group(savepath=savepath,
                                                  data_type=data_type,
-                                                 show_figure=show_figure)
+                                                 show_figure=show_figure,
+                                                 image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Scatter.plot_metric_vs_group plot. Skipping...')
     if 'Error' in plots:
@@ -1554,7 +1624,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                         savepath=savepath,
                                         data_type=data_type,
                                         model_errors=model_errors,
-                                        show_figure=show_figure)
+                                        show_figure=show_figure,
+                                        file_extension=file_extension,
+                                        image_dpi=image_dpi)
         except:
             print('Warning: unable to make Error.plot_normalized_error plot. Skipping...')
         try:
@@ -1562,7 +1634,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                    savepath=savepath,
                                                    data_type=data_type,
                                                    model_errors=model_errors,
-                                                   show_figure=show_figure)
+                                                   show_figure=show_figure,
+                                                    file_extension=file_extension,
+                                                    image_dpi=image_dpi)
         except:
             print('Warning: unable to make Error.plot_cumulative_normalized_error plot. Skipping...')
         if has_model_errors is True:
@@ -1572,7 +1646,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                  model_errors=model_errors,
                                  residuals=residuals,
                                  show_figure=show_figure,
-                                 is_calibrated=False)
+                                 is_calibrated=False,
+                                 image_dpi=image_dpi)
             except:
                 print('Warning: unable to make Error.plot_rstat plot. Skipping...')
             try:
@@ -1583,7 +1658,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                    residuals=residuals,
                                                    dataset_stdev=dataset_stdev,
                                                    show_figure=show_figure,
-                                                   is_calibrated=False)
+                                                   is_calibrated=False,
+                                                    image_dpi=image_dpi)
             except:
                 print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
             if recalibrate_errors is True:
@@ -1593,7 +1669,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                      residuals=residuals,
                                      model_errors=model_errors_cal,
                                      show_figure=show_figure,
-                                     is_calibrated=True)
+                                     is_calibrated=True,
+                                     image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_rstat plot. Skipping...')
                 try:
@@ -1602,7 +1679,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                        residuals=residuals,
                                                        model_errors=model_errors,
                                                        model_errors_cal=model_errors_cal,
-                                                       show_figure=False)
+                                                       show_figure=False,
+                                                       image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_rstat_uncal_cal_overlay plot. Skipping...')
                 try:
@@ -1613,7 +1691,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                        model_errors=model_errors_cal,
                                                        dataset_stdev=dataset_stdev,
                                                        show_figure=show_figure,
-                                                       is_calibrated=True)
+                                                       is_calibrated=True,
+                                                        image_dpi = image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
                 try:
@@ -1624,7 +1703,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                                          model_errors_cal=model_errors_cal,
                                                                          residuals=residuals,
                                                                          dataset_stdev=dataset_stdev,
-                                                                         show_figure=False)
+                                                                         show_figure=False,
+                                                                         image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_real_vs_predicted_error_uncal_cal_overlay plot. Skipping...')
     if 'Classification' in plots:

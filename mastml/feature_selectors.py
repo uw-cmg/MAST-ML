@@ -100,7 +100,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X
 
-    def evaluate(self, X, y, savepath=None, make_new_dir=False):
+    def evaluate(self, X, y, savepath=None, make_new_dir=False, file_extension='.csv'):
         if savepath is None:
             savepath = os.getcwd()
         self.fit(X=X, y=y)
@@ -112,28 +112,51 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
                 f.write(str(feature) + '\n')
-        if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
-            self.feature_importances_sorted.to_excel(
-                os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
-        if self.__class__.__name__ == 'PearsonSelector':
-            self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
-            self.highly_correlated_features.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
-            self.highly_correlated_features_flagged.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
-            self.features_highly_correlated_with_target.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
-        if self.__class__.__name__ == 'MASTMLFeatureSelector':
-            self.mastml_forward_selection_df.to_excel(
-                os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        if file_extension == '.xlsx':
+            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                self.feature_importances_sorted.to_excel(
+                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
+            if self.__class__.__name__ == 'PearsonSelector':
+                self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
+                self.highly_correlated_features.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
+                self.highly_correlated_features_flagged.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
+                self.features_highly_correlated_with_target.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
+            if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                self.mastml_forward_selection_df.to_excel(
+                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
 
-        if self.__class__.__name__ == 'ShapFeatureSelector':
-            self.feature_imp_shap.to_excel(
-                os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx')
-            )
-            if (self.make_plot == True):
-                shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi = 150, bbox_inches = "tight")
+            if self.__class__.__name__ == 'ShapFeatureSelector':
+                self.feature_imp_shap.to_excel(
+                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx'))
+                if (self.make_plot == True):
+                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi = 150, bbox_inches = "tight")
+        elif file_extension == '.csv':
+            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                self.feature_importances_sorted.to_csv(
+                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.csv'))
+            if self.__class__.__name__ == 'PearsonSelector':
+                self.full_correlation_matrix.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.csv'))
+                self.highly_correlated_features.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.csv'))
+                self.highly_correlated_features_flagged.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.csv'))
+                self.features_highly_correlated_with_target.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.csv'))
+            if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                self.mastml_forward_selection_df.to_csv(
+                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.csv'))
+
+            if self.__class__.__name__ == 'ShapFeatureSelector':
+                self.feature_imp_shap.to_csv(
+                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.csv'))
+                if (self.make_plot == True):
+                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi=150, bbox_inches="tight")
 
         X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
@@ -141,7 +164,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def _setup_savedir(self, selector, savepath):
         now = datetime.now()
         dirname = selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+        dirname = f"{dirname}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
                   f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()

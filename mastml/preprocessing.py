@@ -94,7 +94,7 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             return pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
         return self.preprocessor.fit_transform(X=X)
 
-    def evaluate(self, X, y=None, savepath=None, file_name='', make_new_dir=False):
+    def evaluate(self, X, y=None, savepath=None, file_name='', make_new_dir=False, file_extension='.csv'):
         if not savepath:
             savepath = os.getcwd()
         if make_new_dir is True:
@@ -102,7 +102,10 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             savepath = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
-            Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))
+            if file_extension == '.xlsx':
+                Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))
+            elif file_extension == '.csv':
+                Xnew.to_csv(os.path.join(savepath, 'data_preprocessed_' + file_name + '.csv'))
         else:
             Xnew = self.preprocessor.fit_transform(X=X)
             np.savetxt(os.path.join(savepath, 'data_preprocessed_'+file_name+'.csv'), Xnew)
@@ -126,7 +129,7 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
     def _setup_savedir(self, savepath):
         now = datetime.now()
         dirname = self.preprocessor.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+        dirname = f"{dirname}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
                         f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
