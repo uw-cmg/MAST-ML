@@ -12,6 +12,12 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
     <img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' />
 </a>
 
+## Run example notebooks in Google Colab:
+
+* Tutorial 1: Getting Started with MAST-ML
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_1_GettingStarted.ipynb)
+
+
 ## MAST-ML version 3.x Major Updates
 * MAST-ML no longer uses an input file. The core functionality and workflow of MAST-ML has been rewritten to be more conducive to use in a Jupyter notebook environment. This major change has made the code more modular and transparent, and we believe more intuitive and easier to use in a research setting. The last version of MAST-ML to have input file support was version 2.0.20 on PyPi.
 
