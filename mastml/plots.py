@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 from collections import Iterable
 from math import log, ceil
+import scipy
 from scipy.stats import gaussian_kde, norm
 import scipy.stats as stats
 
@@ -43,6 +44,8 @@ from matplotlib.font_manager import FontProperties
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+import statsmodels.api as sm
 
 matplotlib.rc('font', size=18, family='sans-serif')  # set all font to bigger
 matplotlib.rc('figure', autolayout=True)  # turn on autolayout
@@ -667,6 +670,30 @@ class Error():
                 None
 
     """
+
+    @classmethod
+    def plot_qq(cls, residuals, savepath, data_type, show_figure, image_dpi=250):
+        x_align = 0.64
+        fig, ax = make_fig_ax(x_align=x_align)
+        fig = sm.qqplot(data=residuals, dist=scipy.stats.distributions.norm, line='45', fit=True,
+                            ax=ax, markerfacecolor='blue', markeredgecolor='darkblue',
+                            zorder=2, markersize=10, alpha=0.7)
+        ax.set_xlim(-5, 5)
+        ax.set_ylim(-5, 5)
+        ax.set_xlabel('Normal distribution quantiles', fontsize=14)
+        ax.set_ylabel('Model residual quantiles', fontsize=14)
+        ax.get_lines()[1].set_color("black")
+        ax.get_lines()[1].set_linewidth("1.5")
+        ax.get_lines()[1].set_linestyle("--")
+        ax.xaxis.get_label().set_fontsize(12)
+        ax.yaxis.get_label().set_fontsize(12)
+        fig.savefig(os.path.join(savepath, 'qq_plot_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
+        if show_figure is True:
+            plt.show()
+        else:
+            plt.close()
+        return
+
     @classmethod
     def plot_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False, file_extension='.csv', image_dpi=250):
 
@@ -1619,6 +1646,12 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 except:
                     print('Warning: unable to make Scatter.plot_metric_vs_group plot. Skipping...')
     if 'Error' in plots:
+        #add try here
+        Error.plot_qq(residuals=residuals,
+                      savepath=savepath,
+                      data_type=data_type,
+                      show_figure=show_figure,
+                      image_dpi=image_dpi)
         try:
             Error.plot_normalized_error(residuals=residuals,
                                         savepath=savepath,
