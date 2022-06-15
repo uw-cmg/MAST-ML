@@ -838,7 +838,7 @@ class Error():
         ax.set_xlabel('residuals / model error estimates')
         ax.set_ylabel('relative counts')
         ax.hist(residuals/model_errors, bins=30, color='blue', edgecolor='black', density=True)
-        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
+        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
         ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes)
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes)
 
@@ -877,7 +877,7 @@ class Error():
         ax.set_ylabel('relative counts')
         ax.hist(residuals/model_errors, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
         ax.hist(residuals/model_errors_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
-        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='orange')
+        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
         ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
