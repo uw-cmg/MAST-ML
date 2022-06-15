@@ -110,6 +110,10 @@ class Baseline_tests():
 
         y_predict = model.predict(X_test)
 
+        # The edge case of predicting a single value
+        if isinstance(y_predict, float):
+            y_predict = np.array([y_predict])
+
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=fake_test)
         return self.to_excel(real_score, naive_score)
@@ -119,6 +123,10 @@ class Baseline_tests():
         # Shuffling the y-data values to make it so that the X features do not correspond to the correct y data.
         fake_test = y_test.sample(frac=1)
         y_predict = model.predict(X_test)
+
+        # The edge case of predicting a single value
+        if isinstance(y_predict, float):
+            y_predict = np.array([y_predict])
 
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
@@ -134,6 +142,10 @@ class Baseline_tests():
             fake_test.append(y_train[i])
         fake_test = pd.DataFrame(fake_test)
         y_predict = model.predict(X_test)
+
+        # The edge case of predicting a single value
+        if isinstance(y_predict, float):
+            y_predict = np.array([y_predict])
 
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=fake_test)
@@ -152,6 +164,10 @@ class Baseline_tests():
             fake_test.append(y_train[nn_index])
 
         y_predict = model.predict(X_test)
+
+        # The edge case of predicting a single value
+        if isinstance(y_predict, float):
+            y_predict = np.array([y_predict])
 
         real_score = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_predict)
         naive_score = Metrics(metrics_list=metrics).evaluate(y_true=fake_test, y_pred=y_predict)
