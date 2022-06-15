@@ -139,7 +139,7 @@ class Scatter():
     """
     @classmethod
     def plot_predicted_vs_true(cls, y_true, y_pred, savepath, data_type, x_label, metrics_list=None, show_figure=False,
-                               ebars=None, file_extension='.csv', image_dpi=250):
+                               ebars=None, file_extension='.csv', image_dpi=250, groups=None):
 
         # Make the dataframe/array 1D if it isn't
         y_true = check_dimensions(y_true)
@@ -154,10 +154,45 @@ class Scatter():
 
         _set_tick_labels(ax, maxx, minn)
 
-        ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
+        if groups is not None:
+            groups_unique = np.unique(groups)
+            colors = ['blue', 'green', 'red', 'purple', 'orange', 'black', 'grey']
+            shapes = ['o', 's', '^', 'x', '<', '>', 'h']
+            count = 0
+            lap = 0
+            for group in groups_unique:
+                ax.scatter(np.array(y_true)[np.where(groups==group)], np.array(y_pred)[np.where(groups==group)], c=colors[count],
+                           marker=shapes[lap], zorder=2, s=100, alpha=0.7, label=group)
+                if count < len(colors)-1:
+                    count += 1
+                else:
+                    lap += 1
+                    count = 0
+            ax.legend(loc='best', fontsize=8)
+
+        else:
+            ax.scatter(y_true, y_pred, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
+
         if ebars is not None:
-            ax.errorbar(y_true, y_pred, yerr=ebars, fmt='o',
-                        markerfacecolor='blue', markeredgecolor='black',
+            if groups is not None:
+                groups_unique = np.unique(groups)
+                colors = ['blue', 'green', 'red', 'purple', 'orange', 'black', 'grey']
+                shapes = ['o', 's', '^', 'x', '<', '>', 'h']
+                count = 0
+                lap = 0
+                for group in groups_unique:
+                    ax.errorbar(np.array(y_true)[np.where(groups == group)], np.array(y_pred)[np.where(groups == group)],
+                                yerr=np.array(ebars)[np.where(groups == group)], fmt=shapes[lap], markerfacecolor=colors[count],
+                                markeredgecolor=colors[count], ecolor=colors[count], markersize=10, alpha=0.7, capsize=3)
+                    if count < len(colors) - 1:
+                        count += 1
+                    else:
+                        lap += 1
+                        count = 0
+                ax.legend(loc='best', fontsize=8)
+            else:
+                ax.errorbar(y_true, y_pred, yerr=ebars, fmt='o',
+                        markerfacecolor='blue', markeredgecolor='black', ecolor='blue',
                         markersize=10, alpha=0.7, capsize=3)
 
         # draw dashed horizontal line
@@ -171,15 +206,36 @@ class Scatter():
             metrics_list = ['r2_score', 'mean_absolute_error', 'root_mean_squared_error', 'rmse_over_stdev']
         stats_dict = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
 
+        if groups is not None:
+            stats_dict_group = dict()
+            for group in groups_unique:
+                stats_dict_group[group] = Metrics(metrics_list=metrics_list).evaluate(y_true=np.array(y_true)[np.where(groups==group)],
+                                                                                      y_pred=np.array(y_pred)[np.where(groups==group)])
+            stats_dict_group['Overall'] = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
+            stats_group_df = pd.DataFrame().from_dict(stats_dict_group, orient='index', columns=metrics_list)
+            if file_extension == '.xlsx':
+                stats_group_df.to_excel(os.path.join(savepath, 'parity_plot_'+str(data_type)+ '_pergroupstats' +'.xlsx'))
+            elif file_extension == '.csv':
+                stats_group_df.to_csv(os.path.join(savepath, 'parity_plot_'+str(data_type)+ '_pergroupstats' +'.csv'))
+
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
         if ebars is not None:
-            fig.savefig(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=DPI, bbox_inches='tight')
+            if groups is not None:
+                fig.savefig(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_grouplabels_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            else:
+                fig.savefig(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
             df = pd.DataFrame({'y true': y_true,
                                'y pred': y_pred,
                                'y err': ebars})
-            df.to_excel(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+            if file_extension == '.xlsx':
+                df.to_excel(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.xlsx'), index=False)
+            elif file_extension == '.csv':
+                df.to_csv(os.path.join(savepath, 'parity_plot_withcalibratederrorbars_' + str(data_type) + '.csv'), index=False)
         else:
-            fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            if groups is not None:
+                fig.savefig(os.path.join(savepath, 'parity_plot_grouplabels_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            else:
+                fig.savefig(os.path.join(savepath, 'parity_plot_'+str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
             df = pd.DataFrame({'y true': y_true,
                                'y pred': y_pred})
             if file_extension == '.xlsx':
@@ -368,7 +424,7 @@ class Scatter():
 
     @classmethod
     def plot_predicted_vs_true_bars(cls, savepath, x_label, data_type, metrics_list, show_figure=False, ebars=None,
-                                    file_extension='.csv', image_dpi=250):
+                                    file_extension='.csv', image_dpi=250, groups=None):
 
         # Get lists of all ytrue and ypred for each split
         dirs = os.listdir(savepath)
@@ -377,36 +433,51 @@ class Scatter():
         y_true_list = list()
         y_pred_list = list()
         data_ind_list = list()
+        groups_list = list()
         if file_extension == '.xlsx':
             for splitdir in splitdirs:
                 y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
                 if data_type == 'test':
                     y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
                     data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_inds.xlsx'), engine='openpyxl'))
+                    if groups is not None:
+                        groups_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_groups.xlsx'), engine='openpyxl'))
                 elif data_type == 'train':
                     y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
                     data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_inds.xlsx'), engine='openpyxl'))
+                    if groups is not None:
+                        groups_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_groups.xlsx'), engine='openpyxl'))
                 elif data_type == 'leaveout':
                     y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.xlsx'), engine='openpyxl'))
                     data_ind_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.xlsx'), engine='openpyxl'))
+                    if groups is not None:
+                        groups_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'leaveout_groups.xlsx'), engine='openpyxl'))
         elif file_extension == '.csv':
             for splitdir in splitdirs:
-                y_true_list.append(
-                    pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_' + str(data_type) + '.csv')))
+                y_true_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_' + str(data_type) + '.csv')))
                 if data_type == 'test':
                     y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred.csv')))
                     data_ind_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'test_inds.csv')))
+                    if groups is not None:
+                        groups_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'test_groups.csv')))
                 elif data_type == 'train':
                     y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.csv')))
-                    data_ind_list.append(
-                        pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'train_inds.csv')))
+                    data_ind_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'train_inds.csv')))
+                    if groups is not None:
+                        groups_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'train_groups.csv')))
                 elif data_type == 'leaveout':
                     y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_leaveout.csv')))
                     data_ind_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'leaveout_inds.csv')))
+                    if groups is not None:
+                        groups_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'leaveout_groups.csv')))
 
         all_y_true = list()
         all_y_pred = list()
         all_data_inds = list()
+        all_groups = list()
+        if groups is not None:
+            for groups in groups_list:
+                all_groups.append(np.array(groups))
         for yt, y_pred, data_inds in zip(y_true_list, y_pred_list, data_ind_list):
             yt = np.array(check_dimensions(yt))
             y_pred = np.array(check_dimensions(y_pred))
@@ -418,11 +489,13 @@ class Scatter():
         df_all = pd.DataFrame({'all_y_true': np.array([item for sublist in all_y_true for item in sublist]),
                                'all_y_pred': np.array([item for sublist in all_y_pred for item in sublist]),
                                'all_data_inds': np.array([item for sublist in all_data_inds for item in sublist])})
+        if groups is not None:
+            df_all['all_groups']= np.array([item for sublist in all_groups for item in sublist])
 
         if ebars is not None:
             df_all['ebars'] = np.array(ebars)
 
-        df_all_grouped = df_all.groupby('all_data_inds', sort=False)
+        df_all_grouped = df_all.groupby('all_data_inds', as_index=False, sort=False)
         df_avg = df_all_grouped.mean()
         df_std = df_all_grouped.std()
 
@@ -432,6 +505,13 @@ class Scatter():
 
         trues = df_avg['all_y_true']
         preds = df_avg['all_y_pred']
+        if groups is not None:
+            # Need to use the indices of df.groupby to get the original list of groups
+            grps = df_all_grouped.groups
+            inds = list()
+            for k, v, in grps.items():
+                inds.append(v[0])
+            groups = np.array(df_all['all_groups'])[inds]
 
         # gather max and min
         maxx = max(np.nanmax(trues), np.nanmax(preds))
@@ -447,14 +527,66 @@ class Scatter():
         # set tick labels
         _set_tick_labels(ax, maxx, minn)
 
+        if groups is not None:
+            groups_unique = np.unique(groups)
+            colors = ['blue', 'green', 'red', 'purple', 'orange', 'black', 'grey']
+            shapes = ['o', 's', '^', 'x', '<', '>', 'h']
+            count = 0
+            lap = 0
+            for group in groups_unique:
+                ax.scatter(np.array(trues)[np.where(groups==group)], np.array(preds)[np.where(groups==group)], c=colors[count],
+                           marker=shapes[lap], zorder=2, s=100, alpha=0.7, label=group)
+                if count < len(colors)-1:
+                    count += 1
+                else:
+                    lap += 1
+                    count = 0
+            ax.legend(loc='best', fontsize=8)
+        else:
+            ax.scatter(trues, preds, c='b', edgecolor='darkblue', zorder=2, s=100, alpha=0.7)
+
         if ebars is not None:
-            ax.errorbar(trues, preds, yerr=df_avg['ebars'], fmt='o',
-                        markerfacecolor='blue', markeredgecolor='black',
+            if groups is not None:
+                groups_unique = np.unique(groups)
+                colors = ['blue', 'green', 'red', 'purple', 'orange', 'black', 'grey']
+                shapes = ['o', 's', '^', 'x', '<', '>', 'h']
+                count = 0
+                lap = 0
+                for group in groups_unique:
+                    ax.errorbar(np.array(trues)[np.where(groups == group)], np.array(preds)[np.where(groups == group)],
+                                yerr=np.array(df_avg['ebars'])[np.where(groups == group)], fmt=shapes[lap], markerfacecolor=colors[count],
+                                markeredgecolor=colors[count], ecolor=colors[count], markersize=10, alpha=0.7, capsize=3)
+                    if count < len(colors) - 1:
+                        count += 1
+                    else:
+                        lap += 1
+                        count = 0
+                ax.legend(loc='best', fontsize=8)
+            else:
+                ax.errorbar(trues, preds, yerr=df_avg['ebars'], fmt='o',
+                        markerfacecolor='blue', markeredgecolor='black', ecolor='blue',
                         markersize=10, alpha=0.7, capsize=3)
         else:
-            ax.errorbar(trues, preds, yerr=df_std['all_y_pred'], fmt='o',
-                    markerfacecolor='blue', markeredgecolor='black',
-                    markersize=10, alpha=0.7, capsize=3)
+            if groups is not None:
+                groups_unique = np.unique(groups)
+                colors = ['blue', 'green', 'red', 'purple', 'orange', 'black', 'grey']
+                shapes = ['o', 's', '^', 'x', '<', '>', 'h']
+                count = 0
+                lap = 0
+                for group in groups_unique:
+                    ax.errorbar(np.array(trues)[np.where(groups == group)], np.array(preds)[np.where(groups == group)],
+                                yerr=np.array(df_std['all_y_pred'])[np.where(groups == group)], fmt=shapes[lap], markerfacecolor=colors[count],
+                                markeredgecolor=colors[count], ecolor=colors[count], markersize=10, alpha=0.7, capsize=3)
+                    if count < len(colors) - 1:
+                        count += 1
+                    else:
+                        lap += 1
+                        count = 0
+                ax.legend(loc='best', fontsize=8)
+            else:
+                ax.errorbar(trues, preds, yerr=df_std['all_y_pred'], fmt='o',
+                        markerfacecolor='blue', markeredgecolor='black', ecolor='blue',
+                        markersize=10, alpha=0.7, capsize=3)
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
@@ -475,7 +607,10 @@ class Scatter():
         plot_stats(fig, avg_stats, x_align=x_align, y_align=0.90)
 
         if ebars is not None:
-            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            if groups is not None:
+                fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_grouplabels_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            else:
+                fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
 
             df = pd.DataFrame({'y true': trues,
                                'average predicted values': preds,
@@ -485,7 +620,10 @@ class Scatter():
             elif file_extension == '.csv':
                 df.to_csv(os.path.join(savepath, 'parity_plot_allsplits_average_withcalibratederrorbars_' + str(data_type) + '.csv'), index=False)
         else:
-            fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
+            if groups is not None:
+                fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_grouplabels_' + str(data_type) + '.png'), dpi=image_dpi, bbox_inches='tight')
+            else:
+                fig.savefig(os.path.join(savepath, 'parity_plot_allsplits_average_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
 
             df = pd.DataFrame({'y true': trues,
                                'average predicted values': preds,
@@ -1595,7 +1733,20 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                            show_figure=show_figure,
                                            ebars=None,
                                            file_extension=file_extension,
-                                           image_dpi=image_dpi)
+                                           image_dpi=image_dpi,
+                                           groups=None)
+            if groups is not None:
+                Scatter.plot_predicted_vs_true(y_true=y_true,
+                                               y_pred=y_pred,
+                                               savepath=savepath,
+                                               x_label='values',
+                                               data_type=data_type,
+                                               metrics_list=metrics,
+                                               show_figure=show_figure,
+                                               ebars=None,
+                                               file_extension=file_extension,
+                                               image_dpi=image_dpi,
+                                               groups=groups)
             if recalibrate_errors == True:
                 Scatter.plot_predicted_vs_true(y_true=y_true,
                                                y_pred=y_pred,
@@ -1606,7 +1757,20 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                show_figure=show_figure,
                                                ebars=model_errors_cal,
                                                file_extension=file_extension,
-                                               image_dpi=image_dpi)
+                                               image_dpi=image_dpi,
+                                               groups=None)
+                if groups is not None:
+                    Scatter.plot_predicted_vs_true(y_true=y_true,
+                                                   y_pred=y_pred,
+                                                   savepath=savepath,
+                                                   x_label='values',
+                                                   data_type=data_type,
+                                                   metrics_list=metrics,
+                                                   show_figure=show_figure,
+                                                   ebars=model_errors_cal,
+                                                   file_extension=file_extension,
+                                                   image_dpi=image_dpi,
+                                                   groups=groups)
         except:
             print('Warning: unable to make Scatter.plot_predicted_vs_true plot. Skipping...')
         if splits_summary is True:
@@ -1638,7 +1802,17 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                     metrics_list=metrics,
                                                     show_figure=show_figure,
                                                     file_extension=file_extension,
-                                                    image_dpi=image_dpi)
+                                                    image_dpi=image_dpi,
+                                                    groups=None)
+                if groups is not None:
+                    Scatter.plot_predicted_vs_true_bars(savepath=savepath,
+                                                        data_type=data_type,
+                                                        x_label='values',
+                                                        metrics_list=metrics,
+                                                        show_figure=show_figure,
+                                                        file_extension=file_extension,
+                                                        image_dpi=image_dpi,
+                                                        groups=groups)
                 if recalibrate_errors == True:
                     Scatter.plot_predicted_vs_true_bars(savepath=savepath,
                                                         data_type=data_type,
@@ -1647,7 +1821,18 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                         show_figure=show_figure,
                                                         ebars=model_errors_cal,
                                                         file_extension=file_extension,
-                                                        image_dpi=image_dpi)
+                                                        image_dpi=image_dpi,
+                                                        groups=None)
+                    if groups is not None:
+                        Scatter.plot_predicted_vs_true_bars(savepath=savepath,
+                                                            data_type=data_type,
+                                                            x_label='values',
+                                                            metrics_list=metrics,
+                                                            show_figure=show_figure,
+                                                            ebars=model_errors_cal,
+                                                            file_extension=file_extension,
+                                                            image_dpi=image_dpi,
+                                                            groups=groups)
             except:
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
             if groups is not None:

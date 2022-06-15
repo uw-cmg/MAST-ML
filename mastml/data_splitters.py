@@ -446,8 +446,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                         if groups is not None:
                             groups_subsplit = groups.loc[~groups.index.isin(leaveout_ind)]
+                            groups_leaveout = groups.loc[groups.index.isin(leaveout_ind)]
                         else:
                             groups_subsplit = None
+
                         X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X_subsplit, y=y_subsplit,
                                                                                        groups=groups_subsplit)
 
@@ -462,6 +464,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                         elif file_extension == '.csv':
                             pd.DataFrame({'leaveout_inds': leaveout_ind}).to_csv(os.path.join(splitouterpath, 'leaveout_inds' + file_extension), index=False)
 
+                        # Save the left-out data groups
+                        if groups is not None:
+                            groups_leaveout.name = 'leaveout_groups'
+                            if file_extension == '.xlsx':
+                                groups_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+                            elif file_extension == '.csv':
+                                groups_leaveout.to_csv(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+
                         outerdir = self._evaluate_split_sets(X_splits,
                                                              y_splits,
                                                              train_inds,
@@ -472,7 +482,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              selector,
                                                              preprocessor,
                                                              X_extra_subsplit,
-                                                             groups,
+                                                             groups_subsplit, #groups subsplit??? Used to be "groups"
                                                              splitouterpath,
                                                              hyperopt,
                                                              metrics,
@@ -522,6 +532,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                         elif file_extension == '.csv':
                             df_stats_leaveout.to_csv(os.path.join(splitouterpath, 'leaveout_stats_summary' + file_extension), index=False)
                         # At level of splitouterpath, do analysis over all splits (e.g. parity plot over all splits)
+                        if groups is not None:
+                            groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitouterpath, file_extension=file_extension, iterdirs=False)
+                        else:
+                            groups_leaveout_all = None
                         y_test_all = self._collect_data(filename='y_test', savepath=splitouterpath, file_extension=file_extension)
                         y_train_all = self._collect_data(filename='y_train', savepath=splitouterpath, file_extension=file_extension)
                         y_pred_all = self._collect_data(filename='y_pred', savepath=splitouterpath, file_extension=file_extension)
@@ -581,7 +595,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        y_true=y_leaveout,
                                        y_pred=y_pred_leaveout,
                                        X_test=X_leaveout,
-                                       groups=groups,
+                                       groups=groups_leaveout_all,
                                        data_type='leaveout',
                                        dataset_stdev=dataset_stdev,
                                        has_model_errors=has_model_errors,
@@ -613,6 +627,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                             mastml._save_mastml_metadata()
 
                     # At level of splitdir, collect and save all leaveout data
+                    if groups is not None:
+                        groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitdir, file_extension=file_extension)
+                    else:
+                        groups_leaveout_all = None
                     y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir, file_extension=file_extension)
                     y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir, file_extension=file_extension)
                     residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir, file_extension=file_extension)
@@ -682,7 +700,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    y_true=y_leaveout_all,
                                    y_pred=y_pred_leaveout_all,
                                    X_test=X_leaveout_all,
-                                   groups=groups,
+                                   groups=groups_leaveout_all,
                                    data_type='leaveout',
                                    dataset_stdev=np.std(y_leaveout_all),
                                    has_model_errors=has_model_errors,
@@ -812,9 +830,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                 X_extra_test = None
 
             if groups is not None:
-                group = np.unique(groups[test_ind])[0]
+                group = pd.Series(np.array(groups)[test_ind])
+                group_train = pd.Series(np.array(groups)[train_ind])
             else:
                 group = None
+                group_train = None
 
             splitpath = os.path.join(splitdir, 'split_' + str(split_count))
             os.mkdir(splitpath)
@@ -828,7 +848,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 pd.DataFrame({'train_inds': train_ind}).to_csv(os.path.join(splitpath, 'train_inds' + file_extension), index=False)
 
             self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
-                                 hyperopt_orig, metrics, plots, group,
+                                 hyperopt_orig, metrics, plots, group, group_train,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
                                  verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
 
@@ -844,6 +864,12 @@ class BaseSplitter(ms.BaseCrossValidator):
             [_evaluate_split_sets_serial(i) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
+        if groups is not None:
+            groups_test_all = self._collect_data(filename='test_groups', savepath=splitdir, file_extension=file_extension)
+            groups_train_all = self._collect_data(filename='train_groups', savepath=splitdir, file_extension=file_extension)
+        else:
+            groups_test_all = None
+            groups_train_all = None
         y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
         y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
         y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
@@ -925,7 +951,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                        y_true=y_test_all,
                        y_pred=y_pred_all,
                        X_test=X_train_all,
-                       groups=groups,
+                       groups=groups_test_all,
                        data_type='test',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -948,7 +974,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                        y_true=y_train_all,
                        y_pred=y_pred_train_all,
                        X_test=X_test_all,
-                       groups=groups,
+                       groups=groups_train_all,
                        data_type='train',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -1015,9 +1041,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         return outerdir
 
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
-                        metrics, plots, groups, splitpath, has_model_errors, X_extra_train, X_extra_test,
+                        metrics, plots, groups, groups_train, splitpath, has_model_errors, X_extra_train, X_extra_test,
                         error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric,
                         domain_distance, file_extension, image_dpi, **kwargs):
+
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
 
@@ -1125,7 +1152,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                        y_true=y_train,
                        y_pred=y_pred_train,
                        X_test=X_test,
-                       groups=groups,
+                       groups=groups_train, # HERE groups_train
                        data_type='train',
                        dataset_stdev=dataset_stdev,
                        has_model_errors=has_model_errors,
@@ -1142,11 +1169,18 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Write the test group to a text file,
         if groups is not None:
+            unique_groups = np.unique(groups)
+            groups.name = 'test_groups'
+            groups_train.name = 'train_groups'
+            if file_extension == '.xlsx':
+                groups.to_excel(os.path.join(splitpath, 'test_groups.xlsx'), index=False)
+                groups_train.to_excel(os.path.join(splitpath, 'train_groups.xlsx'), index=False)
+            elif file_extension == '.csv':
+                groups.to_csv(os.path.join(splitpath, 'test_groups.csv'), index=False)
+                groups_train.to_csv(os.path.join(splitpath, 'train_groups.csv'), index=False)
             with open(os.path.join(splitpath, 'test_group.txt'), 'w') as f:
-                f.write(str(groups))
-        #    with open(os.path.join(splitpath,'train_groups.txt'), 'w') as f:
-        #        for group in train_groups:
-        #            f.write(str(group)+"\n")
+                for group in unique_groups:
+                    f.write(str(group)+'\n')
 
         # Save the fitted model, will be needed for DLHub upload later on
         joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
@@ -1275,9 +1309,12 @@ class BaseSplitter(ms.BaseCrossValidator):
             df.to_csv(os.path.join(savepath, filename) + '.csv', index=False)
         return
 
-    def _collect_data(self, filename, savepath, file_extension):
+    def _collect_data(self, filename, savepath, file_extension, iterdirs=True):
         # Note this is only meant for collecting y-data (single column)
-        dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d]
+        if iterdirs == True:
+            dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d]
+        else:
+            dirs = ['']
         data = list()
         if 'residuals' in filename:
             col_name = 'residuals'
