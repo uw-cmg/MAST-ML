@@ -85,6 +85,8 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 savepath: (str), string denoting savepath to save selected features and associated files (if
                 applicable) to.
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
             Returns:
 
                 X_select (dataframe), dataframe of selected X features

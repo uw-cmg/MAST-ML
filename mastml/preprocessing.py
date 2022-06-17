@@ -53,6 +53,8 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
 
                 savepath: (str), string containing main savepath to construct splits for saving output
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
             Returns:
                 Xnew (pd.DataFrame or numpy array), dataframe or array of the preprocessed X features
 

@@ -147,6 +147,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
+                image_dpi: (int), determines output image quality
+
                 **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
             Returns:
@@ -197,6 +201,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                 distance_metric: (str), distance metric to use in baseline_test's test_nearest_neighbour_cdist method
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
+
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
+                image_dpi: (int), determines output image quality
 
                 **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
@@ -249,6 +257,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 domain_distance: (str), distance metric to perform domain evaluation of test data
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
+                image_dpi: (int), determines output image quality
+
                 **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
             Returns:
@@ -274,6 +286,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 columns: (list), list of dataframe column names, e.g. X feature names
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
             Returns:
                 None
 
@@ -283,6 +297,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 savepath: (str), string denoting the save path of the file
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
+                iterdirs: (bool), whether to recursively search within directories to collect data or just look in cwd
+
             Returns:
                 data: (list), list containing flattened array of all data of a given type over many splits, e.g. all ypred data
 
@@ -291,6 +309,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 filename: (str), string denoting the filename, e.g. 'Xtest'
 
                 savepath: (str), string denoting the save path of the file
+
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
 
             Returns:
                 data: (list), list containing flattened array of all data of a given type over many splits, e.g. all Xtest data
@@ -305,6 +325,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 model_name: (str), class name of model being evaluated
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
             Returns:
                 best_split_dict: (dict), dictionary containing the path locations of the best model and corresponding preprocessor and selected feature list
 
@@ -313,6 +335,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 savepath: (str), string denoting the save path of the file
 
                 data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
+
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
 
             Returns:
                 recalibrate_avg_dict: (dict): dictionary of average recalibration parameters
@@ -324,6 +348,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 savepath: (str), string denoting the save path of the file
 
                 data_type: (str), string denoting the type of data to examine (e.g. test or leftout)
+
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
 
             Returns:
                 recalibrate_dict: (dict): dictionary of recalibration parameters

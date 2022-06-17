@@ -154,7 +154,9 @@ class LocalDatasets():
 
         load_data: Method to import the data and ascertain which columns are features, target and extra based on provided input.
             Args:
-                None
+                copy: (bool), whether or not to copy the imported data to the designated savepath
+
+                savepath: (str), path to save the data to (used if copy=True)
 
             Returns:
                 data_dict: (dict), dictionary containing dataframes of X, y, groups, X_extra, X_testdata
