@@ -257,3 +257,30 @@ def parallel(func, x, *args, **kwargs):
         data = list(pool.imap(part_func, x))
 
     return data
+
+def write_requirements():
+    reqs = ['citrination-client',
+            'dlhub_sdk',
+            'foundry-ml',
+            'globus_nexus_client',
+            'globus_sdk',
+            'matminer',
+            'matplotlib',
+            'mdf_forge',
+            'mdf-toolbox',
+            'numpy',
+            'openpyxl',
+            'pandas',
+            'pathos',
+            'pymatgen',
+            'scikit-learn',
+            'scikit-optimize',
+            'scikit-learn-extra',
+            'scipy',
+            'shap',
+            'sphinx-automodapi',
+            'statsmodels']
+    with open('requirements.txt', 'w') as f:
+        for req in reqs:
+            f.write(req+'\n')
+    return
