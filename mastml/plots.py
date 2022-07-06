@@ -257,7 +257,11 @@ class Scatter():
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
-            stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            if file_extension == '.xlsx':
+                stats_files_dict[splitdir] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            elif file_extension == '.csv':
+                stats_files_dict[splitdir] = \
+                pd.read_csv(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.csv')).to_dict('records')[0]
 
         # Find best/worst splits based on RMSE value
         rmse_best = 10**20
@@ -333,7 +337,6 @@ class Scatter():
             plt.close()
         return
 
-    #TODO: this method runs into issues when the y_true data have multiple instances where the y data have the same value, leading to size mismatch errors
     @classmethod
     def plot_best_worst_per_point(cls, savepath, data_type, x_label, metrics_list, show_figure=False, file_extension='.csv', image_dpi=250):
 
@@ -343,47 +346,59 @@ class Scatter():
 
         y_true_list = list()
         y_pred_list = list()
+        index_list = list()
         if file_extension == '.xlsx':
             for splitdir in splitdirs:
                 y_true_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.xlsx'), engine='openpyxl'))
                 if data_type == 'test':
                     y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred.xlsx'), engine='openpyxl'))
+                    index_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'test_inds.xlsx'), engine='openpyxl'))
                 elif data_type == 'train':
                     y_pred_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.xlsx'), engine='openpyxl'))
+                    index_list.append(pd.read_excel(os.path.join(os.path.join(savepath, splitdir), 'train_inds.xlsx'), engine='openpyxl'))
         elif file_extension == '.csv':
             for splitdir in splitdirs:
                 y_true_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_'+str(data_type)+'.csv')))
                 if data_type == 'test':
                     y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred.csv')))
+                    index_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'test_inds.csv')))
                 elif data_type == 'train':
                     y_pred_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'y_pred_train.csv')))
+                    index_list.append(pd.read_csv(os.path.join(os.path.join(savepath, splitdir), 'train_inds.csv')))
 
         all_y_true = list()
         all_y_pred = list()
         all_abs_residuals = list()
-        for yt, y_pred in zip(y_true_list, y_pred_list):
+        all_indices = list()
+        for yt, y_pred, indices in zip(y_true_list, y_pred_list, index_list):
             yt = np.array(check_dimensions(yt))
             y_pred = np.array(check_dimensions(y_pred))
+            indices = np.array(check_dimensions(indices))
             abs_residuals = abs(yt-y_pred)
             all_y_true.append(yt)
             all_y_pred.append(y_pred)
             all_abs_residuals.append(abs_residuals)
+            all_indices.append(indices)
         all_y_true_flat = np.array([item for sublist in all_y_true for item in sublist])
         all_y_pred_flat = np.array([item for sublist in all_y_pred for item in sublist])
+        all_indices_flat = np.array([item for sublist in all_indices for item in sublist])
         all_residuals_flat = np.array([item for sublist in all_abs_residuals for item in sublist])
 
-        # TODO: this is the source of the issue, as y_true_unique can be smaller than y_true. A better way?
-        y_true_unique = np.unique(all_y_true_flat)
+        # Loop over indices
+        unique_inds = np.unique(all_indices_flat)
         bests = list()
         worsts = list()
-        for yt in y_true_unique:
-            best = min(abs(all_y_pred_flat[np.where(all_y_true_flat == yt)] - all_y_true_flat[np.where(all_y_true_flat == yt)]))
-            worst = max(abs(all_y_pred_flat[np.where(all_y_true_flat == yt)] - all_y_true_flat[np.where(all_y_true_flat == yt)]))
+        y_true_unique = list()
+        for ind in unique_inds:
+            y_true_unique.append(np.mean(all_y_true_flat[np.where(all_indices_flat==ind)[0]]))
+            best = min(abs(all_y_pred_flat[np.where(all_indices_flat==ind)] - all_y_true_flat[np.where(all_indices_flat==ind)]))
+            worst = max(abs(all_y_pred_flat[np.where(all_indices_flat==ind)] - all_y_true_flat[np.where(all_indices_flat==ind)]))
             bests.append(all_y_pred_flat[np.where(all_residuals_flat == best)])
             worsts.append(all_y_pred_flat[np.where(all_residuals_flat == worst)])
 
-        bests = np.array([item for sublist in bests for item in sublist])
-        worsts = np.array([item for sublist in worsts for item in sublist])
+        y_true_unique = np.array(y_true_unique).ravel()
+        bests = np.array(bests).ravel()
+        worsts = np.array(worsts).ravel()
 
         stats_dict_best = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=bests)
         stats_dict_worst = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true_unique, y_pred=worsts)
@@ -391,8 +406,8 @@ class Scatter():
         fig, ax = make_fig_ax(x_align=0.65)
 
         # gather max and min
-        maxx = max([max(y_true_unique), max(bests), max(worsts)])
-        minn = min([min(y_true_unique), min(bests), min(worsts)])
+        maxx = float(max([max(y_true_unique), max(bests), max(worsts)]))
+        minn = float(min([min(y_true_unique), min(bests), min(worsts)]))
 
         # draw dashed horizontal line
         ax.plot([minn, maxx], [minn, maxx], 'k--', lw=2, zorder=1)
@@ -1791,8 +1806,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                       x_label='values',
                                                       metrics_list=metrics,
                                                       show_figure=show_figure,
-                                                    file_extension=file_extension,
-                                                    image_dpi=image_dpi)
+                                                      file_extension=file_extension,
+                                                      image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Scatter.plot_best_worst_per_point plot. Skipping...')
             try:
