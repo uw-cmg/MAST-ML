@@ -826,9 +826,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                            model_name=model_name,
                                                            file_extension=file_extension)
                     # Copy the best model, selected features and preprocessor to this outer directory
-                    shutil.copy(best_split_dict['preprocessor'], splitdir)
-                    shutil.copy(best_split_dict['model'], splitdir)
-                    shutil.copy(best_split_dict['features'], splitdir)
+                    try:
+                        shutil.copy(best_split_dict['preprocessor'], splitdir)
+                    except:
+                        print('Warning: could not copy best preprocessor to splitdir')
+                    try:
+                        shutil.copy(best_split_dict['model'], splitdir)
+                    except:
+                        print('Warning: could not copy best model to splitdir')
+                    try:
+                        shutil.copy(best_split_dict['features'], splitdir)
+                    except:
+                        print('Warning: could not copy best feature set to splitdir')
 
         return
 
@@ -1209,7 +1218,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                     f.write(str(group)+'\n')
 
         # Save the fitted model, will be needed for DLHub upload later on
-        joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+        if model_name == 'KerasRegressor':
+            model.model.save(splitpath)
+        else:
+            joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
         # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
         if model_name == 'KerasRegressor':
@@ -1420,9 +1432,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         model_name = model_name+'.pkl'
 
         if not os.path.exists(os.path.join(best_split, preprocessor_name)):
-            print("Error: couldn't find preprocessor .pkl file in best split")
+            print("Warning: couldn't find preprocessor .pkl file in best split")
         if not os.path.exists(os.path.join(best_split, model_name)):
-            print("Error: couldn't find model .pkl file in best split")
+            print("Warning: couldn't find model .pkl file in best split")
         best_split_dict['preprocessor'] = os.path.join(best_split, preprocessor_name)
         best_split_dict['model'] = os.path.join(best_split, model_name)
         best_split_dict['features'] = os.path.join(best_split, 'selected_features.txt')
@@ -1431,8 +1443,14 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Remove the saved models and preprocessors from other split dirs that are not the best (save storage space)
         for splitdir in splitdirs:
             if os.path.join(savepath, splitdir) != best_split:
-                os.remove(os.path.join(os.path.join(savepath, splitdir), model_name))
-                os.remove(os.path.join(os.path.join(savepath, splitdir), preprocessor_name))
+                try:
+                    os.remove(os.path.join(os.path.join(savepath, splitdir), model_name))
+                except:
+                    print("Warning: did not remove non-best models from split path")
+                try:
+                    os.remove(os.path.join(os.path.join(savepath, splitdir), preprocessor_name))
+                except:
+                    print("Warning: did not remove non-best preprocessors from split path")
 
         return best_split_dict
 
