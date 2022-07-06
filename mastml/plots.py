@@ -661,7 +661,7 @@ class Scatter():
         return
 
     @classmethod
-    def plot_metric_vs_group(cls, savepath, data_type, show_figure, image_dpi=250):
+    def plot_metric_vs_group(cls, savepath, data_type, show_figure, file_extension='.csv', image_dpi=250):
 
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
@@ -672,7 +672,10 @@ class Scatter():
             with open(os.path.join(os.path.join(savepath, splitdir), 'test_group.txt'), 'r') as f:
                 group = f.readlines()[0]
                 groups.append(group)
-            stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            if file_extension == '.xlsx':
+                stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
+            elif file_extension == '.csv':
+                stats_files_dict[group] = pd.read_csv(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.csv')).to_dict('records')[0]
             metrics_list = list(stats_files_dict[group].keys())
 
         for metric in metrics_list:
@@ -1855,16 +1858,19 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                     Scatter.plot_metric_vs_group(savepath=savepath,
                                                  data_type=data_type,
                                                  show_figure=show_figure,
+                                                 file_extension=file_extension,
                                                  image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Scatter.plot_metric_vs_group plot. Skipping...')
     if 'Error' in plots:
-        #add try here
-        Error.plot_qq(residuals=residuals,
-                      savepath=savepath,
-                      data_type=data_type,
-                      show_figure=show_figure,
-                      image_dpi=image_dpi)
+        try:
+            Error.plot_qq(residuals=residuals,
+                          savepath=savepath,
+                          data_type=data_type,
+                          show_figure=show_figure,
+                          image_dpi=image_dpi)
+        except:
+            print('Warning: unable to make Error.plot_qq plot. Skipping...')
         try:
             Error.plot_normalized_error(residuals=residuals,
                                         savepath=savepath,
