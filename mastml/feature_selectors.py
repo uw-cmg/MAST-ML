@@ -159,8 +159,11 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 if (self.make_plot == True):
                     shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
                     plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi=150, bbox_inches="tight")
+        if file_extension == '.xlsx':
+            X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
+        elif file_extension == '.csv':
+            X_select.to_csv(os.path.join(savepath, 'selected_features.csv'), index=False)
 
-        X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         return X_select
 
     def _setup_savedir(self, selector, savepath):
