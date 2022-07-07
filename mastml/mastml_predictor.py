@@ -27,7 +27,8 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
 
         model: (str), path of saved model in .pkl format (e.g., RandomForestRegressor.pkl)
 
-        X_test_extra: (list or str), list of strings denoting extra columns present in X_test not to be used in prediction.
+        X_test_extra: (pd.DataFrame, list or str), dataframe containing the extra data associated with X_test, or a
+            list of strings denoting extra columns present in X_test not to be used in prediction.
             If a string is provided, it is interpreted as a path to a .xlsx or .csv file containing the extra column data
 
         preprocessor: (str), path of saved preprocessor in .pkl format (e.g., StandardScaler.pkl)
@@ -81,6 +82,9 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
         elif isinstance(X_test_extra, list):
             df_extra = X_test[X_test_extra]
             X_test = X_test.drop(X_test_extra, axis=1)
+        else:
+            # Assume a dataframe was passed in
+            df_extra = X_test_extra
 
     if featurize == False:
         df_test = X_test
