@@ -5,9 +5,10 @@ from mastml.domain import Domain
 from sklearn.model_selection import train_test_split
 
 import mastml
-mastml_path = mastml.__path__._path[0]
-data_path = os.path.join(mastml.__path__._path[0], 'data')
-# data_path = os.path.join(mastml.__path__[0], 'data')
+try:
+    data_path = mastml.__path__._path[0]
+except:
+    data_path = mastml.__path__[0]
 
 class test_baseline(unittest.TestCase):
     def test_mahalanobis(self):
@@ -15,7 +16,7 @@ class test_baseline(unittest.TestCase):
 
         extra_columns = ['Material compositions 1', 'Material compositions 2','Hop activation barrier']
 
-        d = LocalDatasets(file_path=data_path + '/diffusion_data_allfeatures.xlsx',
+        d = LocalDatasets(file_path=data_path + '/data/diffusion_data_allfeatures.xlsx',
                           target=target,
                           extra_columns=extra_columns,
                           group_column='Material compositions 1',
@@ -30,7 +31,7 @@ class test_baseline(unittest.TestCase):
         y = data_dict['y']
         X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=3)
         domain = Domain()
-        domain.distance(X_train, X_test, 'mahalanobis');
+        domain.distance(X_train, X_test, 'mahalanobis')
 
         return
 

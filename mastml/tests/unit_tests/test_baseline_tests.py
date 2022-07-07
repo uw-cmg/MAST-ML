@@ -8,7 +8,10 @@ from mastml.datasets import SklearnDatasets
 from sklearn.model_selection import train_test_split
 
 import mastml
-mastml_path = mastml.__path__._path[0]
+try:
+    mastml_path = mastml.__path__._path[0]
+except:
+    mastml_path = mastml.__path__[0]
 
 class test_baseline(unittest.TestCase):
 
@@ -31,7 +34,7 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_mean(X_train, X_test, y_train, y_test, model)
-        os.remove("data_preprocessed_.xlsx")
+        os.remove("data_preprocessed_.csv")
         os.remove("StandardScaler.pkl")
         return
 
@@ -54,7 +57,7 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_permuted(X_train, X_test, y_train, y_test, model)
-        os.remove("data_preprocessed_.xlsx")
+        os.remove("data_preprocessed_.csv")
         os.remove("StandardScaler.pkl")
         return
 
@@ -77,7 +80,7 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_nearest_neighbour_kdtree(X_train, X_test, y_train.tolist(), y_test, model)
-        os.remove("data_preprocessed_.xlsx")
+        os.remove("data_preprocessed_.csv")
         os.remove("StandardScaler.pkl")
         return
 
@@ -100,7 +103,7 @@ class test_baseline(unittest.TestCase):
 
         baseline = Baseline_tests()
         baseline.test_nearest_neighbour_cdist(X_train, X_test, y_train.tolist(), y_test, model)
-        os.remove("data_preprocessed_.xlsx")
+        os.remove("data_preprocessed_.csv")
         os.remove("StandardScaler.pkl")
         return
 

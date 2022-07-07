@@ -10,7 +10,10 @@ from mastml.feature_selectors import NoSelect, EnsembleModelFeatureSelector, Pea
 from sklearn.ensemble import RandomForestRegressor
 
 import mastml
-mastml_path = mastml.__path__._path[0]
+try:
+    mastml_path = mastml.__path__._path[0]
+except:
+    mastml_path = mastml.__path__[0]
 
 class TestSelectors(unittest.TestCase):
 
@@ -29,8 +32,8 @@ class TestSelectors(unittest.TestCase):
         selector = EnsembleModelFeatureSelector(model=model, n_features_to_select=5)
         Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xselect.shape, (50, 5))
-        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.xlsx'))
-        os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
+        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.csv'))
+        os.remove('EnsembleModelFeatureSelector_feature_importances.csv')
         os.remove('selected_features.txt')
         return
 
@@ -44,14 +47,14 @@ class TestSelectors(unittest.TestCase):
         selector.evaluate(X=X, y=y, savepath=os.getcwd())
         Xselect = selector.transform(X=X)
         self.assertEqual(Xselect.shape, (10, 3))
-        self.assertTrue(os.path.exists('PearsonSelector_fullcorrelationmatrix.xlsx'))
-        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedfeatures.xlsx'))
-        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
-        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedwithtarget.xlsx'))
-        os.remove('PearsonSelector_fullcorrelationmatrix.xlsx')
-        os.remove('PearsonSelector_highlycorrelatedfeatures.xlsx')
-        os.remove('PearsonSelector_highlycorrelatedfeaturesflagged.xlsx')
-        os.remove('PearsonSelector_highlycorrelatedwithtarget.xlsx')
+        self.assertTrue(os.path.exists('PearsonSelector_fullcorrelationmatrix.csv'))
+        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedfeatures.csv'))
+        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedfeaturesflagged.csv'))
+        self.assertTrue(os.path.exists('PearsonSelector_highlycorrelatedwithtarget.csv'))
+        os.remove('PearsonSelector_fullcorrelationmatrix.csv')
+        os.remove('PearsonSelector_highlycorrelatedfeatures.csv')
+        os.remove('PearsonSelector_highlycorrelatedfeaturesflagged.csv')
+        os.remove('PearsonSelector_highlycorrelatedwithtarget.csv')
         os.remove('selected_features.txt')
         return
 
@@ -63,8 +66,8 @@ class TestSelectors(unittest.TestCase):
         selector.evaluate(X=X, y=y, savepath=os.getcwd())
         Xselect = selector.transform(X=X)
         self.assertEqual(Xselect.shape, (10, 2))
-        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.xlsx')))
-        os.remove(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.csv')))
+        os.remove(os.path.join(os.getcwd(), 'MASTMLFeatureSelector_featureselection_data.csv'))
         os.remove('selected_features.txt')
         return
 
@@ -84,8 +87,8 @@ class TestSelectors(unittest.TestCase):
         selector = EnsembleModelFeatureSelector(model=model, n_features_to_select=100, n_random_dummy= 100)
         Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xselect.shape, (408, 100))
-        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.xlsx'))
-        os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
+        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.csv'))
+        os.remove('EnsembleModelFeatureSelector_feature_importances.csv')
         os.remove('selected_features.txt')
         return
 
@@ -105,10 +108,10 @@ class TestSelectors(unittest.TestCase):
         selector = ShapFeatureSelector(model=model, n_features_to_select=15, make_plot=True)
         Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xselect.shape, (408, 15))
-        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx')))
-        os.remove(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.xlsx'))
+        self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.csv')))
+        os.remove(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.csv'))
         os.remove('SHAP_features_selected.png')
-        os.remove('selected_features.xlsx')
+        os.remove('selected_features.csv')
         os.remove('selected_features.txt')
         return
 
@@ -128,8 +131,8 @@ class TestSelectors(unittest.TestCase):
         selector = EnsembleModelFeatureSelector(model=model, n_features_to_select=100, n_random_dummy= 100, n_permuted_dummy = 200)
         Xselect = selector.evaluate(X=X, y=y, savepath=os.getcwd())
         self.assertEqual(Xselect.shape, (408, 100))
-        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.xlsx'))
-        os.remove('EnsembleModelFeatureSelector_feature_importances.xlsx')
+        self.assertTrue(os.path.exists('EnsembleModelFeatureSelector_feature_importances.csv'))
+        os.remove('EnsembleModelFeatureSelector_feature_importances.csv')
         os.remove('selected_features.txt')
         return
 
