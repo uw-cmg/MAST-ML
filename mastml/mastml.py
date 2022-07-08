@@ -259,28 +259,21 @@ def parallel(func, x, *args, **kwargs):
     return data
 
 def write_requirements():
-    reqs = ['citrination-client',
-            'dlhub_sdk',
-            'foundry-ml',
-            'globus_nexus_client',
-            'globus_sdk',
-            'matminer',
+    os.system("pip freeze > reqs_all.txt")
+    reqs_exact = list()
+    with open('reqs_all.txt', 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            reqs_exact.append(line.strip())
+    reqs = ['dlhub-sdk',
             'matplotlib',
-            'mdf_forge',
-            'mdf-toolbox',
             'numpy',
-            'openpyxl',
             'pandas',
-            'pathos',
             'pymatgen',
-            'scikit-learn',
-            'scikit-optimize',
-            'scikit-learn-extra',
-            'scipy',
-            'shap',
-            'sphinx-automodapi',
-            'statsmodels']
+            'scikit-learn']
     with open('requirements.txt', 'w') as f:
         for req in reqs:
-            f.write(req+'\n')
+            for req_exact in reqs_exact:
+                if req == req_exact.split('==')[0]:
+                    f.write(req_exact+'\n')
     return
