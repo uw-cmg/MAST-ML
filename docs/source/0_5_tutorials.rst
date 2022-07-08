@@ -75,9 +75,9 @@ Tutorial 6: Model Error Analysis, Uncertainty Quantification (MASTML_Tutorial_6_
         2. Explore different methods of quantifying and calibrating model uncertainties.
         3. Compare the uncertainty quantification behavior of Bayesian and ensemble-based models.
 
-Tutorial 7: Model predictions with calibrated error bars on new data (MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars.ipynb):
+Tutorial 7: Model predictions with calibrated error bars on new data, hosting on Foundry/DLHub (MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb):
 
-    Tutorial 6 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars.ipynb
+    Tutorial 7 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb
 
     In this notebook tutorial, we will learn about how MAST-ML can be used to:
         1. Fit a model and use it to predict on new data.
