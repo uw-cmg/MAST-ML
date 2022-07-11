@@ -35,7 +35,7 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 * Tutorial 7: Model predictions with calibrated error bars, model hosting on Foundry/DLHub:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb)
 
-## MAST-ML version 3.1.x Mayer Updates from July 2022
+## MAST-ML version 3.1.x Major Updates from July 2022
 * Refinement of tutorials, addition of Tutorial 7, Colab links as badges added for easier use.
 
 * mastml_predictor module added to help streamline making predictions (with option to include error bars) on new test data.
