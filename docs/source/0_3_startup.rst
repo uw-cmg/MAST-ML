@@ -26,3 +26,6 @@ about 10 minutes. At the end, you will have performed your first MAST-ML run!
 Once complete, there are a series of other example/tutorial notebooks that can be found in the mastml/examples folder
 on Github.
 
+Note that all of the example notebooks can be opened via Google Colab by clicking on the corresponding Google Colab
+badge icon in the README section in the Github repo master branch
+

@@ -11,6 +11,8 @@ import os
 from datetime import datetime
 from collections import OrderedDict
 import json
+from pathos.multiprocessing import ProcessingPool as Pool
+from functools import partial
 
 class Mastml():
     """
@@ -94,7 +96,7 @@ class Mastml():
                 print(f"{self.savepath} not empty. Renaming...")
                 now = datetime.now()
                 self.savepath = self.savepath.rstrip(os.sep)  # remove trailing slash
-                self.savepath = f"{self.savepath}_{now.month:02d}_{now.day:02d}" \
+                self.savepath = f"{self.savepath}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
                          f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         os.makedirs(self.savepath)
         return
@@ -123,6 +125,7 @@ class Mastml():
                          X_extra_leaveout=None,
                          y_train=None,
                          y_test=None,
+                         y_test_domain=None,
                          y_leaveout=None,
                          y_pred_train=None,
                          y_pred=None,
@@ -198,6 +201,8 @@ class Mastml():
             self.mastml_metadata[outerdir][split_name]['y_pred'] = y_pred.to_json()
         if y_pred_leaveout is not None:
             self.mastml_metadata[outerdir][split_name]['y_pred_leaveout'] = y_pred_leaveout.to_json()
+        if y_test_domain is not None:
+            self.mastml_metadata[outerdir][split_name]['y_test_domain'] = y_test_domain.to_json()
         if residuals_train is not None:
             self.mastml_metadata[outerdir][split_name]['residuals_train'] = residuals_train.to_json()
         if residuals_test is not None:
@@ -232,3 +237,43 @@ class Mastml():
     @property
     def get_mastml_metadata(self):
         return self.mastml_metadata
+
+def parallel(func, x, *args, **kwargs):
+    '''
+    Run some function in parallel.
+
+    inputs:
+        func = The function to apply.
+        x = The list of items to apply function on.
+
+    outputs:
+        data = List of items returned by func.
+    '''
+
+    pool = Pool(os.cpu_count())
+    part_func = partial(func, *args, **kwargs)
+
+    with Pool(os.cpu_count()) as pool:
+        data = list(pool.imap(part_func, x))
+
+    return data
+
+def write_requirements():
+    os.system("pip freeze > reqs_all.txt")
+    reqs_exact = list()
+    with open('reqs_all.txt', 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            reqs_exact.append(line.strip())
+    reqs = ['dlhub-sdk',
+            'matplotlib',
+            'numpy',
+            'pandas',
+            'pymatgen',
+            'scikit-learn']
+    with open('requirements.txt', 'w') as f:
+        for req in reqs:
+            for req_exact in reqs_exact:
+                if req == req_exact.split('==')[0]:
+                    f.write(req_exact+'\n')
+    return

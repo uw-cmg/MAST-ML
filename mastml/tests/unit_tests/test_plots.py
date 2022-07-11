@@ -20,6 +20,7 @@ class TestPlots(unittest.TestCase):
                                          data_type='test',)
         self.assertTrue(os.path.exists('parity_plot_test.png'))
         os.remove('parity_plot_test.png')
+        os.remove('parity_plot_test.csv')
         return
 
     def test_histogram(self):
@@ -30,11 +31,11 @@ class TestPlots(unittest.TestCase):
                                    file_name='TEST_hist',
                                    x_label='TEST_hist')
         self.assertTrue(os.path.exists('TEST_hist.png'))
-        self.assertTrue(os.path.exists('TEST_hist.xlsx'))
-        self.assertTrue(os.path.exists('TEST_hist_statistics.xlsx'))
+        self.assertTrue(os.path.exists('TEST_hist.csv'))
+        self.assertTrue(os.path.exists('TEST_hist_statistics.csv'))
         os.remove('TEST_hist.png')
-        os.remove('TEST_hist.xlsx')
-        os.remove('TEST_hist_statistics.xlsx')
+        os.remove('TEST_hist.csv')
+        os.remove('TEST_hist_statistics.csv')
         return
 
     def test_residual_histogram(self):
@@ -45,11 +46,11 @@ class TestPlots(unittest.TestCase):
                                              y_pred=y,
                                              savepath=os.getcwd())
         self.assertTrue(os.path.exists('residual_histogram.png'))
-        self.assertTrue(os.path.exists('residual_histogram.xlsx'))
-        self.assertTrue(os.path.exists('residual_histogram_statistics.xlsx'))
+        self.assertTrue(os.path.exists('residual_histogram.csv'))
+        self.assertTrue(os.path.exists('residual_histogram_statistics.csv'))
         os.remove('residual_histogram.png')
-        os.remove('residual_histogram.xlsx')
-        os.remove('residual_histogram_statistics.xlsx')
+        os.remove('residual_histogram.csv')
+        os.remove('residual_histogram_statistics.csv')
         return
 
 
