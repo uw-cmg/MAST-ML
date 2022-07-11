@@ -45,7 +45,10 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import statsmodels.api as sm
+try:
+    import statsmodels.api as sm
+except:
+    print('statsmodels is an optional dependency. If you want to create QQ plots for error analysis, do pip install statsmodels')
 
 matplotlib.rc('font', size=18, family='sans-serif')  # set all font to bigger
 matplotlib.rc('figure', autolayout=True)  # turn on autolayout
