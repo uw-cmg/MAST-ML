@@ -2,15 +2,12 @@
 
 MAST-ML is an open-source Python package designed to broaden and accelerate the use of machine learning in materials science research
 
-<img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/uw-cmg/MAST-ML">
-
-<img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mastml">
-
-[![Actions Status](https://github.com/uw-cmg/MAST-ML/workflows/python_package/badge.svg)](https://github.com/uw-cmg/MAST-ML/actions)
-
-<a href='https://mastmldocs.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' />
-</a>
+<div align="center">
+    <img alt="GitHub release (latest by date)" src="https://img.shields.io/github/v/release/uw-cmg/MAST-ML">
+    <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mastml">
+    <a href='https://github.com/uw-cmg/MAST-ML/actions'><img src='https://github.com/uw-cmg/MAST-ML/workflows/python_package/badge.svg'/></a>
+    <a href='https://mastmldocs.readthedocs.io/en/latest/?badge=latest'><img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' /></a>
+</div>
 
 ## Run example notebooks in Google Colab:
 
