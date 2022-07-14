@@ -28,11 +28,16 @@ MASTMLFeatureSelector:
     Allows the user to specify a particular model and cross validation routine for selecting features, as well as the
     ability to forcibly select certain features on the outset.
 
+ShapFeatureSelector:
+    Class to select features based on how much each of the features contribute to the model in predicting the target data.
+
+
 """
 
 import copy
 import os
 import warnings
+import shap
 from datetime import datetime
 
 import numpy as np
@@ -41,7 +46,7 @@ import sklearn
 from scipy.stats import pearsonr
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import KFold
-from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 from mastml.metrics import root_mean_squared_error
 
@@ -80,6 +85,8 @@ class BaseSelector(BaseEstimator, TransformerMixin):
                 savepath: (str), string denoting savepath to save selected features and associated files (if
                 applicable) to.
 
+                file_extension: (str), must be either '.xlsx' or '.csv', determines data file type for saving
+
             Returns:
 
                 X_select (dataframe), dataframe of selected X features
@@ -95,7 +102,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X
 
-    def evaluate(self, X, y, savepath=None, make_new_dir=False):
+    def evaluate(self, X, y, savepath=None, make_new_dir=False, file_extension='.csv'):
         if savepath is None:
             savepath = os.getcwd()
         self.fit(X=X, y=y)
@@ -107,27 +114,62 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
                 f.write(str(feature) + '\n')
-        if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
-            self.feature_importances_sorted.to_excel(
-                os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
-        if self.__class__.__name__ == 'PearsonSelector':
-            self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
-            self.highly_correlated_features.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
-            self.highly_correlated_features_flagged.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
-            self.features_highly_correlated_with_target.to_excel(
-                os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
-        if self.__class__.__name__ == 'MASTMLFeatureSelector':
-            self.mastml_forward_selection_df.to_excel(
-                os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
-        X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
+        if file_extension == '.xlsx':
+            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                self.feature_importances_sorted.to_excel(
+                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
+            if self.__class__.__name__ == 'PearsonSelector':
+                self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
+                self.highly_correlated_features.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
+                self.highly_correlated_features_flagged.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
+                self.features_highly_correlated_with_target.to_excel(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
+            if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                self.mastml_forward_selection_df.to_excel(
+                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
+
+            if self.__class__.__name__ == 'ShapFeatureSelector':
+                self.feature_imp_shap.to_excel(
+                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx'))
+                if (self.make_plot == True):
+                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi = 150, bbox_inches = "tight")
+        elif file_extension == '.csv':
+            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                self.feature_importances_sorted.to_csv(
+                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.csv'))
+            if self.__class__.__name__ == 'PearsonSelector':
+                self.full_correlation_matrix.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.csv'))
+                self.highly_correlated_features.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.csv'))
+                self.highly_correlated_features_flagged.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.csv'))
+                self.features_highly_correlated_with_target.to_csv(
+                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.csv'))
+            if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                self.mastml_forward_selection_df.to_csv(
+                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.csv'))
+
+            if self.__class__.__name__ == 'ShapFeatureSelector':
+                self.feature_imp_shap.to_csv(
+                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.csv'))
+                if (self.make_plot == True):
+                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi=150, bbox_inches="tight")
+        if file_extension == '.xlsx':
+            X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
+        elif file_extension == '.csv':
+            X_select.to_csv(os.path.join(savepath, 'selected_features.csv'), index=False)
+
         return X_select
 
     def _setup_savedir(self, selector, savepath):
         now = datetime.now()
         dirname = selector.__class__.__name__
-        dirname = f"{dirname}_{now.month:02d}_{now.day:02d}" \
+        dirname = f"{dirname}_{now.year:02d}_{now.month:02d}_{now.day:02d}" \
                   f"_{now.hour:02d}_{now.minute:02d}_{now.second:02d}"
         if savepath == None:
             splitdir = os.getcwd()
@@ -687,3 +729,118 @@ class MASTMLFeatureSelector(BaseSelector):
         # Return dataframe containing only selected features
         X_selected = X.loc[:, selected_feature_names]
         return X_selected
+
+class ShapFeatureSelector(BaseSelector):
+    """
+        Class custom-written for MAST-ML to conduct selection of features with SHAP
+
+        Args:
+            model: (mastml.models object), a MAST-ML compatable model
+
+            n_features_to_select: (int), the number of features to select
+
+            make_plot: Saves the plot of SHAP value if True, default is False
+
+            max_display: maximum number of feature to display in the plot
+
+        Methods:
+            fit: performs feature selection
+                Args:
+                    X: (dataframe), dataframe of X features
+
+                    y: (dataframe), dataframe of y data
+
+                Returns:
+                    None
+
+            transform: performs the transform to generate output of only selected features
+                Args:
+                    X: (dataframe), dataframe of X features
+
+                Returns:
+                    dataframe: (dataframe), dataframe of selected X features
+        """
+
+    def __init__(self, model, n_features_to_select, make_plot = False, max_display = 10):
+        super(ShapFeatureSelector, self).__init__()
+        self.model = model
+        self.make_plot = make_plot
+        self.n_features_to_select = n_features_to_select
+        self.max_display = max_display
+
+    def fit(self, X, y):
+        Xcol = X.columns.tolist()
+        self.model = self.model.fit(X,y)
+        explainer = shap.Explainer(self.model)
+        self.shap_values = explainer(X)
+
+        feature_order = np.argsort(np.sum(np.abs(self.shap_values.values), axis=0))
+        feature_order_reversed = [k for k in reversed(feature_order)]
+        self.feature_imp_shap = []
+        for i in feature_order_reversed:
+            self.feature_imp_shap.append(Xcol[i])
+        self.selected_features = self.feature_imp_shap[:self.n_features_to_select]
+        self.feature_imp_shap = pd.DataFrame(self.feature_imp_shap)
+        return self
+
+    def transform(self, X):
+        X_select = X[self.selected_features]
+        return X_select
+
+def selected_features_correlation(X, savepath, features_x_path, features_y_path):
+    '''
+    Function to get the correlation between two sets of features selected from two different methods of feature selection
+
+    Args:
+        X: (pd.DataFrame), dataframe of X features
+
+        savepath: (str), string denoting the path to save output to
+
+        features_x_path: (str), string denoting the path to the first selected_features.txt
+
+        features_y_path: (str), string denoting the path to the second selected_features.txt
+
+    Returns:
+        None.
+
+    '''
+    with open(os.path.join(features_x_path, 'selected_features.txt')) as f:
+        x_selected_features = [line.rstrip() for line in f]
+
+    with open(os.path.join(features_y_path, 'selected_features.txt')) as f:
+        y_selected_features = [line.rstrip() for line in f]
+
+    array_data = list()
+    for i in range(len(x_selected_features)):
+        col_data = X[x_selected_features].iloc[:,i]
+        col = list()
+        for j in range(len(y_selected_features)):
+            row_data = X[y_selected_features].iloc[:,j]
+            corr, _ = pearsonr(row_data, col_data)
+            col.append(corr)
+        array_data.append(col)
+    array_df = pd.DataFrame(array_data, index=x_selected_features[:len(x_selected_features)], 
+                            columns=y_selected_features[:len(y_selected_features)])
+    array_df.to_excel(os.path.join(savepath, 'pearson')+'.xlsx', index=True)
+    hCorr = dict()
+    same_features = list()
+    for i in range(len(array_df)):
+        for j in range(len(array_df.iloc[0, :])):
+            if (abs(array_df.iloc[i][j]) > 0.7):
+                if (array_df.index[i] != array_df.columns[j]):
+                    if ((array_df.columns[j], array_df.index[i]) not in hCorr):
+                        hCorr[(array_df.index[i], array_df.columns[j])] = array_df.iloc[i][j]
+                else:
+                    if array_df.index[i] not in same_features:
+                        same_features.append(array_df.index[i])
+
+    hCorr_sorted = sorted(hCorr.items(), key=lambda x: (x[1]), reverse=True)
+    arr = []
+    for i in hCorr_sorted:
+        arr.append((i[0][0], i[0][1], i[1]))
+    arr_df = pd.DataFrame(arr, columns=['feature_1', 'feature_2', 'correlation'])
+    arr_df.to_excel(os.path.join(savepath, 'related_features') + '.xlsx', index=True)
+
+    with open(os.path.join(savepath, 'same_features.txt'), 'w') as f:
+        for feature in same_features:
+            f.write(str(feature) + '\n')

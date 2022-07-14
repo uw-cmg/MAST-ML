@@ -89,6 +89,10 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         else:
             return self.model.predict(X).ravel()
 
+    def predict_proba(self, X):
+        if hasattr(self.model, 'predict_proba'):
+            return self.model.predict_proba(X)
+
     def get_params(self, deep=True):
         return self.model.get_params(deep)
 
@@ -144,7 +148,15 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     def __init__(self, model, n_estimators, **kwargs):
         super(EnsembleModel, self).__init__()
         try:
-            model = dict(sklearn.utils.all_estimators())[model](**kwargs)
+            if model == 'XGBoostRegressor':
+                model = xgboost.XGBRegressor(**kwargs)
+            elif model == 'GaussianProcessRegressor':
+                kernel = kwargs['kernel']
+                kernel = _make_gpr_kernel(kernel_string=kernel)
+                del kwargs['kernel']
+                model = GaussianProcessRegressor(kernel=kernel, **kwargs)
+            else:
+                model = dict(sklearn.utils.all_estimators())[model](**kwargs)
         except:
             print('Could not find designated model type in scikit-learn model library. Note the other supported model'
                   'type is the keras.wrappers.scikit_learn.KerasRegressor model')

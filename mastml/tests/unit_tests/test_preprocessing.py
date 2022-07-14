@@ -18,9 +18,9 @@ class TestPreprocessor(unittest.TestCase):
         X_scaled = preprocessor.evaluate(X=X, savepath=os.getcwd(), file_name='test')
 
         self.assertEqual(X_scaled.shape[0], 10)
-        self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'data_preprocessed_test.xlsx')))
+        self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'data_preprocessed_test.csv')))
         self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'StandardScaler.pkl')))
-        os.remove('data_preprocessed_test.xlsx')
+        os.remove('data_preprocessed_test.csv')
         os.remove('StandardScaler.pkl')
 
         return
@@ -34,9 +34,9 @@ class TestPreprocessor(unittest.TestCase):
 
         self.assertEqual(X_scaled.shape[0], 10)
         self.assertAlmostEqual(X_scaled[0].std(), 2)
-        self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'data_preprocessed_test.xlsx')))
+        self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'data_preprocessed_test.csv')))
         self.assertTrue(os.path.exists(os.path.join(preprocessor.savepath, 'MeanStdevScaler.pkl')))
-        os.remove('data_preprocessed_test.xlsx')
+        os.remove('data_preprocessed_test.csv')
         os.remove('MeanStdevScaler.pkl')
 
         return

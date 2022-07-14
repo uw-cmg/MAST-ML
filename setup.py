@@ -49,6 +49,7 @@ setup(
         "scikit-learn>=0.24.1",
         "scikit-learn-extra",
         "scikit-optimize",
+        "shap",
         "scipy",
         "sphinx-automodapi",
         "pathos",

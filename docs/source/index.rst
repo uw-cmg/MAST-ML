@@ -41,6 +41,10 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    13_preprocessing.rst
 
+   14_baseline_tests.rst
+
+   15_mastml_predictor.rst
+
 
 Indices and tables
 ==================

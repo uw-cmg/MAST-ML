@@ -72,7 +72,7 @@ except:
 
 try:
     import pymatgen
-    from pymatgen import Element, Composition
+    from pymatgen.core import Element, Composition
     from pymatgen.ext.matproj import MPRester
 except:
     print('pymatgen is an optional dependency. To install pymatgen, do pip install pymatgen')
@@ -1143,7 +1143,7 @@ class PolynomialFeatureGenerator(BaseGenerator):
     def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
         super(PolynomialFeatureGenerator, self).__init__()
         self.features = features
-        self.SPF = PolynomialFeatures(degree, interaction_only, include_bias)
+        self.SPF = PolynomialFeatures(degree=degree, interaction_only=interaction_only, include_bias=include_bias)
 
     def fit(self, X, y=None):
         self.y = y
@@ -1262,7 +1262,7 @@ class OneHotElementEncoder(BaseGenerator):
         something crazy like "contains {element}" and "does not contain {element}" if you really
         wanted.
         """
-        comp = pymatgen.Composition(comp)
+        comp = Composition(comp)
         count = comp[self.element]
         return int(count != 0)
 
@@ -1270,7 +1270,7 @@ class OneHotElementEncoder(BaseGenerator):
         elements = list()
         df_trans = pd.DataFrame()
         for comp in compositions.values:
-            comp = pymatgen.Composition(comp)
+            comp = Composition(comp)
             for element in comp.elements:
                 if element not in elements:
                     elements.append(element)
