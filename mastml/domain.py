@@ -33,15 +33,29 @@ class Domain:
 
             domain = domain_split()
             domain.train(X_train, y_train)
-            dist = domain.predict(X_test)
-            dist = pd.DataFrame(dist)
-            dist.to_csv(os.path.join(path, 'dist.csv'), index=False)
+
+            dist_train_to_test = domain.predict(X_test)
+            dist_train_to_test = pd.DataFrame(dist_train_to_test)
+
+            out_name = os.path.join(path, 'dist_train_to_test.csv')
+            dist_train_to_test.to_csv(out_name, index=False)
+
+            leave_out_file = path+'/X_leaveout.csv'
+            if os.path.exists(leave_out_file):
+
+                X_leaveout = pd.read_csv(leave_out_file)
+                X_leaveout = X_leaveout._get_numeric_data()
+
+                dist_train_to_leaveout = domain.predict(X_leaveout)
+                dist_train_to_leaveout = pd.DataFrame(dist_train_to_leaveout)
+
+                out_name = os.path.join(path, 'dist_train_to_leaveout.csv')
+                dist_train_to_leaveout.to_csv(out_name, index=False)
 
         if parallel_run is True:
             parallel(calculate, paths)
         else:
             [calculate(i) for i in paths]
-
 
 
 class domain_split:
