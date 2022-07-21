@@ -10,13 +10,13 @@ import os
 
 class Domain:
     '''
-    Trainable domain object that can calculate dissimilarities between
-    sets of data.
+    Calculate dissimilarities between splits of data.
     '''
 
     def __init__(self, path, parallel_run=True):
         paths = list(map(str, Path(path).rglob('*X_train*')))
 
+        # Calculation of dissimilarity between train data and others
         def calculate(path):
 
             splits = path.split('/')
@@ -27,9 +27,17 @@ class Domain:
             X_test = pd.read_csv(path+'/X_test.csv')
 
             # Cannot measure non-numeric data (may consider one-hot encoding)
+            train = X_train
+            train['target'] = y_train
+            train.drop_duplicates(inplace=True)
+
+            X_train = train.loc[:, train.columns != 'target']
+            y_train = train.target
+
             X_train = X_train._get_numeric_data()
             y_train = y_train.values
             X_test = X_test._get_numeric_data()
+            X_test.drop_duplicates(inplace=True)
 
             domain = domain_split()
             domain.train(X_train, y_train)
@@ -45,6 +53,7 @@ class Domain:
 
                 X_leaveout = pd.read_csv(leave_out_file)
                 X_leaveout = X_leaveout._get_numeric_data()
+                X_leaveout.drop_duplicates(inplace=True)
 
                 dist_train_to_leaveout = domain.predict(X_leaveout)
                 dist_train_to_leaveout = pd.DataFrame(dist_train_to_leaveout)

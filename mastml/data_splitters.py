@@ -684,9 +684,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                     self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
                     self._save_split_data(df=X_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_leaveout_all.columns.tolist(), file_extension=file_extension)
                     if X_extra is not None:
-                        self._save_split_data(df=X_extra_train_all, filename='X_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_extra_test_all, filename='X_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_extra_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=X_extra_leaveout_all, filename='X_extra_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist(), file_extension=file_extension)
                     self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
                     self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir,  columns='y_train', file_extension=file_extension)
                     self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
