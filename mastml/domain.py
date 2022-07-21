@@ -42,6 +42,12 @@ class Domain:
             domain = domain_split()
             domain.train(X_train, y_train)
 
+            dist_train_to_train = domain.predict(X_train)
+            dist_train_to_train = pd.DataFrame(dist_train_to_train)
+
+            out_name = os.path.join(path, 'dist_train_to_train.csv')
+            dist_train_to_train.to_csv(out_name, index=False)
+
             dist_train_to_test = domain.predict(X_test)
             dist_train_to_test = pd.DataFrame(dist_train_to_test)
 

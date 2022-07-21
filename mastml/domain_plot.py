@@ -84,7 +84,6 @@ def find(where, pattern):
     '''
 
     paths = list(map(str, Path(where).rglob(pattern)))
-    #paths = [i for i in paths if ('random' in i) or ('chemical' in i)]
 
     return paths
 
@@ -100,31 +99,53 @@ def load(path):
         df = A pandas dataframe.
     '''
 
+    splits = path.split('/')
+
+    if 'test' in splits[-1]:
+        in_domain = 'test'
+
+    elif 'leaveout' in splits[-1]:
+        in_domain = 'leaveout'
+
+    elif 'train' in splits[-1]:
+        in_domain = 'train'
+
+    new_path = 'model_errors_{}_calibrated.csv'.format(in_domain)
+    new_path = path.replace(new_path, '')
+
+    dist = new_path+'dist_train_to_{}.csv'.format(in_domain)
+    y = new_path+'y_{}.csv'.format(in_domain)
+    y_pred = new_path+'y_pred_{}.csv'.format(in_domain)
+
+    # Files that should exist
+    cond = [
+            os.path.exists(dist),
+            os.path.exists(y),
+            os.path.exists(y_pred),
+            os.path.exists(path)
+            ]
+    if not all(cond):
+        return pd.DataFrame()
+
+    dist = pd.read_csv(dist)
+    y = pd.read_csv(y)
+    y.columns = ['y']
+    y_pred = pd.read_csv(y_pred)
+    y_pred.columns = ['y_pred']
     stdcal = pd.read_csv(path)
     stdcal.columns = ['stdcal']
 
-    dist = pd.read_csv(path.replace(
-                                    'model_errors_leaveout_calibrated.csv',
-                                    'dist_train_to_leaveout.csv'
-                                    ))
-
-
-    y = pd.read_csv(path.replace(
-                                 'model_errors_leaveout_calibrated.csv',
-                                 'y_leaveout.csv'
-                                 ))
-    y.columns = ['y']
-
-    y_pred = pd.read_csv(path.replace(
-                                      'model_errors_leaveout_calibrated.csv',
-                                      'y_pred_leaveout.csv'
-                                      ))
-
-    y_pred.columns = ['y_pred']
-
-
     df = pd.concat([dist, stdcal, y, y_pred], axis=1)
-    print(df)
+
+    print('-'*79)
+    print(dist.shape)
+    print(stdcal.shape)
+    print(y.shape)
+    print(y_pred.shape)
+
+    df['run'] = splits[0]
+    df['set'] = in_domain
+    df['split_type'] = splits[0].split('_')[1]
 
     return df
 
@@ -933,7 +954,7 @@ def main():
     dist = 'gpr_std'  # The dissimilarity metric to use
     perc_stdc = 70
     perc_ecut = 95
-    name = 'model_errors_leaveout_calibrated.csv'
+    name = 'model_errors_*_calibrated.csv'
 
     df = pd.concat(parallel(load, find(root, name)))
     df = df.sort_values(by=['stdcal', 'y_pred', dist])
@@ -941,15 +962,15 @@ def main():
     # Assign colors and markers based on groups
     df['color'] = 'r'
     df['marker'] = '.'
-    for group, c in zip(df.groupby(['run', 'domain']), cc):
+    for group, c in zip(df.groupby(['split_type', 'set']), cc):
         group, values = group
-        indx = (df['run'] == group[0]) & (df['domain'] == group[1])
+        indx = (df['split_type'] == group[0]) & (df['set'] == group[1])
         df['color'].loc[indx] = c['color']
         df['marker'].loc[indx] = c['marker']
 
     # Get values from training CV
-    if 'random' in df['run'].values:
-        df_tr = df[df['in_domain'] == 'tr']
+    if 'RepeatedKFold' in df['split_type'].values:
+        df_tr = df[df['set'] == 'tr']
         std_y = df_tr['y'].std()
         df.loc[df['run'] == 'random', 'domain'] = 'random'
     else:
@@ -960,8 +981,8 @@ def main():
     # Grab quantile data for each set of runs
     group = df.groupby([
                         'run',
-                        'in_domain',
-                        'domain',
+                        'set',
+                        'split_type',
                         'color',
                         'marker'
                         ], sort=False)
