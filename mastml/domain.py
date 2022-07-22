@@ -14,7 +14,8 @@ class Domain:
     '''
 
     def __init__(self, path, parallel_run=True):
-        paths = list(map(str, Path(path).rglob('*X_train*')))
+        paths = 'model_errors_*_calibrated.csv'
+        paths = list(map(str, Path(path).rglob(paths)))
 
         # Calculation of dissimilarity between train data and others
         def calculate(path):
@@ -22,50 +23,55 @@ class Domain:
             splits = path.split('/')
             path = '/'.join(splits[:-1])
 
-            X_train = pd.read_csv(path+'/X_train.csv')
-            y_train = pd.read_csv(path+'/y_train.csv')
-            X_test = pd.read_csv(path+'/X_test.csv')
+            for i in ['train', 'test', 'leaveout']:
 
-            # Cannot measure non-numeric data (may consider one-hot encoding)
-            train = X_train
-            train['target'] = y_train
-            train.drop_duplicates(inplace=True)
+                # File names
+                X_train = 'X_train.csv'
+                y_train = 'y_train.csv'
+                stdcal = 'model_errors_{}_calibrated.csv'.format(i)
+                X = 'X_{}.csv'.format(i)
+                y = 'y_{}.csv'.format(i)
+                y_pred = 'y_pred_{}.csv'.format(i)
 
-            X_train = train.loc[:, train.columns != 'target']
-            y_train = train.target
+                # File paths
+                X_train = os.path.join(path, X_train)
+                y_train = os.path.join(path, y_train)
+                stdcal = os.path.join(path, stdcal)
+                X = os.path.join(path, X)
+                y = os.path.join(path, y)
+                y_pred = os.path.join(path, y_pred)
 
-            X_train = X_train._get_numeric_data()
-            y_train = y_train.values
-            X_test = X_test._get_numeric_data()
-            X_test.drop_duplicates(inplace=True)
+                # If required files exist
+                if all([
+                        os.path.exists(y),
+                        os.path.exists(y_pred),
+                        os.path.exists(stdcal),
+                        os.path.exists(X),
+                        os.path.exists(y_train),
+                        os.path.exists(X_train),
+                        ]):
 
-            domain = domain_split()
-            domain.train(X_train, y_train)
+                    X = pd.read_csv(X)
+                    X_train = pd.read_csv(X_train)
+                    y = pd.read_csv(y)
+                    y.columns = ['y']
+                    y_train = pd.read_csv(y_train)
+                    y_train.columns = ['y_train']
+                    y_pred = pd.read_csv(y_pred)
+                    y_pred.columns = ['y_pred']
+                    stdcal = pd.read_csv(stdcal)
+                    stdcal.columns = ['stdcal']
 
-            dist_train_to_train = domain.predict(X_train)
-            dist_train_to_train = pd.DataFrame(dist_train_to_train)
+                    domain = domain_split()
+                    domain.train(X_train, y_train)
 
-            out_name = os.path.join(path, 'dist_train_to_train.csv')
-            dist_train_to_train.to_csv(out_name, index=False)
+                    dist = domain.predict(X)
+                    dist = pd.DataFrame(dist)
 
-            dist_train_to_test = domain.predict(X_test)
-            dist_train_to_test = pd.DataFrame(dist_train_to_test)
-
-            out_name = os.path.join(path, 'dist_train_to_test.csv')
-            dist_train_to_test.to_csv(out_name, index=False)
-
-            leave_out_file = path+'/X_leaveout.csv'
-            if os.path.exists(leave_out_file):
-
-                X_leaveout = pd.read_csv(leave_out_file)
-                X_leaveout = X_leaveout._get_numeric_data()
-                X_leaveout.drop_duplicates(inplace=True)
-
-                dist_train_to_leaveout = domain.predict(X_leaveout)
-                dist_train_to_leaveout = pd.DataFrame(dist_train_to_leaveout)
-
-                out_name = os.path.join(path, 'dist_train_to_leaveout.csv')
-                dist_train_to_leaveout.to_csv(out_name, index=False)
+                    df = pd.concat([dist, stdcal, y, y_pred], axis=1)
+                    out_name = 'dist_train_to_{}.csv'.format(i)
+                    out_name = os.path.join(path, out_name)
+                    df.to_csv(out_name, index=False)
 
         if parallel_run is True:
             parallel(calculate, paths)
