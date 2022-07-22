@@ -128,7 +128,7 @@ def quantiles(groups, bins=100, std_y=1, control='points'):
 
     if control == 'points':
         subbins = values.shape[0]//bins  # Number of quantiles
-    elif control == 'quantiles':
+    elif (control == 'quantiles') or (control == 'bins'):
         subbins = bins
 
     data = {
@@ -145,9 +145,16 @@ def quantiles(groups, bins=100, std_y=1, control='points'):
             }
 
     if bins > 1:
-        values['bin'] = pd.qcut(values['stdcal'], subbins)  # Quantile split
+
+        if control == 'bins':
+            values['bin'] = pd.cut(values['stdcal'], subbins)
+        else:
+            values['bin'] = pd.qcut(values['stdcal'], subbins)  # Quantile split
 
         for subgroup, subvalues in values.groupby('bin'):
+
+            if subvalues.empty:
+                continue
 
             # RMSE
             err = metrics.mean_squared_error(
@@ -638,12 +645,12 @@ def plot_confusion(y_true, score, counts, stdcal, stdc, thresh, name):
     y_pred = []
     for i, j in zip(score, stdcal):
         if stdc is None:
-            if (i < thresh):
+            if (i <= thresh):
                 y_pred.append(1)
             else:
                 y_pred.append(0)
         else:
-            if (i < thresh) and (j < stdc):
+            if (i <= thresh) and (j <= stdc):
                 y_pred.append(1)
             else:
                 y_pred.append(0)
@@ -925,7 +932,7 @@ def main(path):
 
     bins = 15
     root = path
-    control = 'quantiles'
+    control = 'bins'
     dist = 'gpr_std'  # The dissimilarity metric to use
     perc_stdc = 70
     perc_ecut = 95
