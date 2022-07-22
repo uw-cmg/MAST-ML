@@ -20,7 +20,7 @@ import os
 font = {'font.size': 15, 'lines.markersize': 10}
 matplotlib.rcParams.update(font)
 
-# To make sure runs are plot with same symbols and colors 
+# To make sure runs are plot with same symbols and colors
 cc = (
       cycler(color=[
                     'tab:blue',
@@ -110,38 +110,7 @@ def load(path):
     elif 'train' in splits[-1]:
         in_domain = 'train'
 
-    new_path = 'model_errors_{}_calibrated.csv'.format(in_domain)
-    new_path = path.replace(new_path, '')
-
-    dist = new_path+'dist_train_to_{}.csv'.format(in_domain)
-    y = new_path+'y_{}.csv'.format(in_domain)
-    y_pred = new_path+'y_pred_{}.csv'.format(in_domain)
-
-    # Files that should exist
-    cond = [
-            os.path.exists(dist),
-            os.path.exists(y),
-            os.path.exists(y_pred),
-            os.path.exists(path)
-            ]
-    if not all(cond):
-        return pd.DataFrame()
-
-    dist = pd.read_csv(dist)
-    y = pd.read_csv(y)
-    y.columns = ['y']
-    y_pred = pd.read_csv(y_pred)
-    y_pred.columns = ['y_pred']
-    stdcal = pd.read_csv(path)
-    stdcal.columns = ['stdcal']
-
-    df = pd.concat([dist, stdcal, y, y_pred], axis=1)
-
-    print('-'*79)
-    print(dist.shape)
-    print(stdcal.shape)
-    print(y.shape)
-    print(y_pred.shape)
+    df = pd.read_csv(path)
 
     df['run'] = splits[0]
     df['set'] = in_domain
@@ -241,7 +210,7 @@ def ground_truth(data, perc_stdc, perc_ecut):
     stdc = []
     counts = []
     for i in data:
-        if i['set'] == 'tr':
+        if i['set'] == 'train':
             ecut += i['errs']
             stdc += i['stdcal']
             counts += i['count']
@@ -347,7 +316,7 @@ def plot_qq(df):
 
     fig, ax = pl.subplots(1, 2)
     fig_data = {}
-    for group, values in df.groupby(['in_domain', 'run', 'domain']):
+    for group, values in df.groupby(['set', 'run']):
 
         # Make absolute residuals normalized by model uncertainties
         stdcal = values['stdcal'].values
@@ -358,16 +327,15 @@ def plot_qq(df):
 
         group_name = '_'.join(map(str, group))
         fig_data[group_name] = {}
-        fig_data[group_name]['in_domain'] = group[0]
+        fig_data[group_name]['set'] = group[0]
         fig_data[group_name]['run'] = group[1]
-        fig_data[group_name]['domain'] = group[2]
-        if group[0] == 'tr':
+        if group[0] == 'train':
             cdf_parity(x, ax[0], fig_data[group_name])
-        elif group[0] == 'te':
+        elif group[0] == 'leaveout':
             cdf_parity(x, ax[1], fig_data[group_name])
 
     ax[0].set_title('Train')
-    ax[1].set_title('Test')
+    ax[1].set_title('Leaveout')
     ax[1].yaxis.tick_right()
     ax[1].yaxis.set_label_position("right")
     fig.tight_layout()
@@ -399,9 +367,9 @@ def plot_calibration(data, stdc, ecut):
     fig_data = []
     fig, ax = pl.subplots(1, 2)
     for i in data:
-        if 'te' == i['set']:
+        if 'leaveout' == i['set']:
             j = 1
-        elif 'tr' == i['set']:
+        elif 'train' == i['set']:
             j = 0
         else:
             continue
@@ -448,7 +416,7 @@ def plot_calibration(data, stdc, ecut):
     lim_max = [max(lims)]*2
 
     ax[0].set_title('Train')
-    ax[1].set_title('Test')
+    ax[1].set_title('Leaveout')
     ax[1].yaxis.tick_right()
     ax[1].yaxis.set_label_position("right")
     for i in range(2):
@@ -485,9 +453,9 @@ def plot_gt_pred(data, stdc, ecut):
         fig_data = []
         fig, ax = pl.subplots(1, 2)
         for i in data:
-            if 'te' == i['set']:
+            if 'leaveout' == i['set']:
                 j = 1
-            elif 'tr' == i['set']:
+            elif 'train' == i['set']:
                 j = 0
             else:
                 continue
@@ -502,12 +470,13 @@ def plot_gt_pred(data, stdc, ecut):
 
             marker = i['marker']
             color = i['color']
+            label = str(i['set'])+'_'+str(i['domain'])+'_'+str(i['run'])
             ax[j].scatter(
                           x[indx],
                           y[indx],
                           marker=marker,
                           color=color,
-                          label=str(i['set'])+'_'+str(i['domain'])+'_'+str(i['run'])
+                          label=label
                           )
             ax[j].scatter(
                           x[~indx],
@@ -530,7 +499,7 @@ def plot_gt_pred(data, stdc, ecut):
                              })
 
         ax[0].set_title('Train')
-        ax[1].set_title('Test')
+        ax[1].set_title('Leaveout')
         ax[1].yaxis.tick_right()
         ax[1].yaxis.set_label_position("right")
 
@@ -544,7 +513,12 @@ def plot_gt_pred(data, stdc, ecut):
             ax[q].set_xlim(xlim_min, xlim_max)
             ax[q].set_ylim(ylim_min, ylim_max)
 
-            ax[q].axhline(stdc, linestyle=':', color='g', label=r'$\sigma_{c}$')
+            ax[q].axhline(
+                          stdc,
+                          linestyle=':',
+                          color='g',
+                          label=r'$\sigma_{c}$'
+                          )
             if k == 0:
                 ax[q].set_xlabel(r'$|RMSE-\sigma_{cal}|/\sigma_{y}$')
                 ax[q].axvline(ecut, linestyle=':', color='r', label=r'$E_{c}$')
@@ -581,9 +555,9 @@ def plot_score(data, stdc, ecut):
 
     fig, ax = pl.subplots(1, 2)
     for i in data:
-        if 'te' == i['set']:
+        if 'leaveout' == i['set']:
             j = 1
-        elif 'tr' == i['set']:
+        elif 'train' == i['set']:
             j = 0
         else:
             continue
@@ -595,12 +569,13 @@ def plot_score(data, stdc, ecut):
 
         marker = i['marker']
         color = i['color']
+        label = str(i['set'])+'_'+str(i['domain'])+'_'+str(i['run'])
         ax[j].scatter(
                       x[indx],
                       y[indx],
                       marker=marker,
                       color=color,
-                      label=str(i['set'])+'_'+str(i['domain'])+'_'+str(i['run'])
+                      label=label
                       )
         ax[j].scatter(
                       x[~indx],
@@ -623,7 +598,7 @@ def plot_score(data, stdc, ecut):
                          })
 
     ax[0].set_title('Train')
-    ax[1].set_title('Test')
+    ax[1].set_title('Leaveout')
     ax[1].yaxis.tick_right()
     ax[1].yaxis.set_label_position("right")
 
@@ -904,7 +879,7 @@ def plot_pr(data, stdc):
           }
 
     for i in data:
-        if i['set'] == 'te':
+        if i['set'] == 'leaveout':
             pr['te_id_domain'] += i['in_domain']
             pr['te_od_score'] += i['score']
             pr['te_stdcal'] += i['stdcal']
@@ -943,18 +918,18 @@ def plot_pr(data, stdc):
            )
 
 
-def main():
+def main(path):
     '''
     The general workflow.
     '''
 
     bins = 15
-    root = '.'
+    root = path
     control = 'quantiles'
     dist = 'gpr_std'  # The dissimilarity metric to use
     perc_stdc = 70
     perc_ecut = 95
-    name = 'model_errors_*_calibrated.csv'
+    name = 'dist_train_to_*.csv'
 
     df = pd.concat(parallel(load, find(root, name)))
     df = df.sort_values(by=['stdcal', 'y_pred', dist])
@@ -970,9 +945,8 @@ def main():
 
     # Get values from training CV
     if 'RepeatedKFold' in df['split_type'].values:
-        df_tr = df[df['set'] == 'tr']
+        df_tr = df[df['set'] == 'train']
         std_y = df_tr['y'].std()
-        df.loc[df['run'] == 'random', 'domain'] = 'random'
     else:
         raise 'Need RepeatedCV run for ID'
 
