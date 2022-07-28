@@ -151,6 +151,8 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                 image_dpi: (int), determines output image quality
 
+                remove_split_dirs: (bool), whether to remove all the inner split directories after data and plots saved
+
                 **kwargs: (str), extra argument for domain_distance, eg. minkowsi requires additional arg p
 
             Returns:
@@ -383,7 +385,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test = None, distance_metric="euclidean",
-                 domain_distance=None, file_extension='.csv', image_dpi=250, **kwargs):
+                 domain_distance=None, file_extension='.csv', image_dpi=250, remove_split_dirs=False, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -791,6 +793,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                 dataset_stdev=None)
                         mastml._save_mastml_metadata()
 
+                    # Remove all the splitdirs if set to True
+                    if remove_split_dirs == True:
+                        ds = os.listdir(splitdir)
+                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d]
+                        for d in splitdirs:
+                            shutil.rmtree(os.path.join(splitdir, d))
 
                 else:
                     X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
@@ -839,6 +847,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                         shutil.copy(best_split_dict['features'], splitdir)
                     except:
                         print('Warning: could not copy best feature set to splitdir')
+
+                    # Remove all the splitdirs if set to True
+                    if remove_split_dirs == True:
+                        ds = os.listdir(splitdir)
+                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d]
+                        for d in splitdirs:
+                            shutil.rmtree(os.path.join(splitdir, d))
 
         return
 
