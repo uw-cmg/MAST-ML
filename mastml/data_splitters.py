@@ -600,7 +600,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_pred_leaveout = pd.Series(np.array(y_pred_leaveout))
 
                         self._save_split_data(df=X_leaveout, filename='X_leaveout', savepath=splitouterpath, columns=X_leaveout.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_extra_leaveout, filename='X_extra_leaveout', savepath=splitouterpath, columns=X_extra_leaveout.columns.tolist(), file_extension=file_extension)
+                        if X_extra is not None:
+                            self._save_split_data(df=X_extra_leaveout, filename='X_extra_leaveout', savepath=splitouterpath, columns=X_extra_leaveout.columns.tolist(), file_extension=file_extension)
                         self._save_split_data(df=y_leaveout, filename='y_leaveout', savepath=splitouterpath, columns='y_leaveout', file_extension=file_extension)
                         self._save_split_data(df=y_pred_leaveout, filename='y_pred_leaveout', savepath=splitouterpath, columns='y_pred_leaveout', file_extension=file_extension)
 
