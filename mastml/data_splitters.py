@@ -385,7 +385,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test = None, distance_metric="euclidean",
-                 domain_distance=None, file_extension='.csv', image_dpi=250, remove_split_dirs=False, **kwargs):
+                 domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -828,6 +828,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               domain_distance,
                                               file_extension,
                                               image_dpi,
+                                              parallel_run,
                                               **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            preprocessor=preprocessor,
@@ -860,8 +861,8 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
-                             domain_distance, file_extension, image_dpi, **kwargs):
-        def _evaluate_split_sets_serial(data):
+                             domain_distance, file_extension, image_dpi, parallel_run, **kwargs):
+        def _evaluate_split_sets_serial(data, groups=None):
             Xs, ys, train_ind, test_ind, split_count = data
             model_orig = copy.deepcopy(model)
             selector_orig = copy.deepcopy(selector)
@@ -902,17 +903,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                                  hyperopt_orig, metrics, plots, group, group_train,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
                                  verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
+            return
 
         split_counts = list(range(len(y_splits)))
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
         # Parallel
-        if self.parallel_run is True:
-            parallel(_evaluate_split_sets_serial, data)
+        if parallel_run is True:
+            parallel(_evaluate_split_sets_serial, x=data, groups=groups)
 
         # Serial
         else:
-            [_evaluate_split_sets_serial(i) for i in data]
+            [_evaluate_split_sets_serial(data=i, groups=groups) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         if groups is not None:
@@ -921,6 +923,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         else:
             groups_test_all = None
             groups_train_all = None
+
         y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
         y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
         y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
@@ -1117,9 +1120,13 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features, file_extension=file_extension)
         self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train', file_extension=file_extension)
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
+
         if X_extra_train is not None and X_extra_test is not None:
             self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
             self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist(), file_extension=file_extension)
+        else:
+            X_extra_train = None
+            X_extra_test = None
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
         if hyperopt is not None:
@@ -1160,6 +1167,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         else:
             model_errors_test = None
             model_errors_train = None
+            num_removed_learners_train = None
+            num_removed_learners_test = None
 
         # Save summary stats data for this split
         stats_dict = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_pred)
@@ -1232,6 +1241,9 @@ class BaseSplitter(ms.BaseCrossValidator):
             with open(os.path.join(splitpath, 'test_group.txt'), 'w') as f:
                 for group in unique_groups:
                     f.write(str(group)+'\n')
+        else:
+            groups_train = None
+            groups = None
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
@@ -1246,7 +1258,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             if model.model.base_estimator.__class__.__name__ == 'KerasRegressor':
                 keras.backend.clear_session()
 
-        if (baseline_test is not None):
+        if baseline_test is not None:
             baseline = Baseline_tests()
             columns = ["Metric", "Real_score", "Fake_score"]
             # ["test_mean", "test_permuted", "test_nearest_neighbour_kdTree", "test_nearest_neighbour_cdist",
@@ -1278,7 +1290,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     df_res = baseline.test_classifier_dominant(X_train, X_test, y_train, y_test, model, metrics)
                     self._save_split_data(df_res, "test_classifier_dominant", splitpath, columns, file_extension)
 
-        if (domain_distance is not None):
+        if domain_distance is not None:
             y_test_domain = Domain()
             df_res = y_test_domain.distance(X_train, X_test, domain_distance, **kwargs)
             self._save_split_data(df_res, "y_test_domain", splitpath, columns=["y_test_domain"], file_extension=file_extension)
