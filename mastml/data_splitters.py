@@ -525,6 +525,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              domain_distance,
                                                              file_extension,
                                                              image_dpi,
+                                                             parallel_run,
                                                              **kwargs)
                         split_outer_count += 1
 
