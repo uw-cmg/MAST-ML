@@ -217,9 +217,11 @@ class Scatter():
             stats_dict_group['Overall'] = Metrics(metrics_list=metrics_list).evaluate(y_true=y_true, y_pred=y_pred)
             stats_group_df = pd.DataFrame().from_dict(stats_dict_group, orient='index', columns=metrics_list)
             if file_extension == '.xlsx':
-                stats_group_df.to_excel(os.path.join(savepath, 'parity_plot_'+str(data_type)+ '_pergroupstats' +'.xlsx'))
+                stats_group_df.to_excel(os.path.join(savepath, str(data_type)+ '_stats_pergroup_summary' +'.xlsx'))
             elif file_extension == '.csv':
-                stats_group_df.to_csv(os.path.join(savepath, 'parity_plot_'+str(data_type)+ '_pergroupstats' +'.csv'))
+                stats_group_df.to_csv(os.path.join(savepath, str(data_type)+'_stats_pergroup_summary' +'.csv'))
+
+            cls.plot_metric_vs_group(groups_unique, stats_group_df, metrics_list, savepath, data_type, show_figure, file_extension, image_dpi)
 
         plot_stats(fig, stats_dict, x_align=0.65, y_align=0.90, fontsize=12)
         if ebars is not None:
@@ -664,27 +666,12 @@ class Scatter():
         return
 
     @classmethod
-    def plot_metric_vs_group(cls, savepath, data_type, show_figure, file_extension='.csv', image_dpi=250):
-
-        dirs = os.listdir(savepath)
-        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
-
-        stats_files_dict = dict()
-        groups = list()
-        for splitdir in splitdirs:
-            with open(os.path.join(os.path.join(savepath, splitdir), 'test_group.txt'), 'r') as f:
-                group = f.readlines()[0]
-                groups.append(group)
-            if file_extension == '.xlsx':
-                stats_files_dict[group] = pd.read_excel(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.xlsx'), engine='openpyxl').to_dict('records')[0]
-            elif file_extension == '.csv':
-                stats_files_dict[group] = pd.read_csv(os.path.join(os.path.join(savepath, splitdir), data_type + '_stats_summary.csv')).to_dict('records')[0]
-            metrics_list = list(stats_files_dict[group].keys())
+    def plot_metric_vs_group(cls, groups, stats_group_df, metrics_list, savepath, data_type, show_figure, file_extension='.csv', image_dpi=250):
 
         for metric in metrics_list:
             stats = list()
             for group in groups:
-                stats.append(stats_files_dict[group][metric])
+                stats.append(stats_group_df[metric][group])
 
             avg_stats = {metric: (np.mean(stats), np.std(stats))}
 
@@ -1856,15 +1843,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                             groups=groups)
             except:
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
-            if groups is not None:
-                try:
-                    Scatter.plot_metric_vs_group(savepath=savepath,
-                                                 data_type=data_type,
-                                                 show_figure=show_figure,
-                                                 file_extension=file_extension,
-                                                 image_dpi=image_dpi)
-                except:
-                    print('Warning: unable to make Scatter.plot_metric_vs_group plot. Skipping...')
+
     if 'Error' in plots:
         try:
             Error.plot_qq(residuals=residuals,
