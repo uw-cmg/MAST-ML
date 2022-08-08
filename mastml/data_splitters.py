@@ -368,21 +368,31 @@ class BaseSplitter(ms.BaseCrossValidator):
         super(BaseSplitter, self).__init__()
         self.splitter = self.__class__.__name__
 
-    def split_asframe(self, X, y, groups=None):
+    def split_asframe(self, X, y, groups=None, X_force_train=None, y_force_train=None):
         split = self.split(X, y, groups)
         X_splits = list()
         y_splits = list()
         train_inds = list()
         test_inds = list()
         for train, test in split:
-            X_splits.append((X.iloc[train], X.iloc[test]))
-            y_splits.append((y.iloc[train], y.iloc[test]))
-            train_inds.append(train)
-            test_inds.append(test)
+            if X_force_train is None and y_force_train is None:
+                X_splits.append((X.iloc[train], X.iloc[test]))
+                y_splits.append((y.iloc[train], y.iloc[test]))
+                train_inds.append(train)
+                test_inds.append(test)
+            else:
+                X_splits.append((pd.concat([X.iloc[train], X_force_train]), X.iloc[test]))
+                y_splits.append((pd.concat([y.iloc[train], y_force_train]), y.iloc[test]))
+                test_inds.append(test)
+                train_inds.append(train) # Don't append the forced train inds b/c don't want to evaluate metrics with these extra data, also creates issues with groups indexing
+                # Note that including the forced training data causes an issue with plotting the train data all split average parity plots
+                #num_ind = X.shape[0]
+                #train_inds_extra = np.arange(0+num_ind, X_force_train.shape[0]+num_ind)
+                #train_inds.append(np.concatenate([train, train_inds_extra]))
         return X_splits, y_splits, train_inds, test_inds
 
     def evaluate(self, X, y, models, mastml=None, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
-                 plots=None, savepath=None, X_extra=None, leaveout_inds=list(list()),
+                 plots=None, savepath=None, X_extra=None, X_force_train=None, y_force_train=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test = None, distance_metric="euclidean",
                  domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False, **kwargs):
@@ -392,7 +402,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 print('Warning: NoSplit does not support nested cross validation.')
             else:
                 # Get set of X_leaveout, y_leaveout for testing. Append them to user-specified X_leaveout tests
-                X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
+                X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups, X_force_train=X_force_train, y_force_train=y_force_train)
                 leaveout_inds_orig = leaveout_inds
                 leaveout_inds = [i for i in test_inds]
                 if len(leaveout_inds_orig) > 0:
@@ -733,7 +743,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                             groups_subsplit = None
 
                         X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X_subsplit, y=y_subsplit,
-                                                                                       groups=groups_subsplit)
+                                                                                       groups=groups_subsplit,
+                                                                                       X_force_train=X_force_train,
+                                                                                       y_force_train=y_force_train)
 
                         # make the individual split directory
                         splitouterpath = os.path.join(splitdir, 'split_outer_' + str(split_outer_count))
@@ -1056,7 +1068,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                             shutil.rmtree(os.path.join(splitdir, d))
 
                 else:
-                    X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups)
+                    X_splits, y_splits, train_inds, test_inds = self.split_asframe(X=X, y=y, groups=groups,
+                                                                                   X_force_train=X_force_train,
+                                                                                   y_force_train=y_force_train)
 
                     self._evaluate_split_sets(X_splits,
                                               y_splits,
