@@ -56,6 +56,7 @@ import joblib
 from math import ceil
 import warnings
 import shutil
+import itertools
 from scipy.spatial.distance import minkowski
 try:
     import keras
@@ -2349,6 +2350,76 @@ class LeaveOutClusterCV(BaseSplitter):
 
         # return labels
         return labels
+
+
+class LeaveMultiGroupOut(BaseSplitter):
+    """
+    Class to train the model on multiple groups at a time and test it on the rest of the data
+
+    Args:
+        None (only object instance)
+
+    Attributes:
+        parallel_run: an attribute definining wheteher to run splits with all available computer cores
+
+    Methods:
+        get_n_splits: method to calculate the number of splits to perform
+            Args:
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (int), number of unique groups, indicating number of splits to perform
+
+        split: method to perform split into train indices and test indices
+            Args:
+                X: (numpy array), array of X features
+
+                y: (numpy array), array of y data
+
+                groups: (numpy array), array of group labels
+
+            Returns:
+                (numpy array), array of train and test indices
+
+    """
+
+    def __init__(self, multigroup_size=2, **kwargs):
+        super(LeaveMultiGroupOut, self).__init__()
+        self.multigroup_size = multigroup_size
+        # Compensate for parallel mode
+        self.parallel_run = False
+        if 'parallel_run' in kwargs.keys():
+            self.parallel_run = kwargs['parallel_run']
+            del kwargs['parallel_run']  # Remove key to not break self.splitter
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return len(list(itertools.combinations(groups, self.multigroup_size)))
+
+    def split(self, X, y, groups):
+        unique_groups = np.unique(groups)
+        super_groups = list(itertools.combinations(unique_groups, self.multigroup_size))
+        inds = np.arange(0, X.shape[0])
+
+        # Need to get the indices of the data corresponding to each regular group
+        group_ind_dict = dict()
+        for group in unique_groups:
+            group_inds = np.where(groups == group)[0]
+            group_ind_dict[group] = group_inds
+
+        # Build the train/test index sets by looping over the super groups and finding indices of each normal group
+        trains_tests = list()
+        for super_group in super_groups:
+            group_inds = list()
+            for k, v in group_ind_dict.items():
+                if k in super_group:
+                    group_inds.append(v)
+            group_inds = np.concatenate(group_inds)
+            tests = group_inds
+            trains = [i for i in inds if i not in tests]
+            trains = np.array(trains)
+            trains_tests.append((trains, tests))
+
+        return trains_tests
 
 
 class Bootstrap(BaseSplitter):
