@@ -39,6 +39,9 @@ LeaveOutClusterCV:
     left-out data set. Basically functions as a leave out group test where the groups are automatically obtained from
     a clustering algorithm.
 
+LeaveMultiGroupOut:
+    Class to train the model on multiple groups at a time and test it on the rest of the data
+
 Bootstrap:
     Method to perform bootstrap resampling, i.e. random leave-out with replacement.
 
@@ -2357,7 +2360,7 @@ class LeaveMultiGroupOut(BaseSplitter):
     Class to train the model on multiple groups at a time and test it on the rest of the data
 
     Args:
-        None (only object instance)
+        multigroup_size: (int), size of the groups to be made for leave out.
 
     Attributes:
         parallel_run: an attribute definining wheteher to run splits with all available computer cores
