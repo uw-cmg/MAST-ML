@@ -1522,7 +1522,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         if model_name == 'KerasRegressor':
             model.model.save(splitpath)
         else:
-            joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+            if model_name == 'BaggingRegressor':
+                # Edge case of ensemble of keras models- pickle won't work here. Just state warning
+                if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
+                    print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
+                else:
+                    joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
         # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
         if model_name == 'KerasRegressor':
@@ -1716,6 +1721,9 @@ class BaseSplitter(ms.BaseCrossValidator):
             metric_best = 10**20
         else:
             metric_best = 0
+
+        # Start with best_split being the first split so doesn't throw an error later
+        best_split = list(stats_files_dict.keys())[0]
         for split, stats_dict in stats_files_dict.items():
             if greater_is_better == False:
                 if stats_dict[best_run_metric] < metric_best:
