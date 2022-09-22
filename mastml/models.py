@@ -33,6 +33,11 @@ except:
           'pip install xgboost. If have error with finding libxgboost.dylib library, do'
           'brew install libomp. If do not have brew on your system, first do'
           ' ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" from the Terminal')
+try:
+    from sklego.linear_model import LowessRegression
+except:
+    print('scikit-lego is an optional dependency, enabling use of the LowessRegression model. If you want to use this model, '
+          'do "pip install scikit-lego"')
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -77,6 +82,8 @@ class SklearnModel(BaseEstimator, TransformerMixin):
             kernel = _make_gpr_kernel(kernel_string=kernel)
             del kwargs['kernel']
             self.model = GaussianProcessRegressor(kernel=kernel, **kwargs)
+        elif model == 'LowessRegression':
+            self.model = LowessRegression(**kwargs)
         else:
             self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
