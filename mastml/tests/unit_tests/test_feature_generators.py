@@ -69,6 +69,8 @@ class TestGenerators(unittest.TestCase):
         shutil.rmtree(generator.splitdir)
         return
 
+    #TODO: this will need to be updated with the latest Mat Proj API
+    '''
     def test_materialsproject(self):
         composition_df = pd.DataFrame({'composition': ['Al2O3', 'SrTiO3']})
         X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(2,10)))
@@ -79,6 +81,7 @@ class TestGenerators(unittest.TestCase):
         self.assertTrue(os.path.exists(generator.splitdir))
         shutil.rmtree(generator.splitdir)
         return
+    '''
 
 if __name__=='__main__':
     unittest.main()
