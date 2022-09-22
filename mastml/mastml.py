@@ -265,15 +265,15 @@ def write_requirements():
         lines = f.readlines()
         for line in lines:
             reqs_exact.append(line.strip())
-    reqs = ['dlhub-sdk',
-            'matplotlib',
+    reqs = ['matplotlib',
             'numpy',
             'pandas',
             'pymatgen',
-            'scikit-learn']
+            'scikit-learn',
+            'mastml']
     with open('requirements.txt', 'w') as f:
         for req in reqs:
             for req_exact in reqs_exact:
                 if req == req_exact.split('==')[0]:
-                    f.write(req_exact+'\n')
+                    f.write(req+'\n')
     return
