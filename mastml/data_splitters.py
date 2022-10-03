@@ -800,17 +800,47 @@ class BaseSplitter(ms.BaseCrossValidator):
                         split_outer_count += 1
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath,
+                                                               model=model,
                                                                preprocessor=preprocessor,
                                                                best_run_metric=best_run_metric,
                                                                model_name=model_name,
                                                                file_extension=file_extension)
                         # Copy the best model, selected features and preprocessor to this outer directory
                         shutil.copy(best_split_dict['preprocessor'], splitouterpath)
-                        shutil.copy(best_split_dict['model'], splitouterpath)
+                        if model_name == 'KerasRegressor':
+                            try:
+                                shutil.move(best_split_dict['model'], splitouterpath)
+                            except:
+                                print('Warning: could not move best Keras model to splitdir')
+                        elif model_name == 'BaggingRegressor':
+                            if model.base_estimator_ == 'KerasRegressor':
+                                for m in best_split_dict['model']:
+                                    shutil.move(m, splitouterpath)
+                        else:
+                            try:
+                                shutil.copy(best_split_dict['model'], splitouterpath)
+                            except:
+                                print('Warning: could not copy best model to splitdir')
+                        #shutil.copy(best_split_dict['model'], splitouterpath)
                         shutil.copy(best_split_dict['features'], splitouterpath)
 
                         # Load in the best model, preprocessor and evaluate the left-out data stats
-                        best_model = joblib.load(best_split_dict['model'])
+                        if model_name == 'BaggingRegressor':
+                            if model.base_estimator_ == 'KerasRegressor':
+                                # Need to rebuild the ensemble of Keras models
+                                import tensorflow as tf
+                                keras_dirs = [d for d in os.listdir(splitouterpath) if 'keras_model' in d]
+                                estimators = [tf.keras.models.load_model(os.path.join(splitouterpath, d)) for d in keras_dirs]
+                                estimator_features = list()
+                                for e in estimators:
+                                    estimator_features.append(np.arange(0, X.shape[1]))
+                                model.model.estimators_ = estimators
+                                model.model.estimators_features_ = estimator_features
+                                best_model = model
+                            else:
+                                best_model = joblib.load(best_split_dict['model'])
+                        else:
+                            best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
                         if file_extension == '.xlsx':
                             X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
@@ -1104,6 +1134,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               parallel_run,
                                               **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
+                                                           model=model,
                                                            preprocessor=preprocessor,
                                                            best_run_metric=best_run_metric,
                                                            model_name=model_name,
@@ -1113,10 +1144,21 @@ class BaseSplitter(ms.BaseCrossValidator):
                         shutil.copy(best_split_dict['preprocessor'], splitdir)
                     except:
                         print('Warning: could not copy best preprocessor to splitdir')
-                    try:
-                        shutil.copy(best_split_dict['model'], splitdir)
-                    except:
-                        print('Warning: could not copy best model to splitdir')
+
+                    if model_name == 'KerasRegressor':
+                        try:
+                            shutil.move(best_split_dict['model'], splitdir)
+                        except:
+                            print('Warning: could not move best Keras model to splitdir')
+                    elif model_name == 'BaggingRegressor':
+                        if model.base_estimator_ == 'KerasRegressor':
+                            for m in best_split_dict['model']:
+                                shutil.move(m, splitdir)
+                    else:
+                        try:
+                            shutil.copy(best_split_dict['model'], splitdir)
+                        except:
+                            print('Warning: could not copy best model to splitdir')
                     try:
                         shutil.copy(best_split_dict['features'], splitdir)
                     except:
@@ -1137,7 +1179,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                              domain_distance, file_extension, image_dpi, parallel_run, **kwargs):
         def _evaluate_split_sets_serial(data, groups=None):
             Xs, ys, train_ind, test_ind, split_count = data
-            model_orig = copy.deepcopy(model)
+            # TODO: not copying this causes issues with KerasRegressor when doing different split types. But, doing this breaks BaggingRegressor with KerasRegressor networks
+            #model_orig = copy.deepcopy(model)
             selector_orig = copy.deepcopy(selector)
             preprocessor_orig = copy.deepcopy(preprocessor)
             hyperopt_orig = copy.deepcopy(hyperopt)
@@ -1172,10 +1215,18 @@ class BaseSplitter(ms.BaseCrossValidator):
                 pd.DataFrame({'test_inds': test_ind}).to_csv(os.path.join(splitpath, 'test_inds' + file_extension), index=False)
                 pd.DataFrame({'train_inds': train_ind}).to_csv(os.path.join(splitpath, 'train_inds' + file_extension), index=False)
 
-            self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
+            self._evaluate_split(X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor_orig,
+                                 selector_orig,
                                  hyperopt_orig, metrics, plots, group, group_train,
-                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
-                                 verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
+                                 splitpath, has_model_errors, X_extra_train, X_extra_test, error_method,
+                                 remove_outlier_learners,
+                                 verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi,
+                                 **kwargs)
+
+            #self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
+            #                     hyperopt_orig, metrics, plots, group, group_train,
+            #                     splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
+            #                     verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
             return
 
         split_counts = list(range(len(y_splits)))
@@ -1520,14 +1571,23 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
-            model.model.save(splitpath)
+            if not os.path.exists(os.path.join(splitpath, 'keras_model')):
+                os.mkdir(os.path.join(splitpath, 'keras_model'))
+            model.model.save(os.path.join(splitpath, 'keras_model'))
+        elif model_name == 'BaggingRegressor':
+            # Edge case of ensemble of keras models- pickle won't work here. Just state warning
+            if model.base_estimator_ == 'KerasRegressor':
+            #if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
+                # Save the individiual Keras models comprising the Ensemble
+                count = 0
+                for m in model.model.estimators_:
+                    m.model.save(filepath=os.path.join(splitpath,'keras_model_' + str(count)))
+                    count += 1
+                #print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
+            else:
+                joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
         else:
-            if model_name == 'BaggingRegressor':
-                # Edge case of ensemble of keras models- pickle won't work here. Just state warning
-                if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
-                    print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
-                else:
-                    joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+            joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
         # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
         if model_name == 'KerasRegressor':
@@ -1703,7 +1763,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         df = pd.concat(data)
         return df
 
-    def _get_best_split(self, savepath, preprocessor, best_run_metric, model_name, file_extension):
+    def _get_best_split(self, savepath, model, preprocessor, best_run_metric, model_name, file_extension):
         dirs = os.listdir(savepath)
         splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
 
@@ -1738,14 +1798,35 @@ class BaseSplitter(ms.BaseCrossValidator):
         best_split_dict = dict()
         preprocessor_name = preprocessor.preprocessor.__class__.__name__+'.pkl'
 
-        model_name = model_name+'.pkl'
+        bagging_with_keras = False
+        if "Keras" in model_name:
+            model_name = 'keras_model'
+        elif "BaggingRegressor" in model_name:
+            if model.base_estimator_ == 'KerasRegressor':
+            #if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
+                bagging_with_keras = True
+                model_name = 'keras_model'
+            else:
+                model_name = model_name + '.pkl'
+        else:
+            model_name = model_name+'.pkl'
 
         if not os.path.exists(os.path.join(best_split, preprocessor_name)):
-            print("Warning: couldn't find preprocessor .pkl file in best split")
-        if not os.path.exists(os.path.join(best_split, model_name)):
-            print("Warning: couldn't find model .pkl file in best split")
+            print("Warning: couldn't find preprocessor file in best split")
+
+        if bagging_with_keras == True:
+            keras_paths = [os.path.join(best_split, d) for d in os.listdir(best_split) if 'keras_model' in d]
+            #print('keras paths', keras_paths)
+
+        if bagging_with_keras == False:
+            if not os.path.exists(os.path.join(best_split, model_name)):
+                print("Warning: couldn't find model file in best split")
+
         best_split_dict['preprocessor'] = os.path.join(best_split, preprocessor_name)
-        best_split_dict['model'] = os.path.join(best_split, model_name)
+        if bagging_with_keras == True:
+            best_split_dict['model'] = keras_paths
+        else:
+            best_split_dict['model'] = os.path.join(best_split, model_name)
         best_split_dict['features'] = os.path.join(best_split, 'selected_features.txt')
         best_split_dict['X_train'] = os.path.join(best_split, 'X_train'+file_extension)
 
