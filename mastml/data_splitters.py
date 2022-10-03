@@ -1521,13 +1521,14 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
             model.model.save(splitpath)
+        elif model_name == 'BaggingRegressor':
+            # Edge case of ensemble of keras models- pickle won't work here. Just state warning
+            if model.model.base_estimator.__class__.__name__ == 'KerasRegressor':
+                print('Warning: unable to save pickled model of ensemble of KerasRegressor models. This feature is added on dev branch. Passing through...')
+            else:
+                joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
         else:
-            if model_name == 'BaggingRegressor':
-                # Edge case of ensemble of keras models- pickle won't work here. Just state warning
-                if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
-                    print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
-                else:
-                    joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+            joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
         # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
         if model_name == 'KerasRegressor':
