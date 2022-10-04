@@ -251,10 +251,8 @@ class ErrorUtils():
                         for pred in model.model.estimators_:
                             if pred.__class__.__name__ == 'KerasRegressor':
                                 preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1)))
-                            elif pred.__class__.__name__ == 'Sequential':
-                                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1)))
                             else:
-                                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1)[0]))
+                                preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
                     elif model.model.__class__.__name__ == 'ExtraTreesRegressor':
                         for pred in model.model.estimators_:
                             preds.append(pred.predict(np.array(X_aslist[x]).reshape(1, -1))[0])
