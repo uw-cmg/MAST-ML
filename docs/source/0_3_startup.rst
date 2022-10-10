@@ -17,7 +17,7 @@ Once MAST-ML is installed, you are ready to perform your first MAST-ML run
 
 The first MAST-ML tutorial can be found under the mastml/examples folder, and is named **MASTML_Tutorial_1_GettingStarted.ipynb**
 
-This first notebook can also be downloaded via this link: :download:`MASTML_Tutorial_1_GettingStarted <MASTML_Tutorial_1_GettingStarted.ipynb>`
+This first notebook can also be opened on Google Colab via this link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_1_GettingStarted.ipynb
 
 Open this first example notebook either in Google Colab if running on the cloud or locally by starting a Jupyter notebook
 session. There are explanations for each cell of the notebook. Reading through and running this tutorial should take
