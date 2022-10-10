@@ -12,7 +12,7 @@ of each tutorial is provided:
 
 Tutorial 1: Getting Started (MASTML_Tutorial_1_GettingStarted.ipynb):
 
-    Tutorial 1 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_1_GettingStarted.ipynb
+    Tutorial 1 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_1_GettingStarted.ipynb
 
     In this notebook, we will perform a first, basic run where we:
         1. Import example data of Boston housing prices
@@ -23,7 +23,7 @@ Tutorial 1: Getting Started (MASTML_Tutorial_1_GettingStarted.ipynb):
 
 Tutorial 2: Data Import and Cleaning (MASTML_Tutorial_2_DataImport.ipynb):
 
-    Tutorial 2 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_2_DataImport.ipynb
+    Tutorial 2 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_2_DataImport.ipynb
 
     In this notebook, we will learn different ways to download and import data into a MAST-ML run:
         1. Import model datasets from scikit-learn
@@ -33,7 +33,7 @@ Tutorial 2: Data Import and Cleaning (MASTML_Tutorial_2_DataImport.ipynb):
 
 Tutorial 3: Feature Generation and Selection (MASTML_Tutorial_3_FeatureEngineering.ipynb):
 
-    Tutorial 3 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_3_FeatureEngineering.ipynb
+    Tutorial 3 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_3_FeatureEngineering.ipynb
 
     In this notebook, we will learn different ways to generate, preprocess, and select features:
         1. Generate features based on material composition
@@ -45,7 +45,7 @@ Tutorial 3: Feature Generation and Selection (MASTML_Tutorial_3_FeatureEngineeri
 
 Tutorial 4: Model Fits and Data Split Tests (MASTML_Tutorial_4_Models_and_Tests.ipynb):
 
-    Tutorial 4 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_4_Models_and_Tests.ipynb
+    Tutorial 4 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_4_Models_and_Tests.ipynb
 
     In this notebook, we will learn how to run a few different types of models on a select dataset, and conduct a
     few different types of data splits to evaluate our model performance. In this tutorial, we will:
@@ -58,7 +58,7 @@ Tutorial 4: Model Fits and Data Split Tests (MASTML_Tutorial_4_Models_and_Tests.
 
 Tutorial 5: Left-out data, Nested cross-validation, and Optimized models (MASTML_Tutorial_5_NestedCV_and_OptimizedModels.ipynb):
 
-    Tutorial 5 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_5_NestedCV_and_OptimizedModels.ipynb
+    Tutorial 5 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_5_NestedCV_and_OptimizedModels.ipynb
 
     In this notebook, we will perform more advanced model fitting routines, including nested cross validation and
     hyperparameter optimization. In this tutorial, we will learn how to use MAST-ML to:
@@ -68,7 +68,7 @@ Tutorial 5: Left-out data, Nested cross-validation, and Optimized models (MASTML
 
 Tutorial 6: Model Error Analysis, Uncertainty Quantification (MASTML_Tutorial_6_ErrorAnalysis_UncertaintyQuantification.ipynb):
 
-    Tutorial 6 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_6_ErrorAnalysis_UncertaintyQuantification.ipynb
+    Tutorial 6 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_6_ErrorAnalysis_UncertaintyQuantification.ipynb
 
     In this notebook tutorial, we will learn about how MAST-ML can be used to:
         1. Assess the true and predicted errors of our model, and some useful measures of their statistical distributions
@@ -77,7 +77,7 @@ Tutorial 6: Model Error Analysis, Uncertainty Quantification (MASTML_Tutorial_6_
 
 Tutorial 7: Model predictions with calibrated error bars on new data, hosting on Foundry/DLHub (MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb):
 
-    Tutorial 7 link: https://github.com/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb
+    Tutorial 7 link: https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_CalibratedErrorBars_HostModelonFoundry.ipynb
 
     In this notebook tutorial, we will learn about how MAST-ML can be used to:
         1. Fit a model and use it to predict on new data.

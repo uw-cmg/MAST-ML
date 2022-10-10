@@ -1,6 +1,6 @@
-**********************************
-Code Documentation: Preprocessing
-**********************************
+**************************************
+Code Documentation: MAST-ML Predictor
+**************************************
 
 .. automodapi:: mastml.mastml_predictor
    :members:

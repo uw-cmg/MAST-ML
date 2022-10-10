@@ -1,6 +1,6 @@
-**********************************
-Code Documentation: Preprocessing
-**********************************
+***********************************
+Code Documentation: Baseline Tests
+***********************************
 
 .. automodapi:: mastml.baseline_tests
    :members:
