@@ -101,6 +101,7 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             savepath = os.getcwd()
         if make_new_dir is True:
             splitdir = self._setup_savedir(savepath=savepath)
+            self.splitdir = splitdir
             savepath = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)

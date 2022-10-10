@@ -109,6 +109,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         X_select = self.transform(X=X)
         if make_new_dir is True:
             splitdir = self._setup_savedir(selector=self, savepath=savepath)
+            self.splitdir = splitdir
             savepath = splitdir
         self.selected_features = X_select.columns.tolist()
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:

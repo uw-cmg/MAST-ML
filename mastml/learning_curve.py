@@ -116,6 +116,7 @@ class LearningCurve():
             savepath = os.getcwd()
         if make_new_dir is True:
             splitdir = self._setup_savedir(savepath=savepath)
+            self.splitdir = splitdir
             savepath = splitdir
         self.data_learning_curve(model=model,
                                  X=X,
