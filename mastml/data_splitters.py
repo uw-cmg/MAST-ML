@@ -1309,7 +1309,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             model_errors_test_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all)
 
             # Write the recalibration values to file
-            recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+            recal_df = pd.DataFrame({'a': a, 'b': b}, index=[0])
             if file_extension == '.xlsx':
                 recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_'+str('test')+file_extension), index=False)
             elif file_extension == '.csv':
@@ -1322,7 +1322,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                                 residuals=residuals_train_all)
 
             # Write the recalibration values to file
-            recal_df = pd.DataFrame({'slope (a)': a, 'intercept (b)': b}, index=[0])
+            recal_df = pd.DataFrame({'a': a, 'b': b}, index=[0])
             if file_extension == '.xlsx':
                 recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
             elif file_extension == '.csv':
@@ -1871,8 +1871,8 @@ class BaseSplitter(ms.BaseCrossValidator):
             elif file_extension == '.csv':
                 recalibrate_dict = pd.read_csv(os.path.join(os.path.join(savepath, splitdir),
                                                           'recalibration_parameters_'+str(data_type)+'.csv')).to_dict('records')[0]
-            recalibrate_a_vals.append(recalibrate_dict['slope (a)'])
-            recalibrate_b_vals.append(recalibrate_dict['intercept (b)'])
+            recalibrate_a_vals.append(recalibrate_dict['a'])
+            recalibrate_b_vals.append(recalibrate_dict['b'])
         recalibrate_avg_dict = {'a': np.mean(recalibrate_a_vals), 'b': np.mean(recalibrate_b_vals)}
         recalibrate_stdev_dict = {'a': np.std(recalibrate_a_vals), 'b': np.std(recalibrate_b_vals)}
         return recalibrate_avg_dict, recalibrate_stdev_dict
@@ -1882,10 +1882,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
         elif file_extension == '.csv':
             recalibrate_dict = pd.read_csv(os.path.join(savepath, 'recalibration_parameters_' + str(data_type) + '.csv')).to_dict('records')[0]
-        recalibrate_dict_ = dict()
-        recalibrate_dict_['a'] = recalibrate_dict['slope (a)']
-        recalibrate_dict_['b'] = recalibrate_dict['intercept (b)']
-        return recalibrate_dict_
+        return recalibrate_dict
 
     def help(self):
         print('Documentation for', self.splitter)
