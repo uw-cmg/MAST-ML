@@ -809,7 +809,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         shutil.copy(best_split_dict['preprocessor'], splitouterpath)
                         if model_name == 'KerasRegressor':
                             try:
-                                shutil.move(best_split_dict['model'], splitouterpath)
+                                shutil.copy(best_split_dict['model'], splitouterpath)
                             except:
                                 print('Warning: could not move best Keras model to splitdir')
                         elif model_name == 'BaggingRegressor':
@@ -851,8 +851,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                             selected_features = [line.rstrip() for line in f]
                         X_leaveout = X_leaveout[selected_features]
                         X_leaveout_preprocessed = preprocessor.transform(X=X_leaveout)
-                        y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
+                        #y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
+                        y_pred_leaveout = best_model.predict(X_leaveout_preprocessed)
+                        y_pred_leaveout = y_pred_leaveout.ravel()
                         y_pred_leaveout = pd.Series(y_pred_leaveout, name='y_pred_leaveout')
+
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
                                                                                      y_pred=y_pred_leaveout)
                         df_stats_leaveout = pd.DataFrame().from_records([stats_dict_leaveout])
@@ -1147,7 +1150,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
                     if model_name == 'KerasRegressor':
                         try:
-                            shutil.move(best_split_dict['model'], splitdir)
+                            shutil.copy(best_split_dict['model'], splitdir)
                         except:
                             print('Warning: could not move best Keras model to splitdir')
                     elif model_name == 'BaggingRegressor':
@@ -1585,9 +1588,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
-            if not os.path.exists(os.path.join(splitpath, 'keras_model')):
-                os.mkdir(os.path.join(splitpath, 'keras_model'))
-            model.model.save(os.path.join(splitpath, 'keras_model'))
+            joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+            #if not os.path.exists(os.path.join(splitpath, 'keras_model')):
+            #    os.mkdir(os.path.join(splitpath, 'keras_model'))
+            #model.model.save(os.path.join(splitpath, 'keras_model'))
         elif model_name == 'BaggingRegressor':
             # Edge case of ensemble of keras models- pickle won't work here. Just state warning
             if model.base_estimator_ == 'KerasRegressor':
@@ -1813,9 +1817,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         preprocessor_name = preprocessor.preprocessor.__class__.__name__+'.pkl'
 
         bagging_with_keras = False
-        if "Keras" in model_name:
-            model_name = 'keras_model'
-        elif "BaggingRegressor" in model_name:
+        #if "Keras" in model_name:
+        #    model_name = 'keras_model'
+        if "BaggingRegressor" in model_name:
             if model.base_estimator_ == 'KerasRegressor':
             #if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
                 bagging_with_keras = True
@@ -1845,16 +1849,16 @@ class BaseSplitter(ms.BaseCrossValidator):
         best_split_dict['X_train'] = os.path.join(best_split, 'X_train'+file_extension)
 
         # Remove the saved models and preprocessors from other split dirs that are not the best (save storage space)
-        for splitdir in splitdirs:
-            if os.path.join(savepath, splitdir) != best_split:
-                try:
-                    os.remove(os.path.join(os.path.join(savepath, splitdir), model_name))
-                except:
-                    print("Warning: did not remove non-best models from split path")
-                try:
-                    os.remove(os.path.join(os.path.join(savepath, splitdir), preprocessor_name))
-                except:
-                    print("Warning: did not remove non-best preprocessors from split path")
+        #for splitdir in splitdirs:
+        #    if os.path.join(savepath, splitdir) != best_split:
+        #        try:
+        #            os.remove(os.path.join(os.path.join(savepath, splitdir), model_name))
+        #        except:
+        #            print("Warning: did not remove non-best models from split path")
+        #        try:
+        #            os.remove(os.path.join(os.path.join(savepath, splitdir), preprocessor_name))
+        #        except:
+        #            print("Warning: did not remove non-best preprocessors from split path")
 
         return best_split_dict
 
