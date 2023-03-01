@@ -167,7 +167,10 @@ class ElementalFeatureGenerator(BaseGenerator):
     Args:
         composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
-        feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix.
+        feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix. The choices
+            include: composition_avg (takes the composition-weighted average of features), arithmetic_avg (takes the average of
+            individual elements present, neglecting their relative amounts), max (takes max of elements present), min (takes min of
+            elements present), difference (takes max-min of elements present)
 
         remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
