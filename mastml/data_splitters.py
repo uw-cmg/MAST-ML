@@ -1154,6 +1154,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                         if model.base_estimator_ == 'KerasRegressor':
                             for m in best_split_dict['model']:
                                 shutil.move(m, splitdir)
+                        else:
+                            shutil.copy(best_split_dict['model'], splitdir)
                     else:
                         try:
                             shutil.copy(best_split_dict['model'], splitdir)
@@ -1191,7 +1193,11 @@ class BaseSplitter(ms.BaseCrossValidator):
             y_test = pd.Series(np.array(ys[1]).ravel(), name='y_test')  # Make it so the y_test and y_pred have same indices so can be subtracted to get residual
 
             if X_extra is not None:
-                X_extra_train = X_extra.loc[X_train.index.values, :]
+                try:
+                    X_extra_train = X_extra.loc[X_train.index.values, :]
+                except:
+                    print('Could not write X_extra_train with forcing X_train data- too many indices')
+                    X_extra_train = None
                 X_extra_test = X_extra.loc[X_test.index.values, :]
             else:
                 X_extra_train = None
@@ -1257,7 +1263,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
         X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
         if X_extra is not None:
-            X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
+            try:
+                X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
+            except:
+                print('No X_extra_train data to collect')
             X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir, file_extension=file_extension)
         if domain_distance:
             y_test_domain_all = self._collect_data(filename='y_test_domain', savepath=splitdir, file_extension=file_extension)
@@ -1267,7 +1276,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist(), file_extension=file_extension)
         self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
         if X_extra is not None:
-            self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
+            try:
+                self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
+            except:
+                print('No X_extra_train data to save')
             self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
         self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
         self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train', file_extension=file_extension)
@@ -1445,11 +1457,13 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train', file_extension=file_extension)
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
 
-        if X_extra_train is not None and X_extra_test is not None:
+        if X_extra_train is not None:
             self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
-            self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist(), file_extension=file_extension)
         else:
             X_extra_train = None
+        if X_extra_test is not None:
+            self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist(), file_extension=file_extension)
+        else:
             X_extra_test = None
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
