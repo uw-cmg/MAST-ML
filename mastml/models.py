@@ -38,6 +38,11 @@ try:
 except:
     print('scikit-lego is an optional dependency, enabling use of the LowessRegression model. If you want to use this model, '
           'do "pip install scikit-lego"')
+try:
+    from lineartree import LinearTreeRegressor, LinearForestRegressor, LinearBoostingRegressor
+except:
+    print('linear-tree is an optional dependency, enabling use of Linear tree, forest, and boosting models. If you want'
+          ' to use this model, do "pip install linear-tree"')
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -84,6 +89,12 @@ class SklearnModel(BaseEstimator, TransformerMixin):
             self.model = GaussianProcessRegressor(kernel=kernel, **kwargs)
         elif model == 'LowessRegression':
             self.model = LowessRegression(**kwargs)
+        elif model == 'LinearTreeRegressor':
+            self.model = LinearTreeRegressor(**kwargs)
+        elif model == 'LinearForestRegressor':
+            self.model = LinearForestRegressor(**kwargs)
+        elif model == 'LinearBoostingRegressor':
+            self.model = LinearBoostingRegressor(**kwargs)
         else:
             self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
