@@ -5,6 +5,10 @@ BaseGenerator:
     Base class to provide MAST-ML type functionality to all feature generators. All other feature generator classes
     should inherit from this base class
 
+CBFVGenerator:
+    Class that is used to create elemental-type features using the Composition-based feature vector (CBFV) package:
+    https://github.com/Kaaiian/CBFV
+
 ElementalFractionGenerator:
     Class written to encode element fractions in materials compositions as full 118-element vector per material, where
     each element in the vector represents an element on the periodic table.
@@ -76,6 +80,10 @@ try:
     from pymatgen.ext.matproj import MPRester
 except:
     print('pymatgen is an optional dependency. To install pymatgen, do pip install pymatgen')
+try:
+    from CBFV import composition as composition_cbfv
+except:
+    print('CBFV is an optional dependency. To install CBFV, do pip install cbfv')
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
@@ -159,6 +167,60 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         self.splitdir = splitdir
         return splitdir
 
+
+class CBFVGenerator(BaseGenerator):
+    """
+    Class that is used to create elemental-type features using the Composition-based feature vector (CBFV) package:
+    https://github.com/Kaaiian/CBFV
+
+    Args:
+        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+
+        featurization_method: (str), string argument specifying which type of features to generate. Choices are: 'magpie',
+            'jarvis', 'mat2vec', 'oliynyk'.
+
+        drop_duplicates: (bool), whether to remove duplicate columns from the generated feature set
+
+    Methods:
+        fit: pass through, copies input columns as pre-generated features
+            Args:
+                X: (pd.DataFrame), input dataframe containing X data
+
+                y: (pd.Series), series containing y data
+
+        transform: generate the elemental feature matrix from composition strings
+            Args:
+                None.
+
+            Returns:
+                X: (dataframe), output dataframe containing generated features
+
+                y: (series), output y data as series
+    """
+    def __init__(self, composition_df, featurization_method='oliynyk', drop_duplicates=True):
+        super(BaseGenerator, self).__init__()
+        self.composition_df = composition_df
+        self.featurization_method = featurization_method
+        self.drop_duplicates = drop_duplicates
+        if type(self.composition_df) == pd.Series:
+            self.composition_df = pd.DataFrame(self.composition_df)
+    def fit(self, X=None, y=None):
+        self.y = y
+        return self
+
+    def transform(self, X=None):
+
+        composition_col = self.composition_df.columns.tolist()[0]
+        self.composition_df = self.composition_df.rename({str(composition_col):'formula'}, axis=1)
+        self.target = self.y.rename('target')
+
+        df_in = pd.concat([self.composition_df, self.target], axis=1)
+        df, y, formulae, skipped = composition_cbfv.generate_features(df=df_in,
+                                                                      elem_prop=self.featurization_method,
+                                                                      drop_duplicates=self.drop_duplicates)
+
+        df = df[sorted(df.columns.tolist())]
+        return df, self.y
 
 class ElementalFeatureGenerator(BaseGenerator):
     """
