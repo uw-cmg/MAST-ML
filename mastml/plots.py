@@ -1038,11 +1038,14 @@ class Error():
 
     @classmethod
     def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
-                                     show_figure=False, is_calibrated=False, well_sampled_number=30, image_dpi=250):
+                                     show_figure=False, is_calibrated=False, well_sampled_number=30, image_dpi=250,
+                                     number_of_bins=15, equal_sized_bins=False):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
-                                                                                                             dataset_stdev=dataset_stdev)
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -1173,15 +1176,20 @@ class Error():
     @classmethod
     def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, model_errors_cal,
                                                        residuals, dataset_stdev, show_figure=False,
-                                                       well_sampled_number=30, image_dpi=250):
+                                                       well_sampled_number=30, image_dpi=250,
+                                                       number_of_bins=15, equal_sized_bins=False):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                                      residuals=residuals,
-                                                                                                                                     dataset_stdev=dataset_stdev)
+                                                                                                                                     dataset_stdev=dataset_stdev,
+                                                                                                                                     number_of_bins=number_of_bins,
+                                                                                                                                     equal_sized_bins=equal_sized_bins)
 
         bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal, ms_residual_values_cal, var_sq_residual_values_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
                                                                                                                              residuals=residuals,
-                                                                                                                             dataset_stdev=dataset_stdev)
+                                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                                             number_of_bins=number_of_bins,
+                                                                                                                             equal_sized_bins=equal_sized_bins)
 
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
@@ -1677,7 +1685,7 @@ def plot_avg_score_vs_occurrence(savepath, occurrence, score, std_score):
 
 def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, residuals, model_errors, has_model_errors,
                savepath, data_type, X_test=None, show_figure=False, recalibrate_errors=False, model_errors_cal=None, splits_summary=False,
-               file_extension='.csv', image_dpi=250):
+               file_extension='.csv', image_dpi=250, number_of_bins=15, equal_sized_bins=False):
     """
     Helper function to make collections of different types of plots after a single or multiple data splits are evaluated.
 
@@ -1713,6 +1721,10 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
         model_errors_cal: (pd.Series), series containing the calibrated predicted model errors
 
         splits_summary: (bool), whether or not the data used in the plots comes from a collection of many splits (default False), False denotes a single split folder
+
+        number_of_bins: (int), the number of bins to use for the RvE plots
+
+        equal_sized_bins: (bool), whether to make the RvE plot bins have equal numbers of points per bin
 
     Returns:
         None.
@@ -1893,7 +1905,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                    dataset_stdev=dataset_stdev,
                                                    show_figure=show_figure,
                                                    is_calibrated=False,
-                                                    image_dpi=image_dpi)
+                                                   image_dpi=image_dpi,
+                                                   number_of_bins=number_of_bins,
+                                                   equal_sized_bins=equal_sized_bins)
             except:
                 print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
             if recalibrate_errors is True:
@@ -1926,7 +1940,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                        dataset_stdev=dataset_stdev,
                                                        show_figure=show_figure,
                                                        is_calibrated=True,
-                                                        image_dpi = image_dpi)
+                                                       image_dpi=image_dpi,
+                                                       number_of_bins=number_of_bins,
+                                                       equal_sized_bins=equal_sized_bins)
                 except:
                     print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
                 try:
@@ -1938,7 +1954,9 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                                          residuals=residuals,
                                                                          dataset_stdev=dataset_stdev,
                                                                          show_figure=False,
-                                                                         image_dpi=image_dpi)
+                                                                         image_dpi=image_dpi,
+                                                                         number_of_bins=number_of_bins,
+                                                                         equal_sized_bins=equal_sized_bins)
                 except:
                     print('Warning: unable to make Error.plot_real_vs_predicted_error_uncal_cal_overlay plot. Skipping...')
     if 'Classification' in plots:

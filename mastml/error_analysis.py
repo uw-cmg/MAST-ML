@@ -162,7 +162,7 @@ class ErrorUtils():
         return model_errors, a, b
 
     @classmethod
-    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15):
+    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15, equal_sized_bins=False):
 
         # Normalize the residuals and model errors by dataset stdev
         model_errors = model_errors/dataset_stdev
@@ -182,7 +182,18 @@ class ErrorUtils():
         # Set bins for calculating RMS
         upperbound = np.amax(model_errors)
         lowerbound = np.amin(model_errors)
-        bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
+
+        if equal_sized_bins == False:
+            bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
+        else:
+            # Thanks to this StackOverflow solution: https://stackoverflow.com/questions/39418380/histogram-with-equal-number-of-points-in-each-bin
+            def histedges_equalN(x, nbin):
+                npt = len(x)
+                return np.interp(np.linspace(0, npt, nbin + 1),
+                                 np.arange(npt),
+                                 np.sort(x))
+
+            bins = histedges_equalN(x=model_errors_sorted.ravel(), nbin=number_of_bins)
 
         # Create a vector determining bin of each data point
         digitized = np.digitize(model_errors, bins)
@@ -211,7 +222,6 @@ class ErrorUtils():
             curr_bin = bins_present[i]
             binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
 
-        #TODO this is temporary
         bin_values = np.array(binned_model_errors)
         rms_residual_values = np.array(RMS_abs_res)
         ms_residual_values = np.array(MS_abs_res)

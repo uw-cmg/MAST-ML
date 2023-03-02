@@ -398,8 +398,9 @@ class BaseSplitter(ms.BaseCrossValidator):
     def evaluate(self, X, y, models, mastml=None, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=None, savepath=None, X_extra=None, X_force_train=None, y_force_train=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
-                 recalibrate_errors=False, verbosity=1, baseline_test = None, distance_metric="euclidean",
-                 domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False, **kwargs):
+                 recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
+                 domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
+                 rve_number_of_bins=15, rve_equal_sized_bins=False, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -796,6 +797,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              file_extension,
                                                              image_dpi,
                                                              parallel_run,
+                                                             rve_number_of_bins,
+                                                             rve_equal_sized_bins,
                                                              **kwargs)
                         split_outer_count += 1
 
@@ -942,7 +945,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        model_errors_cal=model_errors_leaveout_cal,
                                        splits_summary=True,
                                        file_extension=file_extension,
-                                       image_dpi=image_dpi)
+                                       image_dpi=image_dpi,
+                                       number_of_bins=rve_number_of_bins,
+                                       equal_sized_bins=rve_equal_sized_bins)
 
                         # Update the MASTML metadata file to include the leftout data info
                         if mastml is not None:
@@ -1047,7 +1052,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                    model_errors_cal=model_errors_leaveout_all_calibrated,
                                    splits_summary=True,
                                    file_extension=file_extension,
-                                   image_dpi=image_dpi)
+                                   image_dpi=image_dpi,
+                                   number_of_bins=rve_number_of_bins,
+                                   equal_sized_bins=rve_equal_sized_bins)
 
                     # Update the MASTML metadata file
                     try:
@@ -1181,7 +1188,7 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
-                             domain_distance, file_extension, image_dpi, parallel_run, **kwargs):
+                             domain_distance, file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, **kwargs):
         def _evaluate_split_sets_serial(data, groups=None):
             Xs, ys, train_ind, test_ind, split_count = data
             # TODO: not copying this causes issues with KerasRegressor when doing different split types. But, doing this breaks BaggingRegressor with KerasRegressor networks
@@ -1358,7 +1365,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                        model_errors_cal=model_errors_test_all_cal,
                        splits_summary=True,
                        file_extension=file_extension,
-                       image_dpi=image_dpi)
+                       image_dpi=image_dpi,
+                       number_of_bins=number_of_bins,
+                       equal_sized_bins=equal_sized_bins)
 
         # Make all train data plots
         dataset_stdev = np.std(np.unique(y_train_all))
@@ -1381,7 +1390,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                        model_errors_cal=model_errors_train_all_cal,
                        splits_summary=True,
                        file_extension=file_extension,
-                       image_dpi=image_dpi)
+                       image_dpi=image_dpi,
+                       number_of_bins=number_of_bins,
+                       equal_sized_bins=equal_sized_bins)
 
         try:
             if file_extension == '.xlsx':
