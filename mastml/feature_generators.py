@@ -151,6 +151,9 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
             print('Warning! Excel file too large to save.')
         with open(os.path.join(savepath, 'generated_features.pickle'), 'wb') as f:
             pickle.dump(df, f)
+        # Pickle the generator as well for use in making predictions later
+        with open(os.path.join(savepath, self.__class__.__name__+'.pkl'), 'wb') as f:
+            pickle.dump(self, f)
         return X, y
 
     def _setup_savedir(self, generator, savepath):
@@ -167,14 +170,13 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         self.splitdir = splitdir
         return splitdir
 
-
 class CBFVGenerator(BaseGenerator):
     """
     Class that is used to create elemental-type features using the Composition-based feature vector (CBFV) package:
     https://github.com/Kaaiian/CBFV
 
     Args:
-        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+        featurize_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         featurization_method: (str), string argument specifying which type of features to generate. Choices are: 'magpie',
             'jarvis', 'mat2vec', 'oliynyk'.
@@ -197,24 +199,24 @@ class CBFVGenerator(BaseGenerator):
 
                 y: (series), output y data as series
     """
-    def __init__(self, composition_df, featurization_method='oliynyk', drop_duplicates=True):
+    def __init__(self, featurize_df, featurization_method='oliynyk', drop_duplicates=False):
         super(BaseGenerator, self).__init__()
-        self.composition_df = composition_df
+        self.featurize_df = featurize_df
         self.featurization_method = featurization_method
         self.drop_duplicates = drop_duplicates
-        if type(self.composition_df) == pd.Series:
-            self.composition_df = pd.DataFrame(self.composition_df)
+        if type(self.featurize_df) == pd.Series:
+            self.featurize_df = pd.DataFrame(self.featurize_df)
     def fit(self, X=None, y=None):
         self.y = y
         return self
 
     def transform(self, X=None):
 
-        composition_col = self.composition_df.columns.tolist()[0]
-        self.composition_df = self.composition_df.rename({str(composition_col):'formula'}, axis=1)
+        composition_col = self.featurize_df.columns.tolist()[0]
+        self.featurize_df = self.featurize_df.rename({str(composition_col):'formula'}, axis=1)
         self.target = self.y.rename('target')
 
-        df_in = pd.concat([self.composition_df, self.target], axis=1)
+        df_in = pd.concat([self.featurize_df, self.target], axis=1)
         df, y, formulae, skipped = composition_cbfv.generate_features(df=df_in,
                                                                       elem_prop=self.featurization_method,
                                                                       drop_duplicates=self.drop_duplicates)
@@ -227,14 +229,16 @@ class ElementalFeatureGenerator(BaseGenerator):
     Class that is used to create elemental-based features from material composition strings
 
     Args:
-        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+        featurize_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         feature_types: (list), list of strings denoting which elemental feature types to include in the final feature matrix. The choices
             include: composition_avg (takes the composition-weighted average of features), arithmetic_avg (takes the average of
             individual elements present, neglecting their relative amounts), max (takes max of elements present), min (takes min of
             elements present), difference (takes max-min of elements present)
 
-        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set. It is recommended
+            for this to be set to False to preserve as many features as possible, to avoid potential issues at inference time when
+            features for new test points need to be generated.
 
     Methods:
         fit: pass through, copies input columns as pre-generated features
@@ -253,11 +257,11 @@ class ElementalFeatureGenerator(BaseGenerator):
                 y: (series), output y data as series
     """
 
-    def __init__(self, composition_df, feature_types=None, remove_constant_columns=False):
+    def __init__(self, featurize_df, feature_types=None, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
-        self.composition_df = composition_df
-        if type(self.composition_df) == pd.Series:
-            self.composition_df = pd.DataFrame(self.composition_df)
+        self.featurize_df = featurize_df
+        if type(self.featurize_df) == pd.Series:
+            self.featurize_df = pd.DataFrame(self.featurize_df)
         self.feature_types = feature_types
         self.remove_constant_columns = remove_constant_columns
         if self.feature_types is None:
@@ -287,7 +291,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         # Replace empty composition fields with empty string instead of NaN
         #self.df = self.df.fillna('')
 
-        compositions_raw = self.composition_df[self.composition_df.columns[0]].tolist()
+        compositions_raw = self.featurize_df[self.featurize_df.columns[0]].tolist()
         # Check first entry of comps to find [] for delimiting different sublattices
         has_sublattices = False
         if '[' in compositions_raw[0]:
@@ -324,7 +328,7 @@ class ElementalFeatureGenerator(BaseGenerator):
             raise ValueError('Error! No material compositions column found in your input data file. To use this feature generation routine, you must supply a material composition for each data point')
 
         # Add the column of combined material compositions into the dataframe
-        self.composition_df[self.composition_df.columns[0]] = compositions
+        self.featurize_df[self.featurize_df.columns[0]] = compositions
 
         # Assign each magpiedata feature set to appropriate composition name
         magpiedata_dict_composition_average = {}
@@ -651,9 +655,9 @@ class ElementalFeatureGenerator(BaseGenerator):
         for magpiedata_dict in magpiedata_dict_list_toinclude:
             df_magpie = pd.DataFrame.from_dict(data=magpiedata_dict, orient='index')
             # Need to reorder compositions in new dataframe to match input dataframe
-            df_magpie = df_magpie.reindex(self.composition_df[self.composition_df.columns[0]].tolist())
+            df_magpie = df_magpie.reindex(self.featurize_df[self.featurize_df.columns[0]].tolist())
             # Need to make compositions the first column, instead of the row names
-            df_magpie.index.name = self.composition_df.columns[0]
+            df_magpie.index.name = self.featurize_df.columns[0]
             df_magpie.reset_index(inplace=True)
             # Merge magpie feature dataframe with originally supplied dataframe
             if count == 0:
@@ -1107,13 +1111,12 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         return element_list, atoms_per_formula_unit
 
-
 class ElementalFractionGenerator(BaseGenerator):
     """
     Class that is used to create 86-element vector of element fractions from material composition strings
 
     Args:
-        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+        featurize_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
@@ -1134,11 +1137,11 @@ class ElementalFractionGenerator(BaseGenerator):
                 y: (series), output y data as series
     """
 
-    def __init__(self, composition_df, remove_constant_columns=False):
+    def __init__(self, featurize_df, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
-        self.composition_df = composition_df
-        if type(self.composition_df) == pd.Series:
-            self.composition_df = pd.DataFrame(self.composition_df)
+        self.featurize_df = featurize_df
+        if type(self.featurize_df) == pd.Series:
+            self.featurize_df = pd.DataFrame(self.featurize_df)
         self.remove_constant_columns = remove_constant_columns
 
     def fit(self, X=None, y=None):
@@ -1160,7 +1163,7 @@ class ElementalFractionGenerator(BaseGenerator):
 
     def generate_elementfraction_features(self):
         el_frac_list = list()
-        compositions_list = self.composition_df[self.composition_df.columns[0]].tolist()
+        compositions_list = self.featurize_df[self.featurize_df.columns[0]].tolist()
         for comp_str in compositions_list:
             # As of early 2021, there are 118 elements, though only ~80 of them can form stable non-radioactive chemical compounds.
             el_frac_onehot = np.zeros((118,))
@@ -1179,13 +1182,14 @@ class ElementalFractionGenerator(BaseGenerator):
         df = pd.DataFrame(el_frac_list, columns=element_names)
         return df
 
-
 class PolynomialFeatureGenerator(BaseGenerator):
     """
     Class to generate polynomial features using scikit-learn's polynomial features method
     More info at: http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html
 
     Args:
+        featurize_df: (pd.DataFrame), dataframe containing data to generate polynomial features from
+
         degree: (int), degree of polynomial features
 
         interaction_only: (bool), If true, only interaction features are produced: features that are products of at most degree distinct input features (so not x[1] ** 2, x[0] * x[2] ** 3, etc.).
@@ -1205,24 +1209,22 @@ class PolynomialFeatureGenerator(BaseGenerator):
             (dataframe), dataframe containing new polynomial features, plus original features present
 
     """
-    def __init__(self, features=None, degree=2, interaction_only=False, include_bias=True):
+    def __init__(self, featurize_df=None, degree=2, interaction_only=False, include_bias=True):
         super(PolynomialFeatureGenerator, self).__init__()
-        self.features = features
+        self.featurize_df = featurize_df
+        self.degree = degree
+        self.interaction_only = interaction_only
+        self.include_bias = include_bias
         self.SPF = PolynomialFeatures(degree=degree, interaction_only=interaction_only, include_bias=include_bias)
 
     def fit(self, X, y=None):
         self.y = y
-        if self.features is None:
-            self.features = X.columns
-        array = X[self.features].values
-        self.SPF.fit(array)
+        self.SPF.fit(self.featurize_df)
         return self
 
     def transform(self, X):
-        array = X[self.features].values
         new_features = self.SPF.get_feature_names()
-        return pd.DataFrame(self.SPF.transform(array), columns=new_features), self.y
-
+        return pd.DataFrame(self.SPF.transform(self.featurize_df), columns=new_features), self.y
 
 class OneHotGroupGenerator(BaseGenerator):
     """
@@ -1230,9 +1232,11 @@ class OneHotGroupGenerator(BaseGenerator):
     More info at: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
     Args:
-        groups: (pd.Series): pandas Series of group (category) names
+        featurize_df: (pd.DataFrame): pandas dataframe of group (category) names to make one hot features from
 
-        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
+        remove_constant_columns: (bool), whether to remove constant columns from the generated feature set. It is recommended
+            for this to be set to False to preserve as many features as possible, to avoid potential issues at inference time when
+            features for new test points need to be generated.
 
     Methods:
         fit: pass through, copies input columns as pre-generated features
@@ -1252,9 +1256,9 @@ class OneHotGroupGenerator(BaseGenerator):
 
     """
 
-    def __init__(self, groups, remove_constant_columns=False):
+    def __init__(self, featurize_df, remove_constant_columns=False):
         super(BaseGenerator, self).__init__()
-        self.groups = groups
+        self.featurize_df = featurize_df
         self.remove_constant_columns = remove_constant_columns
 
     def fit(self, X, y=None):
@@ -1265,9 +1269,9 @@ class OneHotGroupGenerator(BaseGenerator):
 
     def transform(self, X=None):
         enc = OneHotEncoder()
-        enc.fit(X=np.array(self.groups).reshape(-1, 1))
-        groups_trans = enc.transform(X=np.array(self.groups).reshape(-1, 1)).toarray()
-        col_name = self.groups.name
+        enc.fit(X=np.array(self.featurize_df).reshape(-1, 1))
+        groups_trans = enc.transform(X=np.array(self.featurize_df).reshape(-1, 1)).toarray()
+        col_name = self.featurize_df.columns.tolist()[0]
         column_names = [str(col_name) + '_' + str(n) for n in range(groups_trans.shape[1])]
         df = pd.DataFrame(groups_trans, columns=column_names)
 
@@ -1276,14 +1280,13 @@ class OneHotGroupGenerator(BaseGenerator):
 
         return df, self.y
 
-
-class OneHotElementEncoder(BaseGenerator):
+class OneHotElementGenerator(BaseGenerator):
     """
     Class to generate new categorical features (i.e. values of 1 or 0) based on whether an input composition contains a
     certain designated element
 
     Args:
-        composition_df: (pd.DataFrame or pd.Series), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+        featurize_df: (pd.DataFrame or pd.Series), dataframe containing vector of chemical compositions (strings) to generate elemental features from
 
         remove_constant_columns: (bool), whether to remove constant columns from the generated feature set
 
@@ -1301,9 +1304,9 @@ class OneHotElementEncoder(BaseGenerator):
 
     """
 
-    def __init__(self, composition_df, remove_constant_columns=False):
-        super(OneHotElementEncoder, self).__init__()
-        self.composition_df = composition_df
+    def __init__(self, featurize_df, remove_constant_columns=False):
+        super(OneHotElementGenerator, self).__init__()
+        self.featurize_df = featurize_df
         self.remove_constant_columns = remove_constant_columns
 
     def fit(self, X, y=None):
@@ -1311,10 +1314,10 @@ class OneHotElementEncoder(BaseGenerator):
         return self
 
     def transform(self, X, y=None):
-        if type(self.composition_df) == pd.core.frame.DataFrame:
-            compositions = self.composition_df[self.composition_df.columns[0]]
-        elif type(self.composition_df) == pd.core.series.Series:
-            compositions = self.composition_df
+        if type(self.featurize_df) == pd.core.frame.DataFrame:
+            compositions = self.featurize_df[self.featurize_df.columns[0]]
+        elif type(self.featurize_df) == pd.core.series.Series:
+            compositions = self.featurize_df
         X_trans = self._contains_all_elements(compositions=compositions)
         if self.remove_constant_columns is True:
             X_trans = DataframeUtilities().remove_constant_columns(dataframe=X_trans)
@@ -1346,13 +1349,12 @@ class OneHotElementEncoder(BaseGenerator):
             df_trans[self.new_column_name] = has_element
         return df_trans
 
-
 class MaterialsProjectFeatureGenerator(BaseGenerator):
     """
     Class that wraps MaterialsProjectFeatureGeneration, giving it scikit-learn structure
 
     Args:
-        composition_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate elemental features from
+        featurize_df: (pd.DataFrame), dataframe containing vector of chemical compositions (strings) to generate features from
 
         mapi_key: (str), string denoting your Materials Project API key
 
@@ -1370,11 +1372,11 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
 
     """
 
-    def __init__(self, composition_df, api_key):
+    def __init__(self, featurize_df, api_key):
         super(MaterialsProjectFeatureGenerator, self).__init__()
-        self.composition_df = composition_df
+        self.featurize_df = featurize_df
         self.api_key = api_key
-        self.composition_feature = self.composition_df.columns[0]
+        self.composition_feature = self.featurize_df.columns[0]
 
     def fit(self, X, y=None):
         self.original_features = X.columns
@@ -1390,7 +1392,7 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
 
     def generate_materialsproject_features(self, X):
         try:
-            compositions = self.composition_df[self.composition_feature]
+            compositions = self.featurize_df[self.composition_feature]
         except KeyError as e:
             raise ValueError(f'No column named {self.composition_feature} in csv file')
 
@@ -1402,7 +1404,7 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
 
         dataframe_mp = pd.DataFrame.from_dict(data=mpdata_dict_composition, orient='index')
         # Need to reorder compositions in new dataframe to match input dataframe
-        dataframe_mp = dataframe_mp.reindex(self.composition_df[self.composition_feature].tolist())
+        dataframe_mp = dataframe_mp.reindex(self.featurize_df[self.composition_feature].tolist())
         # Need to make compositions the first column, instead of the row names
         dataframe_mp.index.name = self.composition_feature
         dataframe_mp.reset_index(inplace=True)
@@ -1456,7 +1458,6 @@ class MaterialsProjectFeatureGenerator(BaseGenerator):
                     structure_data_dict_condensed[prop] = ''
 
         return structure_data_dict_condensed
-
 
 # TODO: finish assessing each method compatability
 class MatminerFeatureGenerator(BaseGenerator):
