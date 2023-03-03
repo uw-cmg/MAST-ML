@@ -1142,6 +1142,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               file_extension,
                                               image_dpi,
                                               parallel_run,
+                                              rve_number_of_bins,
+                                              rve_equal_sized_bins,
                                               **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            model=model,
