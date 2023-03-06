@@ -1486,12 +1486,22 @@ class BaseSplitter(ms.BaseCrossValidator):
         if hyperopt is not None:
             model = hyperopt.fit(X=X_train, y=y_train, model=model, cv=5, savepath=splitpath)
 
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        y_pred_train = model.predict(X_train)
+        try:
+            model.fit(X_train, y_train)
+        except:
+            model.fit(np.array(X_train).astype(np.float32), np.array(y_train).reshape(-1, 1).astype(np.float32)) # Need y to be 2D for PyTorch model fitting
 
-        y_pred = pd.Series(y_pred, name='y_pred')
-        y_pred_train = pd.Series(y_pred_train, name='y_pred_train')
+        try:
+            y_pred = model.predict(X_test)
+        except:
+            y_pred = model.predict(np.array(X_test).astype(np.float32)) # For PyTorch model
+        try:
+            y_pred_train = model.predict(X_train)
+        except:
+            y_pred_train = model.predict(np.array(X_train).astype(np.float32))
+
+        y_pred = pd.Series(y_pred.ravel(), name='y_pred')
+        y_pred_train = pd.Series(y_pred_train.ravel(), name='y_pred_train')
 
         residuals_test = y_pred-y_test
         residuals_train = y_pred_train-y_train
@@ -1617,6 +1627,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                 #print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
             else:
                 joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+        elif model_name == 'NeuralNetRegressor':
+            # This is a PyTorch model
+            import torch
+            torch.save(model, os.path.join(splitpath, str(model_name) + ".pkl"))
         else:
             joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
