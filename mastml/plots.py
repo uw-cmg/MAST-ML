@@ -21,7 +21,7 @@ import math
 import os
 import pandas as pd
 import numpy as np
-from collections import Iterable
+from collections.abc import Iterable
 from math import log, ceil
 import scipy
 from scipy.stats import gaussian_kde, norm
@@ -29,7 +29,7 @@ import scipy.stats as stats
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay as plot_confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.exceptions import NotFittedError
 
