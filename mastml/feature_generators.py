@@ -84,6 +84,10 @@ try:
     from CBFV import composition as composition_cbfv
 except:
     print('CBFV is an optional dependency. To install CBFV, do pip install cbfv')
+try:
+    import deepchem as dc
+except:
+    print('DeepChem is an optional dependency used to generate molecular descriptors from RDKit. To install Deepchem, do pip install deepchem')
 
 # locate path to directory containing AtomicNumber.table, AtomicRadii.table AtomicVolume.table, etc
 # (needs to do it the hard way becuase python -m sets cwd to wherever python is ran from)
@@ -220,6 +224,83 @@ class CBFVGenerator(BaseGenerator):
         df, y, formulae, skipped = composition_cbfv.generate_features(df=df_in,
                                                                       elem_prop=self.featurization_method,
                                                                       drop_duplicates=self.drop_duplicates)
+
+        df = df[sorted(df.columns.tolist())]
+        return df, self.y
+
+class DeepChemFeatureGenerator(BaseGenerator):
+    """
+    Class that is used to create molecular property features using the DeepChem and RDKit packages. A list of featurizers
+    is given here: https://github.com/deepchem/deepchem/blob/master/deepchem/feat/molecule_featurizers
+
+    Note that some featurizers require installation of additional packages (a ModuleNotFoundError will be thrown), and,
+    for this feature generator, only routines that take SMILES strings as input will work. These include RDKitDescriptors,
+    Mol2VecFingerprint, AtomicCoordinates, CircularFingerprint, PubChemFingerprint, etc.
+
+    Args:
+        featurize_df: (pd.DataFrame), dataframe containing vector of SMILES strings to generate molecular features from
+
+        deepchem_featurizer: (string), name of DeepChem featurizer to use. See
+        https://github.com/deepchem/deepchem/blob/master/deepchem/feat/__init__.py for options. Use "RDKitDescriptors"
+        to make molecular features based on feature generation scheme in RDKit package.
+
+        **kwargs: additional keyword arguments to pass to the featurizer (see docs in Github link above). For example,
+         for the RDKitDescriptors, options include:
+            use_fragment: bool, optional (default True)
+                If True, the return value includes the fragment binary descriptors like 'fr_XXX'.
+            ipc_avg: bool, optional (default True)
+                If True, the IPC descriptor calculates with avg=True option.
+                Please see this issue: https://github.com/rdkit/rdkit/issues/1527.
+            is_normalized: bool, optional (default False)
+                If True, the return value contains normalized features.
+            use_bcut2d: bool, optional (default True)
+                If True, the return value includes the descriptors like 'BCUT2D_XXX'.
+            labels_only: bool, optional (default False)
+                Returns only the presence or absence of a group.
+            Notes
+            -----
+            * If both `labels_only` and `is_normalized` are True, then `is_normalized` takes
+                precendence and `labels_only` will not be applied.
+
+    Methods:
+        fit: pass through, copies input columns as pre-generated features
+            Args:
+                X: (pd.DataFrame), input dataframe containing X data
+
+                y: (pd.Series), series containing y data
+
+        transform: generate the elemental feature matrix from composition strings
+            Args:
+                None.
+
+            Returns:
+                X: (dataframe), output dataframe containing generated features
+
+                y: (series), output y data as series
+    """
+    def __init__(self, featurize_df, deepchem_featurizer, **kwargs):
+        super(BaseGenerator, self).__init__()
+        self.featurize_df = featurize_df
+        self.deepchem_featurizer = deepchem_featurizer
+        self.kwargs = kwargs
+        if type(self.featurize_df) == pd.Series:
+            self.featurize_df = pd.DataFrame(self.featurize_df)
+    def fit(self, X=None, y=None):
+        self.y = y
+        return self
+
+    def transform(self, X=None):
+        smiles_col = self.featurize_df.columns.tolist()[0]
+        featurizer = getattr(dc.feat, self.deepchem_featurizer)(**self.kwargs)
+        #featurizer = dc.feat.RDKitDescriptors(**self.kwargs)
+        array = featurizer.featurize(self.featurize_df[smiles_col])
+
+        try:
+            feature_names = featurizer.descriptors
+        except:
+            feature_names = np.arange(0, array.shape[1])
+        print(feature_names)
+        df = pd.DataFrame(array, columns=feature_names)
 
         df = df[sorted(df.columns.tolist())]
         return df, self.y
