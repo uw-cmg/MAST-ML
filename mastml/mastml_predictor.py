@@ -13,38 +13,35 @@ import numpy as np
 import os
 from mastml import feature_generators
 
-def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibration_file=None, featurize=False,
-                    featurizer=None, features_to_keep=None, featurize_on=None, **kwargs):
+def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibration_file=None, featurizers=None, featurize_on=None):
     '''
     Method used to take a saved preprocessor, model and calibration file and output predictions and calibrated uncertainties
     on new test data
 
     Args:
         X_test: (pd.DataFrame or str), dataframe of featurized test data to be used to make prediction, or string of path
-            containing featurized test data in .xlsx or .csv format ready for import with pandas. Only the features used
-            to fit the original model should be included, and they should be in the same order as the training data used
-            to fit the original model.
+            containing featurized test data in .xlsx or .csv format ready for import with pandas. If passing an already
+            featurized dataframe, only the features used to fit the original model should be included, and they should be
+            in the same order as the training data used to fit the original model.
+
+        X_train: (pd.DataFrame or str), dataframe of training data used to train original model, or string of path
+            containing featurized training data in .xlsx or .csv format ready for import with pandas. Used to extract the
+            features used in training, to downselect from newly generated features on test data.
+
+        y_train: (pd.DataFrame or str), dataframe of training target data used to train original model, or string of path
+            containing training target data in .xlsx or .csv format ready for import with pandas. Used to return the true
+            value of a test data point if that point is present in the training data.
 
         model: (str), path of saved model in .pkl format (e.g., RandomForestRegressor.pkl)
-
-        X_test_extra: (pd.DataFrame, list or str), dataframe containing the extra data associated with X_test, or a
-            list of strings denoting extra columns present in X_test not to be used in prediction.
-            If a string is provided, it is interpreted as a path to a .xlsx or .csv file containing the extra column data
 
         preprocessor: (str), path of saved preprocessor in .pkl format (e.g., StandardScaler.pkl)
 
         calibration_file: path of file containing the recalibration parameters (typically recalibration_parameters_average_test.xlsx)
 
-        featurize: (bool), whether or not featurization of the provided X_test data needs to be performed
+        featurizers: (list), list of strings denoting paths to saved mastml feature generators, e.g., ["myfolder/ElementalFeatureGenerator.pkl", "myfolder/PolynomialFeatureGenerator.pkl"]
 
-        featurizer: (str), string denoting a mastml.feature_generators class, e.g., "ElementalFeatureGenerator"
-
-        features_to_keep: (list), list of strings denoting column names of features to keep for running model prediction
-
-        featurize_on: (str), string of column name in X_test to perform featurization on
-
-        **kwargs: additional key-value pairs of parameters for feature generator, e.g., composition_df=composition_df['Compositions'] if
-            running ElementalFeatureGenerator
+        featurize_on: (list), list of strings of column name in X_test to perform featurization on, needs to be same length and in
+            same order as featurizers listed above, e.g., ['Composition', ['feature1', 'feature2'] ]
 
     Returns:
         pred_df: (pd.DataFrame), dataframe containing column of model predictions (y_pred) and, if applicable, calibrated uncertainties (y_err).
@@ -65,6 +62,7 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
     else:
          recal_params = None
 
+    # Load in the X_test data if it wasn't provided as a dataframe
     if isinstance(X_test, str):
         if '.xlsx' in X_test:
             X_test = pd.read_excel(X_test, engine='openpyxl')
@@ -73,25 +71,46 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
         else:
             raise ValueError('You must provide X_test as .xlsx or .csv file, or loaded pandas DataFrame')
 
-    if X_test_extra is not None:
-        if isinstance(X_test_extra, str):
-            if '.xlsx' in X_test_extra:
-                df_extra = pd.read_excel(X_test_extra, engine='openpyxl')
-            elif '.csv' in X_test_extra:
-                df_extra = pd.read_csv(X_test_extra)
-        elif isinstance(X_test_extra, list):
-            df_extra = X_test[X_test_extra]
-            X_test = X_test.drop(X_test_extra, axis=1)
+    # Load in X_train data so can get columns to use
+    if isinstance(X_train, str):
+        if '.xlsx' in X_train:
+            X_train = pd.read_excel(X_train, engine='openpyxl')
+        elif '.csv' in X_train:
+            X_train = pd.read_csv(X_train)
         else:
-            # Assume a dataframe was passed in
-            df_extra = X_test_extra
+            raise ValueError('You must provide X_train as .xlsx or .csv file, or loaded pandas DataFrame')
+    features_to_keep = X_train.columns.tolist()
 
-    if featurize == False:
-        df_test = X_test
-    else:
-        featurizer = getattr(feature_generators, featurizer)(**kwargs)
-        df_test, _ = featurizer.fit_transform(X_test[featurize_on])
+    # Load in y_train data so can return true values if that data point is queried as test data
+    if isinstance(y_train, str):
+        if '.xlsx' in y_train:
+            y_train = pd.read_excel(y_train, engine='openpyxl')
+        elif '.csv' in y_train:
+            y_train = pd.read_csv(y_train)
+        else:
+            raise ValueError('You must provide y_train as .xlsx or .csv file, or loaded pandas DataFrame')
+
+    # Load featurizers
+    df_test = X_test
+    if featurizers is not None:
+        # Load in the featurizers
+        for f, f_on in zip(featurizers, featurize_on):
+            gen = joblib.load(f)
+            gen.featurize_df = pd.DataFrame(X_test[f_on])
+            df_test, _ = gen.evaluate(X=df_test, y=pd.Series(np.zeros(shape=df_test.shape[0])), savepath=None, make_new_dir=False)
         df_test = df_test[features_to_keep]
+
+    # Check if any of the featurized rows are in the training data. If so, append the true target value
+    y_true_list = list()
+    for i, vals_i in enumerate(df_test[features_to_keep].iterrows()):
+        found = False
+        for j, vals_j in enumerate(X_train[features_to_keep].iterrows()):
+            if vals_i[1].round(6).equals(vals_j[1].round(6)):
+                y_true_list.append(np.array(y_train)[j][0])
+                found = True
+                break
+        if found == False:
+            y_true_list.append(np.nan)
 
     # Load preprocessor
     if preprocessor is not None:
@@ -99,7 +118,11 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
         df_test = preprocessor.transform(df_test)
 
     # Check the model is an ensemble and get an error bar:
-    ensemble_models = ['RandomForestRegressor','GradientBoostingRegressor','BaggingRegressor','ExtraTreesRegressor','AdaBoostRegressor']
+    ensemble_models = ['RandomForestRegressor',
+                       'GradientBoostingRegressor',
+                       'BaggingRegressor',
+                       'ExtraTreesRegressor',
+                       'AdaBoostRegressor']
     try:
         model_name = model.model.__class__.__name__
     except:
@@ -140,9 +163,11 @@ def make_prediction(X_test, model, X_test_extra=None, preprocessor=None, calibra
     else:
         pred_df = pd.DataFrame(y_pred_new, columns=['y_pred'])
 
-    if X_test_extra is not None:
-        for col in df_extra.columns.tolist():
-            pred_df[col] = df_extra[col]
+    for col in X_test.columns.tolist():
+        pred_df[col] = X_test[col]
+
+    # Add the y_true column into the predicted dataframe:
+    pred_df['y_true'] = y_true_list
 
     return pred_df
 
