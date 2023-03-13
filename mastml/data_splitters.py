@@ -49,6 +49,7 @@ Bootstrap:
 
 import numpy as np
 import os
+import re
 import pandas as pd
 from datetime import datetime
 import copy
@@ -400,7 +401,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
                  domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
-                 rve_number_of_bins=15, rve_equal_sized_bins=False, **kwargs):
+                 rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -751,6 +752,40 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                                        groups=groups_subsplit,
                                                                                        X_force_train=X_force_train,
                                                                                        y_force_train=y_force_train)
+
+                        class domain_check:
+                            def __init__(self, ref, check):
+                                self.ref = ref  # The reference indexes
+                                self.check = check  # The type of domain check
+                                print(self.ref)
+
+                            # Convert a string to elements
+                            def convert_string_to_elements(x):
+                                x = re.sub('[^a-zA-Z]+', '', x)
+                                x = Composition(x)
+                                x = x.chemical_system
+                                x = x.split('-')
+                                return x
+
+                            # Check if all elements from a reference are the same as another case
+                            def compare_elements(ref, x):
+                                x = convert_string_to_elements(x)
+                                ref = convert_string_to_elements(ref)
+
+                                # Check if any reference material in another observation
+                                condition = [True if i in x else False for i in ref]
+
+                                if all(condition):
+                                    return 'in_domain'
+                                elif any(condition):
+                                    return 'maybe_in_domain'
+                                else:
+                                    return 'out_of_domain'
+
+                        #def check_elements(ref, x):
+
+                        check = domain_check(['AgAg', 'AgZr'], domain[0])
+
 
                         # make the individual split directory
                         splitouterpath = os.path.join(splitdir, 'split_outer_' + str(split_outer_count))
