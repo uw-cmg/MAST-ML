@@ -1,9 +1,13 @@
 '''
 This module contains a collection of routines to perform domain evaluations
 '''
+import re
+import itertools
 import numpy as np
 import pandas as pd
+from pymatgen.core import Composition
 from scipy.spatial.distance import cdist
+
 
 class Domain():
     '''
@@ -65,3 +69,50 @@ class Domain():
                         inDomain.append(False)
 
                 return pd.DataFrame(inDomain)
+
+
+class domain_check:
+    def __init__(self, ref, check_type):
+        self.ref = ref  # The reference indexes
+        self.check_type = check_type  # The type of domain check
+
+    # Convert a string to elements
+    def convert_string_to_elements(self, x):
+        x = re.sub('[^a-zA-Z]+', '', x)
+        x = Composition(x)
+        x = x.chemical_system
+        x = x.split('-')
+        return x
+
+    # Check if all elements from a reference are the same as another case
+    def compare_elements(self, ref, x):
+
+        # Check if any reference material in another observation
+        condition = [True if i in ref else False for i in x]
+
+        if all(condition):
+            return 'in_domain'
+        elif any(condition):
+            return 'maybe_in_domain'
+        else:
+            return 'out_of_domain'
+
+    def check(self, test, groups=None):
+        if self.check_type == 'elemental':
+
+            chem_ref = groups[self.ref]
+            chem_test = groups[test]
+
+            chem_ref = chem_ref.apply(self.convert_string_to_elements)
+            chem_test = chem_test.apply(self.convert_string_to_elements)
+
+            # Merge training cases to check if each test case is within
+            chem_ref = set(itertools.chain.from_iterable(chem_ref))
+
+            domains = []
+            for i in chem_test:
+                d = self.compare_elements(chem_ref, i)
+                domains.append(d)
+
+        return domains
+

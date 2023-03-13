@@ -49,7 +49,6 @@ Bootstrap:
 
 import numpy as np
 import os
-import re
 import pandas as pd
 from datetime import datetime
 import copy
@@ -84,7 +83,7 @@ from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
-from mastml.domain import Domain
+from mastml.domain import Domain, domain_check
 from mastml.mastml import parallel
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -1280,7 +1279,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
 
         if domain is not None:
-            domains = self._collect_df_data(filename='domains', savepath=splitdir, file_extension=file_extension)
+            domains_train = self._collect_df_data(filename='domains_train', savepath=splitdir, file_extension=file_extension)
+            domains_test = self._collect_df_data(filename='domains_test', savepath=splitdir, file_extension=file_extension)
 
         if X_extra is not None:
             try:
@@ -1307,7 +1307,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
 
         if domain is not None:
-            self._save_split_data(df=domains, filename='domains_test', savepath=splitdir, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitdir, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitdir, columns=['domain'], file_extension=file_extension)
 
         if domain_distance:
             self._save_split_data(df=y_test_domain_all, filename='y_test_domain', savepath=splitdir,
@@ -1463,54 +1464,13 @@ class BaseSplitter(ms.BaseCrossValidator):
                         error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric,
                         domain_distance, file_extension, image_dpi, domain, train_ind, test_ind, **kwargs):
 
-        class domain_check:
-            def __init__(self, ref, check_type):
-                self.ref = ref  # The reference indexes
-                self.check_type = check_type  # The type of domain check
+        if domain is not None:
+            check = domain_check(train_ind, domain[0])
+            domains_test = pd.DataFrame()
+            domains_test['domain'] = check.check(test_ind, domain[1])
 
-            # Convert a string to elements
-            def convert_string_to_elements(self, x):
-                x = re.sub('[^a-zA-Z]+', '', x)
-                x = Composition(x)
-                x = x.chemical_system
-                x = x.split('-')
-                return x
-
-            # Check if all elements from a reference are the same as another case
-            def compare_elements(self, ref, x):
-
-                # Check if any reference material in another observation
-                condition = [True if i in ref else False for i in x]
-
-                if all(condition):
-                    return 'in_domain'
-                elif any(condition):
-                    return 'maybe_in_domain'
-                else:
-                    return 'out_of_domain'
-
-            def check(self, test, groups=None):
-                if self.check_type == 'elemental':
-
-                    chem_ref = groups[self.ref]
-                    chem_test = groups[test]
-
-                    chem_ref = chem_ref.apply(self.convert_string_to_elements)
-                    chem_test = chem_test.apply(self.convert_string_to_elements)
-
-                    # Merge training cases to check if each test case is within
-                    chem_ref = set(itertools.chain.from_iterable(chem_ref))
-
-                    domains = []
-                    for i in chem_test:
-                        d = self.compare_elements(chem_ref, i)
-                        domains.append(d)
-                
-                return domains
-
-        check = domain_check(train_ind, domain[0])
-        domains = pd.DataFrame()
-        domains['domain'] = check.check(test_ind, domain[1])
+            domains_train = pd.DataFrame()
+            domains_train['domain'] = check.check(train_ind, domain[1])
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -1535,7 +1495,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
 
         if domain is not None:
-            self._save_split_data(df=domains, filename='domains', savepath=splitpath, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitpath, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitpath, columns=['domain'], file_extension=file_extension)
 
         if X_extra_train is not None:
             self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
