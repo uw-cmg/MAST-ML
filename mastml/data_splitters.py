@@ -1472,7 +1472,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             def compare_elements(self, ref, x):
 
                 # Check if any reference material in another observation
-                condition = [True if i in x else False for i in ref]
+                condition = [True if i in ref else False for i in x]
 
                 if all(condition):
                     return 'in_domain'
@@ -1491,19 +1491,17 @@ class BaseSplitter(ms.BaseCrossValidator):
                     chem_test = chem_test.apply(self.convert_string_to_elements)
 
                     # Merge training cases to check if each test case is within
-                    chem_ref = list(itertools.chain.from_iterable(chem_ref))
+                    chem_ref = set(itertools.chain.from_iterable(chem_ref))
 
                     domains = []
                     for i in chem_test:
                         d = self.compare_elements(chem_ref, i)
-                        print(chem_ref, i, d)
                         domains.append(d)
                 
                 return domains
 
         check = domain_check(train_ind, domain[0])
         domains = check.check(test_ind, domain[1])
-        print(domains)
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
