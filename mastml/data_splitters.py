@@ -1501,7 +1501,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 return domains
 
         check = domain_check(train_ind, domain[0])
-        domains = check.check(test_ind, domain[1])
+        domains = pd.DataFrame()
+        domains['domain'] = check.check(test_ind, domain[1])
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -1524,6 +1525,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features, file_extension=file_extension)
         self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train', file_extension=file_extension)
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
+
+        if domain is not None:
+            self._save_split_data(df=domains, filename='domains', savepath=splitpath, columns=['domain'], file_extension=file_extension)
 
         if X_extra_train is not None:
             self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
@@ -1772,7 +1776,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                                     residuals_test=residuals_test,
                                     model_errors_train=model_errors_train,
                                     model_errors_test=model_errors_test,
-                                    dataset_stdev=dataset_stdev)
+                                    dataset_stdev=dataset_stdev,
+                                    domains=domains,
+                                    )
             mastml._save_mastml_metadata()
 
         return
