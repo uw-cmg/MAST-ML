@@ -1278,6 +1278,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir, file_extension=file_extension)
         X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
         X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
+
+        if domain is not None:
+            domains = self._collect_df_data(filename='domains', savepath=splitdir, file_extension=file_extension)
+
         if X_extra is not None:
             try:
                 X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
@@ -1301,6 +1305,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train', file_extension=file_extension)
         self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
         self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
+
+        if domain is not None:
+            self._save_split_data(df=domains, filename='domains_test', savepath=splitdir, columns=['domain'], file_extension=file_extension)
+
         if domain_distance:
             self._save_split_data(df=y_test_domain_all, filename='y_test_domain', savepath=splitdir,
                                   columns='y_test_domain', file_extension=file_extension)
