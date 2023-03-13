@@ -753,40 +753,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                                        X_force_train=X_force_train,
                                                                                        y_force_train=y_force_train)
 
-                        class domain_check:
-                            def __init__(self, ref, check):
-                                self.ref = ref  # The reference indexes
-                                self.check = check  # The type of domain check
-                                print(self.ref)
-
-                            # Convert a string to elements
-                            def convert_string_to_elements(x):
-                                x = re.sub('[^a-zA-Z]+', '', x)
-                                x = Composition(x)
-                                x = x.chemical_system
-                                x = x.split('-')
-                                return x
-
-                            # Check if all elements from a reference are the same as another case
-                            def compare_elements(ref, x):
-                                x = convert_string_to_elements(x)
-                                ref = convert_string_to_elements(ref)
-
-                                # Check if any reference material in another observation
-                                condition = [True if i in x else False for i in ref]
-
-                                if all(condition):
-                                    return 'in_domain'
-                                elif any(condition):
-                                    return 'maybe_in_domain'
-                                else:
-                                    return 'out_of_domain'
-
-                        #def check_elements(ref, x):
-
-                        check = domain_check(['AgAg', 'AgZr'], domain[0])
-
-
                         # make the individual split directory
                         splitouterpath = os.path.join(splitdir, 'split_outer_' + str(split_outer_count))
                         # make the feature selector directory for this split directory
@@ -1179,6 +1145,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               parallel_run,
                                               rve_number_of_bins,
                                               rve_equal_sized_bins,
+                                              domain,
                                               **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            model=model,
@@ -1225,8 +1192,9 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
-                             domain_distance, file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, **kwargs):
-        def _evaluate_split_sets_serial(data, groups=None):
+                             domain_distance, file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, **kwargs):
+
+        def _evaluate_split_sets_serial(data, groups=None, domain=None):
             Xs, ys, train_ind, test_ind, split_count = data
             # TODO: not copying this causes issues with KerasRegressor when doing different split types. But, doing this breaks BaggingRegressor with KerasRegressor networks
             #model_orig = copy.deepcopy(model)
@@ -1274,6 +1242,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method,
                                  remove_outlier_learners,
                                  verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi,
+                                 domain, train_ind, test_ind,
                                  **kwargs)
 
             #self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
@@ -1287,11 +1256,11 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Parallel
         if parallel_run is True:
-            parallel(_evaluate_split_sets_serial, x=data, groups=groups)
+            parallel(_evaluate_split_sets_serial, x=data, groups=groups, domain=domain)
 
         # Serial
         else:
-            [_evaluate_split_sets_serial(data=i, groups=groups) for i in data]
+            [_evaluate_split_sets_serial(data=i, groups=groups, domain=domain) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         if groups is not None:
@@ -1484,7 +1453,57 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
                         metrics, plots, groups, groups_train, splitpath, has_model_errors, X_extra_train, X_extra_test,
                         error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric,
-                        domain_distance, file_extension, image_dpi, **kwargs):
+                        domain_distance, file_extension, image_dpi, domain, train_ind, test_ind, **kwargs):
+
+        class domain_check:
+            def __init__(self, ref, check_type):
+                self.ref = ref  # The reference indexes
+                self.check_type = check_type  # The type of domain check
+
+            # Convert a string to elements
+            def convert_string_to_elements(self, x):
+                x = re.sub('[^a-zA-Z]+', '', x)
+                x = Composition(x)
+                x = x.chemical_system
+                x = x.split('-')
+                return x
+
+            # Check if all elements from a reference are the same as another case
+            def compare_elements(self, ref, x):
+
+                # Check if any reference material in another observation
+                condition = [True if i in x else False for i in ref]
+
+                if all(condition):
+                    return 'in_domain'
+                elif any(condition):
+                    return 'maybe_in_domain'
+                else:
+                    return 'out_of_domain'
+
+            def check(self, test, groups=None):
+                if self.check_type == 'elemental':
+
+                    chem_ref = groups[self.ref]
+                    chem_test = groups[test]
+
+                    chem_ref = chem_ref.apply(self.convert_string_to_elements)
+                    chem_test = chem_test.apply(self.convert_string_to_elements)
+
+                    # Merge training cases to check if each test case is within
+                    chem_ref = list(itertools.chain.from_iterable(chem_ref))
+
+                    domains = []
+                    for i in chem_test:
+                        d = self.compare_elements(chem_ref, i)
+                        print(chem_ref, i, d)
+                        domains.append(d)
+                
+                return domains
+
+        check = domain_check(train_ind, domain[0])
+        domains = check.check(test_ind, domain[1])
+        print(domains)
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
