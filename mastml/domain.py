@@ -164,4 +164,3 @@ class domain_check:
         domains = pd.DataFrame(domains)
 
         return domains
-
