@@ -9,6 +9,7 @@ from pymatgen.core import Composition
 from sklearn.pipeline import Pipeline
 from scipy.spatial.distance import cdist
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import RepeatedKFold
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 
@@ -118,12 +119,29 @@ class domain_check:
                                   ('model', GaussianProcessRegressor()),
                                   ])
 
-            self.pipe.fit(X_train.values, y_train.values)
+            splitter = RepeatedKFold(n_repeats=1, n_splits=5)
+            stds = []
+            for tr_index, te_index in splitter.split(X_train.values):
 
-            _, std = self.pipe.predict(X_train.values, return_std=True)
+                self.pipe.fit(
+                              X_train.values[tr_index],
+                              y_train.values[tr_index]
+                              )
 
-            self.max_std = max(std)  # STD, ouch. Better get a check up
+                _, std = self.pipe.predict(
+                                           X_train.values[te_index],
+                                           return_std=True
+                                           )
 
+                stds = np.concatenate((stds, std), axis=None)
+
+            self.max_std = max(stds)  # STD, ouch. Better get a check up
+
+            # Train one more time with all training data
+            self.pipe.fit(
+                          X_train.values, 
+                          y_train.values
+                          )
 
     def predict(self, X_test):
 
@@ -140,7 +158,7 @@ class domain_check:
 
             _, std = self.pipe.predict(X_test.values, return_std=True)
             domains = std <= self.max_std
-            domains = ['in_domain' if i is True else 'out_of_domain' for i in domains]
+            domains = ['in_domain' if i == True else 'out_of_domain' for i in domains]
 
         domains = {'domain': domains}
         domains = pd.DataFrame(domains)
