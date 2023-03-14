@@ -1465,12 +1465,20 @@ class BaseSplitter(ms.BaseCrossValidator):
                         domain_distance, file_extension, image_dpi, domain, train_ind, test_ind, **kwargs):
 
         if domain is not None:
-            check = domain_check(train_ind, domain[0])
-            domains_test = pd.DataFrame()
-            domains_test['domain'] = check.check(test_ind, domain[1])
 
-            domains_train = pd.DataFrame()
-            domains_train['domain'] = check.check(train_ind, domain[1])
+            if domain[0] == 'elemental':
+                check = domain_check(domain[0])
+                check.fit(domain[1][train_ind])
+
+                domains_test = pd.DataFrame()
+                domains_test['domain'] = check.predict(domain[1][test_ind])
+
+                domains_train = pd.DataFrame()
+                domains_train['domain'] = check.predict(domain[1][train_ind])
+
+            elif domain[0] == 'gpr':
+                check = domain_check(domain[0])
+                check.fit(X_train, y_train)
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)

@@ -6,7 +6,10 @@ import itertools
 import numpy as np
 import pandas as pd
 from pymatgen.core import Composition
+from sklearn.pipeline import Pipeline
 from scipy.spatial.distance import cdist
+from sklearn.preprocessing import StandardScaler
+from sklearn.gaussian_process import GaussianProcessRegressor
 
 
 class Domain():
@@ -72,8 +75,8 @@ class Domain():
 
 
 class domain_check:
-    def __init__(self, ref, check_type):
-        self.ref = ref  # The reference indexes
+
+    def __init__(self, check_type):
         self.check_type = check_type  # The type of domain check
 
     # Convert a string to elements
@@ -97,21 +100,36 @@ class domain_check:
         else:
             return 'out_of_domain'
 
-    def check(self, test, groups=None):
+    def fit(self, X_train=None, y_train=None):
+
+        # Data here is the chemical groups
         if self.check_type == 'elemental':
 
-            chem_ref = groups[self.ref]
-            chem_test = groups[test]
-
-            chem_ref = chem_ref.apply(self.convert_string_to_elements)
-            chem_test = chem_test.apply(self.convert_string_to_elements)
+            chem_ref = X_train.apply(self.convert_string_to_elements)
 
             # Merge training cases to check if each test case is within
-            chem_ref = set(itertools.chain.from_iterable(chem_ref))
+            self.chem_ref = set(itertools.chain.from_iterable(chem_ref))
+
+        # Data here is features and target variable
+        elif self.check_type == 'gpr':
+
+            pipe = Pipeline([
+                             'scaler', StandardScaler(),
+                             'model', GaussianProcessRegressor(),
+                             ])
+
+            pipe.fit(X_train, y_train)
+
+
+    def predict(self, X_test):
+
+        if self.check_type == 'elemental':
+
+            chem_test = X_test.apply(self.convert_string_to_elements)
 
             domains = []
             for i in chem_test:
-                d = self.compare_elements(chem_ref, i)
+                d = self.compare_elements(self.chem_ref, i)
                 domains.append(d)
 
         return domains
