@@ -1470,15 +1470,15 @@ class BaseSplitter(ms.BaseCrossValidator):
                 check = domain_check(domain[0])
                 check.fit(domain[1][train_ind])
 
-                domains_test = pd.DataFrame()
-                domains_test['domain'] = check.predict(domain[1][test_ind])
+                domains_test = check.predict(domain[1][test_ind])
+                domains_train = check.predict(domain[1][train_ind])
 
-                domains_train = pd.DataFrame()
-                domains_train['domain'] = check.predict(domain[1][train_ind])
-
-            elif domain[0] == 'gpr':
-                check = domain_check(domain[0])
+            elif domain == 'gpr':
+                check = domain_check(domain)
                 check.fit(X_train, y_train)
+
+                domains_test = check.predict(X_test)
+                domains_train = check.predict(X_train)
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)

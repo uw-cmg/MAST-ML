@@ -113,12 +113,16 @@ class domain_check:
         # Data here is features and target variable
         elif self.check_type == 'gpr':
 
-            pipe = Pipeline([
-                             'scaler', StandardScaler(),
-                             'model', GaussianProcessRegressor(),
-                             ])
+            self.pipe = Pipeline([
+                                  ('scaler', StandardScaler()),
+                                  ('model', GaussianProcessRegressor()),
+                                  ])
 
-            pipe.fit(X_train, y_train)
+            self.pipe.fit(X_train.values, y_train.values)
+
+            _, std = self.pipe.predict(X_train.values, return_std=True)
+
+            self.max_std = max(std)  # STD, ouch. Better get a check up
 
 
     def predict(self, X_test):
@@ -131,6 +135,15 @@ class domain_check:
             for i in chem_test:
                 d = self.compare_elements(self.chem_ref, i)
                 domains.append(d)
+
+        elif self.check_type == 'gpr':
+
+            _, std = self.pipe.predict(X_test.values, return_std=True)
+            domains = std <= self.max_std
+            domains = ['in_domain' if i is True else 'out_of_domain' for i in domains]
+
+        domains = {'domain': domains}
+        domains = pd.DataFrame(domains)
 
         return domains
 
