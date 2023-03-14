@@ -48,6 +48,7 @@ Bootstrap:
 """
 
 import numpy as np
+import dill
 import os
 import pandas as pd
 from datetime import datetime
@@ -1641,6 +1642,9 @@ class BaseSplitter(ms.BaseCrossValidator):
         else:
             groups_train = None
             groups = None
+
+        if domain is not None:
+            dill.dump(check, open(os.path.join(splitpath, 'domain.dill'), 'wb'))
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
