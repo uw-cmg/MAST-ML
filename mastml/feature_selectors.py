@@ -157,9 +157,33 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             if self.__class__.__name__ == 'ShapFeatureSelector':
                 self.feature_imp_shap.to_csv(
                     os.path.join(savepath, 'ShapFeatureSelector_sorted_features.csv'))
-                if (self.make_plot == True):
-                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi=150, bbox_inches="tight")
+                if self.make_plot == True:
+                    if self.plot_type == 'beeswarm':
+                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                    #elif self.plot_type == 'waterfall':
+                    #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
+                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                    #elif self.plot_type == 'force':
+                    #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
+                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                        #for i, f in enumerate(self.shap_values):
+                        #    shap.plots.force(f, show=False)
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
+                    elif self.plot_type == 'bar':
+                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+                    elif self.plot_type == 'all':
+                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                        plt.clf()
+                        #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
+                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                        #shap.plots.force(self.shap_values, show=False)
+                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+
         if file_extension == '.xlsx':
             X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
         elif file_extension == '.csv':
@@ -736,11 +760,15 @@ class ShapFeatureSelector(BaseSelector):
         Class custom-written for MAST-ML to conduct selection of features with SHAP
 
         Args:
-            model: (mastml.models object), a MAST-ML compatable model
+            model: (mastml.models object), a MAST-ML compatible model
 
             n_features_to_select: (int), the number of features to select
 
             make_plot: Saves the plot of SHAP value if True, default is False
+
+            plot_type: The style of SHAP plot to make. Current supported values are "beeswarm", "bar", "all". The SHAP
+            package has other plot types (https://github.com/slundberg/shap), such as "force" and "waterfall", and these may be added in the future
+            but currently do not plot for all data/features at once in a single plot.
 
             max_display: maximum number of feature to display in the plot
 
@@ -762,18 +790,26 @@ class ShapFeatureSelector(BaseSelector):
                     dataframe: (dataframe), dataframe of selected X features
         """
 
-    def __init__(self, model, n_features_to_select, make_plot = False, max_display = 10):
+    def __init__(self, model, n_features_to_select, make_plot=False, plot_type='all', max_display=10):
         super(ShapFeatureSelector, self).__init__()
         self.model = model
         self.make_plot = make_plot
+        self.plot_type = plot_type
         self.n_features_to_select = n_features_to_select
         self.max_display = max_display
 
     def fit(self, X, y):
         Xcol = X.columns.tolist()
-        self.model = self.model.fit(X,y)
+        self.model = self.model.fit(X, y)
         explainer = shap.Explainer(self.model)
+        self.explainer = explainer
         self.shap_values = explainer(X)
+
+        print('shap values')
+        print(self.shap_values.shape)
+
+        print('explainer exp value')
+        print(self.explainer.expected_value.shape)
 
         feature_order = np.argsort(np.sum(np.abs(self.shap_values.values), axis=0))
         feature_order_reversed = [k for k in reversed(feature_order)]
