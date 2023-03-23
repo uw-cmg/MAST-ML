@@ -43,6 +43,11 @@ try:
 except:
     print('linear-tree is an optional dependency, enabling use of Linear tree, forest, and boosting models. If you want'
           ' to use this model, do "pip install linear-tree"')
+try:
+    from gplearn.genetic import SymbolicRegressor
+except:
+    print('gplearn is an optional dependency, enabling the use of genetic programming SymbolicRegressor model. If you'
+          ' want to use this model, do "pip install gplearn"')
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -95,6 +100,8 @@ class SklearnModel(BaseEstimator, TransformerMixin):
             self.model = LinearForestRegressor(**kwargs)
         elif model == 'LinearBoostingRegressor':
             self.model = LinearBoostingRegressor(**kwargs)
+        elif model == 'SymbolicRegressor':
+            self.model = SymbolicRegressor(**kwargs)
         else:
             self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
