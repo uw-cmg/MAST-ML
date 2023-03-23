@@ -39,6 +39,7 @@ import os
 import warnings
 import shap
 from datetime import datetime
+from copy import copy
 
 import numpy as np
 import pandas as pd
@@ -134,9 +135,33 @@ class BaseSelector(BaseEstimator, TransformerMixin):
             if self.__class__.__name__ == 'ShapFeatureSelector':
                 self.feature_imp_shap.to_excel(
                     os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx'))
-                if (self.make_plot == True):
-                    shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                    plt.savefig(os.path.join(savepath, 'SHAP_features_selected.png'), dpi = 150, bbox_inches = "tight")
+                if self.make_plot == True:
+                    if self.plot_type == 'beeswarm':
+                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                    #elif self.plot_type == 'waterfall':
+                    #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
+                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                    #elif self.plot_type == 'force':
+                    #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
+                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                        #for i, f in enumerate(self.shap_values):
+                        #    shap.plots.force(f, show=False)
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
+                    elif self.plot_type == 'bar':
+                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+                    elif self.plot_type == 'all':
+                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                        plt.clf()
+                        #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
+                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                        #shap.plots.force(self.shap_values, show=False)
+                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+
         elif file_extension == '.csv':
             if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
                 self.feature_importances_sorted.to_csv(
@@ -797,19 +822,22 @@ class ShapFeatureSelector(BaseSelector):
         self.plot_type = plot_type
         self.n_features_to_select = n_features_to_select
         self.max_display = max_display
+        self.model_name = self.model.__class__.__name__
+        self.model_copy = copy(self.model)
 
     def fit(self, X, y):
         Xcol = X.columns.tolist()
         self.model = self.model.fit(X, y)
-        explainer = shap.Explainer(self.model)
+
+        if self.model_name == 'KerasRegressor':
+            #explainer = shap.DeepExplainer(model=self.model_copy.predict, data=np.array(X))
+            print('WARNING: SHAP appears to have support for deep learning models, but as of 3/23 seem to have issues echoed by 
+                  ' numerous users on Github and StackOverflow')
+        else:
+            explainer = shap.Explainer(self.model)
+
         self.explainer = explainer
         self.shap_values = explainer(X)
-
-        print('shap values')
-        print(self.shap_values.shape)
-
-        print('explainer exp value')
-        print(self.explainer.expected_value.shape)
 
         feature_order = np.argsort(np.sum(np.abs(self.shap_values.values), axis=0))
         feature_order_reversed = [k for k in reversed(feature_order)]
