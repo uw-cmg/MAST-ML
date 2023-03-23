@@ -401,7 +401,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
                  domain_distance=None, file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
-                 rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, **kwargs):
+                 rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, **kwargs):
 
         if nested_CV == True:
             if self.__class__.__name__ == 'NoSplit':
@@ -801,6 +801,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              rve_number_of_bins,
                                                              rve_equal_sized_bins,
                                                              domain,
+                                                             recalibrate_power,
                                                              **kwargs)
                         split_outer_count += 1
 
@@ -922,7 +923,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                         if recalibrate_errors is True:
                             recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath,
                                                                               data_type='test', file_extension=file_extension)
-                            model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
+                            if recalibrate_power == 0:
+                                model_errors_leaveout_cal = model_errors_leaveout + recalibrate_dict['a']
+                            elif recalibrate_power == 1:
+                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
+                            elif recalibrate_power == 2:
+                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**2 + recalibrate_dict['b']*model_errors_leaveout + recalibrate_dict['c']
+                            elif recalibrate_power == 3:
+                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**3 + recalibrate_dict['b']*model_errors_leaveout**2 + recalibrate_dict['c']*model_errors_leaveout + recalibrate_dict['d']
                             self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
                                                   savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
                         else:
@@ -1147,6 +1155,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               rve_number_of_bins,
                                               rve_equal_sized_bins,
                                               domain,
+                                              recalibrate_power,
                                               **kwargs)
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            model=model,
@@ -1193,7 +1202,7 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
-                             domain_distance, file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, **kwargs):
+                             domain_distance, file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, recalibrate_power, **kwargs):
 
         def _evaluate_split_sets_serial(data, groups=None, domain=None):
             Xs, ys, train_ind, test_ind, split_count = data
@@ -1333,10 +1342,10 @@ class BaseSplitter(ms.BaseCrossValidator):
             model_errors_train_all = None
 
         if recalibrate_errors is True:
-            model_errors_test_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all)
+            model_errors_test_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all, power=recalibrate_power)
 
             # Write the recalibration values to file
-            recal_df = pd.DataFrame({'a': a, 'b': b}, index=[0])
+            recal_df = pd.DataFrame(recal_dict, index=[0])
             if file_extension == '.xlsx':
                 recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_'+str('test')+file_extension), index=False)
             elif file_extension == '.csv':
@@ -1345,11 +1354,12 @@ class BaseSplitter(ms.BaseCrossValidator):
             # Write the calibrated model errors to file
             self._save_split_data(df=model_errors_test_all_cal, filename='model_errors_test_calibrated', savepath=splitdir, columns='model_errors', file_extension=file_extension)
 
-            model_errors_train_all_cal, a, b = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
-                                                                                residuals=residuals_train_all)
+            model_errors_train_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
+                                                                                       residuals=residuals_train_all,
+                                                                                      power=recalibrate_power)
 
             # Write the recalibration values to file
-            recal_df = pd.DataFrame({'a': a, 'b': b}, index=[0])
+            recal_df = pd.DataFrame(recal_dict, index=[0])
             if file_extension == '.xlsx':
                 recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
             elif file_extension == '.csv':
@@ -1935,6 +1945,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         recalibrate_a_vals = list()
         recalibrate_b_vals = list()
+        recalibrate_c_vals = list()
+        recalibrate_d_vals = list()
+        recalibrate_avg_dict = dict()
+        recalibrate_stdev_dict = dict()
         for splitdir in splitdirs:
             if file_extension == '.xlsx':
                 recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir),
@@ -1942,10 +1956,27 @@ class BaseSplitter(ms.BaseCrossValidator):
             elif file_extension == '.csv':
                 recalibrate_dict = pd.read_csv(os.path.join(os.path.join(savepath, splitdir),
                                                           'recalibration_parameters_'+str(data_type)+'.csv')).to_dict('records')[0]
-            recalibrate_a_vals.append(recalibrate_dict['a'])
-            recalibrate_b_vals.append(recalibrate_dict['b'])
-        recalibrate_avg_dict = {'a': np.mean(recalibrate_a_vals), 'b': np.mean(recalibrate_b_vals)}
-        recalibrate_stdev_dict = {'a': np.std(recalibrate_a_vals), 'b': np.std(recalibrate_b_vals)}
+            if 'a' in recalibrate_dict.keys():
+                recalibrate_a_vals.append(recalibrate_dict['a'])
+            if 'b' in recalibrate_dict.keys():
+                recalibrate_b_vals.append(recalibrate_dict['b'])
+            if 'c' in recalibrate_dict.keys():
+                recalibrate_c_vals.append(recalibrate_dict['c'])
+            if 'd' in recalibrate_dict.keys():
+                recalibrate_d_vals.append(recalibrate_dict['d'])
+        if len(recalibrate_a_vals) > 0:
+            recalibrate_avg_dict['a'] = np.mean(recalibrate_a_vals)
+            recalibrate_stdev_dict['a'] = np.std(recalibrate_a_vals)
+        if len(recalibrate_b_vals) > 0:
+            recalibrate_avg_dict['b'] = np.mean(recalibrate_b_vals)
+            recalibrate_stdev_dict['b'] = np.std(recalibrate_b_vals)
+        if len(recalibrate_c_vals) > 0:
+            recalibrate_avg_dict['c'] = np.mean(recalibrate_c_vals)
+            recalibrate_stdev_dict['c'] = np.std(recalibrate_c_vals)
+        if len(recalibrate_d_vals) > 0:
+            recalibrate_avg_dict['d'] = np.mean(recalibrate_d_vals)
+            recalibrate_stdev_dict['d'] = np.std(recalibrate_d_vals)
+
         return recalibrate_avg_dict, recalibrate_stdev_dict
 
     def _get_recalibration_params(self, savepath, data_type, file_extension):

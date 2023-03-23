@@ -154,12 +154,33 @@ class ErrorUtils():
         return model_errors, residuals, dataset_stdev
 
     @classmethod
-    def _recalibrate_errors(cls, model_errors, residuals):
+    def _recalibrate_errors(cls, model_errors, residuals, power=1):
         corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
-        a, b = corrector.nll()
-        # shift the model errors by the correction factor
-        model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
-        return model_errors, a, b
+        recal_dict = dict()
+        if power == 0:
+            a = corrector.nll(power=0)
+            model_errors = pd.Series(np.array(model_errors) + a, name='model_errors')
+            recal_dict['a'] = a
+        elif power == 1:
+            a, b = corrector.nll(power=1)
+            # shift the model errors by the correction factor
+            model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
+            recal_dict['a'] = a
+            recal_dict['b'] = b
+        elif power == 2:
+            a, b, c = corrector.nll(power=2)
+            model_errors = pd.Series(a * np.array(model_errors)**2 + b * np.array(model_errors) + c, name='model_errors')
+            recal_dict['a'] = a
+            recal_dict['b'] = b
+            recal_dict['c'] = c
+        elif power == 3:
+            a, b, c, d = corrector.nll(power=3)
+            model_errors = pd.Series(a * np.array(model_errors)**3 + b * np.array(model_errors)**2 + c * np.array(model_errors) + d, name='model_errors')
+            recal_dict['a'] = a
+            recal_dict['b'] = b
+            recal_dict['c'] = c
+            recal_dict['d'] = d
+        return model_errors, recal_dict
 
     @classmethod
     def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15, equal_sized_bins=False):
@@ -372,22 +393,58 @@ class CorrectionFactors():
         self.residuals = residuals
         self.model_errors = model_errors
 
-    def nll(self):
-        x0 = np.array([1.0, 0.0])
+    def nll(self, power=1):
+        if power == 0:
+            x0 = np.array([0.1])
+        elif power == 1:
+            x0 = np.array([1.0, 0.0])
+        elif power == 2:
+            x0 = np.array([0.1, 1.0, 0.0])
+        elif power == 3:
+            x0 = np.array([0.05, 0.1, 1.0, 0.0])
         res = minimize(self._nll_opt, x0, method='nelder-mead')
-        a = res.x[0]
-        b = res.x[1]
+        print(res)
+        if power == 0:
+            a = res.x[0]
+        elif power == 1:
+            a = res.x[0]
+            b = res.x[1]
+        elif power == 2:
+            a = res.x[0]
+            b = res.x[1]
+            c = res.x[2]
+        elif power == 3:
+            a = res.x[0]
+            b = res.x[1]
+            c = res.x[2]
+            d = res.x[3]
         success = res.success
         if success is True:
             pass
         elif success is False:
             print("Warning: NLL optimization failed!")
-        # print(res)
         #r_squared = self._direct_rsquared(a, b)
-        return a, b
+        if power == 0:
+            return a
+        elif power == 1:
+            return a, b
+        elif power == 2:
+            return a, b, c
+        elif power == 3:
+            return a, b, c, d
 
     def _nll_opt(self, x):
         sum = 0
-        for i in range(0, len(self.residuals)):
-            sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i] + x[1]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i] + x[1]) ** 2
+        if x.shape[0] == 1:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((self.model_errors[i] + x[0]) ** 2) + (self.residuals[i]) ** 2 / (self.model_errors[i] + x[0]) ** 2
+        elif x.shape[0] == 2:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i] + x[1]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i] + x[1]) ** 2
+        elif x.shape[0] == 3:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i]**2 + x[1] * self.model_errors[i] + x[2]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i]**2 + x[1] * self.model_errors[i] + x[2]) ** 2
+        elif x.shape[0] == 4:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i]**3 + x[1] * self.model_errors[i]**2 + x[2] * self.model_errors[i] + x[3]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i]**3 + x[1] * self.model_errors[i]**2 + x[2] * self.model_errors[i] + x[3]) ** 2
         return 0.5 * sum / len(self.residuals)
