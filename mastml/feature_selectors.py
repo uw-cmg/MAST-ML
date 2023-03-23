@@ -831,7 +831,7 @@ class ShapFeatureSelector(BaseSelector):
 
         if self.model_name == 'KerasRegressor':
             #explainer = shap.DeepExplainer(model=self.model_copy.predict, data=np.array(X))
-            print('WARNING: SHAP appears to have support for deep learning models, but as of 3/23 seem to have issues echoed by 
+            print('WARNING: SHAP appears to have support for deep learning models, but as of 3/23 seem to have issues echoed by' 
                   ' numerous users on Github and StackOverflow')
         else:
             explainer = shap.Explainer(self.model)
