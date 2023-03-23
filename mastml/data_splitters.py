@@ -800,6 +800,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              parallel_run,
                                                              rve_number_of_bins,
                                                              rve_equal_sized_bins,
+                                                             domain,
                                                              **kwargs)
                         split_outer_count += 1
 
