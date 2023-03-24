@@ -12,6 +12,12 @@ EnsembleModel:
     class supports construction of ensembles of most scikit-learn regression models as well as ensembles of neural
     networks that are made via Keras' keras.wrappers.scikit_learn.KerasRegressor class.
 
+CrabNetModel:
+    Class that provides an implementation of PyTorch-based CrabNet regressor model based on the following work:
+    Wang, A., Kauwe, S., Murdock, R., Sparks, T. "Compositionally restricted attention-based network for
+    " materials property predictions", npj Computational Materials (2021) (https://www.nature.com/articles/s41524-021-00545-1)
+
+
 """
 
 import pandas as pd
