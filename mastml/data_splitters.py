@@ -50,6 +50,7 @@ Bootstrap:
 import numpy as np
 import dill
 import os
+import sys
 import pandas as pd
 from datetime import datetime
 import copy
@@ -404,6 +405,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                  rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, **kwargs):
 
         if nested_CV == True:
+            model_names = [m.__class__.__name__ for m in models]
+            if 'CrabNetModel' in model_names:
+                print('Error: Nested CV is not supported with CrabNet model')
+                sys.exit()
             if self.__class__.__name__ == 'NoSplit':
                 print('Warning: NoSplit does not support nested cross validation.')
             else:
@@ -1531,6 +1536,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         if hyperopt is not None:
             model = hyperopt.fit(X=X_train, y=y_train, model=model, cv=5, savepath=splitpath)
 
+        if model_name == 'Model' or model_name == 'CrabNetModel':
+            model.savepath = splitpath
         try:
             model.fit(X_train, y_train)
         except:
@@ -1679,6 +1686,8 @@ class BaseSplitter(ms.BaseCrossValidator):
             # This is a PyTorch model
             import torch
             torch.save(model, os.path.join(splitpath, str(model_name) + ".pkl"))
+        elif model_name == 'Model': #Once instantiated, the CrabNet model is just called "Model"
+            print('CrabNet model is already saved')
         else:
             joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
