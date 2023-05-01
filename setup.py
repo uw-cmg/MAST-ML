@@ -52,7 +52,7 @@ setup(
                       "scipy", 
                       "shap", 
                       "sphinx-automodapi", 
-                      "statsmodels"]
+                      "statsmodels"],
     #install_requires=[
     #    "citrination-client",
     #    "dlhub_sdk",
