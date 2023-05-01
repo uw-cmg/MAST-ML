@@ -21,7 +21,10 @@ import math
 import os
 import pandas as pd
 import numpy as np
-from collections import Iterable
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 from math import log, ceil
 import scipy
 from scipy.stats import gaussian_kde, norm
