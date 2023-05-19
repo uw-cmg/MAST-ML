@@ -7,75 +7,12 @@ import numpy as np
 import pandas as pd
 from pymatgen.core import Composition
 from sklearn.pipeline import Pipeline
-from scipy.spatial.distance import cdist
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import RepeatedKFold
 from sklearn.gaussian_process import GaussianProcessRegressor
-
+from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel, Matern
 
 class Domain():
-    '''
-    This class evaluates which test data point is within and out of the domain
-
-    Args:
-        None.
-
-    Methods:
-        distance: calculates the distance of the test data point from centroid of data to determine if in or out of domain
-
-        Args:
-            X_train: (dataframe), dataframe of X_train features
-
-            X_test: (dataframe), dataframe of X_test features
-
-            metrics: (str), string denoting the method of calculating the distance, ie mahalanobis
-
-            **kwargs: (str), string denoting extra argument needed for metric, e.g minkowski require additional arg p
-    '''
-    def distance(self, X_train, X_test, metrics, **kwargs):
-
-        #TODO: Lane says it gives error because the input is a pd.series but the shouldn't the input be a str?
-        # Only changing this to take a series so that it will pass the test
-        for metric in metrics:
-            if metric == 'mahalanobis':
-                m = np.mean(X_train)
-                X_train_transposed = np.transpose(X_train)
-                covM = np.cov(X_train_transposed)
-                invCovM = np.linalg.inv(covM)
-                max_distance_train = cdist(XA=[m], XB=X_train, metric=metric, VI=invCovM).max()
-
-                #Do the same for X_test
-                centroid_dist = cdist(XA=[m], XB=X_test, metric=metric, VI=invCovM)[0];
-                #Check every test datapoint to see if they are in or out of domain
-                inDomain = []
-                for i in centroid_dist:
-                    if pd.isna(i):
-                        inDomain.append("nan")
-                    elif i < max_distance_train:
-                        inDomain.append(True)
-                    else:
-                        inDomain.append(False)
-
-                return pd.DataFrame(inDomain)
-
-            else:
-                m = np.mean(X_train)
-                max_distance_train = cdist(XA=[m], XB=X_train, metric=metric, **kwargs).max()
-                centroid_dist = cdist(XA=[m], XB=X_test, metric=metric, **kwargs)[0];
-                inDomain = []
-                print(centroid_dist)
-                for i in centroid_dist:
-                    if pd.isna(i):
-                        inDomain.append("nan")
-                    elif i < max_distance_train:
-                        inDomain.append(True)
-                    else:
-                        inDomain.append(False)
-
-                return pd.DataFrame(inDomain)
-
-
-class domain_check:
 
     def __init__(self, check_type):
         self.check_type = check_type  # The type of domain check
@@ -116,7 +53,7 @@ class domain_check:
 
             self.pipe = Pipeline([
                                   ('scaler', StandardScaler()),
-                                  ('model', GaussianProcessRegressor()),
+                                  ('model', GaussianProcessRegressor(kernel=ConstantKernel()*Matern()+WhiteKernel(), n_restarts_optimizer=10)),
                                   ])
 
             splitter = RepeatedKFold(n_repeats=1, n_splits=5)
@@ -144,23 +81,24 @@ class domain_check:
                           )
 
     def predict(self, X_test):
-
+        domains = dict()
         if self.check_type == 'elemental':
 
             chem_test = X_test.apply(self.convert_string_to_elements)
 
-            domains = []
+            domain_vals = []
             for i in chem_test:
                 d = self.compare_elements(self.chem_ref, i)
-                domains.append(d)
+                domain_vals.append(d)
+            domains['domain_elemental'] = domain_vals
 
         elif self.check_type == 'gpr':
 
             _, std = self.pipe.predict(X_test.values, return_std=True)
-            domains = std <= self.max_std
-            domains = ['in_domain' if i == True else 'out_of_domain' for i in domains]
+            domain_vals = std <= self.max_std
+            domain_vals = ['in_domain' if i == True else 'out_of_domain' for i in domain_vals]
+            domains['domain_gpr'] = domain_vals
 
-        domains = {'domain': domains}
         domains = pd.DataFrame(domains)
 
         return domains
