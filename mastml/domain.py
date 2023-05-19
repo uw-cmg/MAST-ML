@@ -80,6 +80,14 @@ class Domain():
                           y_train.values
                           )
 
+        elif self.check_type == 'feature_range':
+            self.features = X_train.columns.tolist()
+            self.feature_mins = dict()
+            self.feature_maxes = dict()
+            for f in self.features:
+                self.feature_mins[f] = min(X_train[f])
+                self.feature_maxes[f] = max(X_train[f])
+
     def predict(self, X_test):
         domains = dict()
         if self.check_type == 'elemental':
@@ -98,6 +106,31 @@ class Domain():
             domain_vals = std <= self.max_std
             domain_vals = ['in_domain' if i == True else 'out_of_domain' for i in domain_vals]
             domains['domain_gpr'] = domain_vals
+
+        elif self.check_type == 'feature_range':
+            features_inside_training_range = list()
+            features_outside_training_full = list()
+            for i, x in X_test.iterrows():
+                num_OK = len(self.features)
+                features_outside_training = ''
+                for f in self.features:
+                    is_OK = True
+                    if x[f] < self.feature_mins[f]:
+                        is_OK = False
+                        # features_outside_training.append(f)
+                        features_outside_training += str(f) + ', '
+                    if x[f] > self.feature_maxes[f]:
+                        is_OK = False
+                        # features_outside_training.append(f)
+                        features_outside_training += str(f) + ', '
+                    if is_OK == False:
+                        num_OK -= 1
+                    # if is_OK == True:
+                    #    features_outside_training.append('n/a')
+                features_inside_training_range.append(num_OK)
+                features_outside_training_full.append(features_outside_training)
+            domains['domain_feature_range_numfeatsinside'] = features_inside_training_range
+            domains['domain_feature_range_featsoutside'] = features_outside_training_full
 
         domains = pd.DataFrame(domains)
 
