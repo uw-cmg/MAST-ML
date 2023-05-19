@@ -193,12 +193,12 @@ class ErrorUtils():
 
         # check to see if number of bins should increase, and increase it if so
         model_errors_sorted = np.sort(model_errors)
-        ninety_percentile = int(len(model_errors_sorted) * 0.9)
-        ninety_percentile_range = model_errors_sorted[ninety_percentile] - np.amin(model_errors)
-        total_range = np.amax(model_errors) - np.amin(model_errors)
-        number_of_bins = number_of_bins
-        if ninety_percentile_range / total_range < 5 / number_of_bins:
-            number_of_bins = int(5 * total_range / ninety_percentile_range)
+        #ninety_percentile = int(len(model_errors_sorted) * 0.9)
+        #ninety_percentile_range = model_errors_sorted[ninety_percentile] - np.amin(model_errors)
+        #total_range = np.amax(model_errors) - np.amin(model_errors)
+        #number_of_bins = number_of_bins
+        #if ninety_percentile_range / total_range < 5 / number_of_bins:
+        #    number_of_bins = int(5 * total_range / ninety_percentile_range)
 
         # Set bins for calculating RMS
         upperbound = np.amax(model_errors)
@@ -237,7 +237,10 @@ class ErrorUtils():
         Var_squarederr_res = [np.std((abs_res[digitized == bins_present[i]] ** 2)) ** 2 for i in range(0, len(bins_present))]
 
         # Set the x-values to the midpoint of each bin
-        bin_width = bins[1] - bins[0]
+        # TODO: this can have issues if doing higher-order recalibration and have some negative values, leading to large step
+        # at first. Try using last two values instead
+        #bin_width = abs(bins[-1] - bins[-2])
+        bin_width = abs(bins[1]-bins[0])
         binned_model_errors = np.zeros(len(bins_present))
         for i in range(0, len(bins_present)):
             curr_bin = bins_present[i]
@@ -403,7 +406,6 @@ class CorrectionFactors():
         elif power == 3:
             x0 = np.array([0.05, 0.1, 1.0, 0.0])
         res = minimize(self._nll_opt, x0, method='nelder-mead')
-        print(res)
         if power == 0:
             a = res.x[0]
         elif power == 1:
