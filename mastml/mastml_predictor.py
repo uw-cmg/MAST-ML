@@ -13,7 +13,7 @@ import numpy as np
 import os
 from mastml import feature_generators
 
-def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibration_file=None, featurizers=None, featurize_on=None):
+def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibration_file=None, featurizers=None, featurize_on=None, domain=None, composition_column=None):
     '''
     Method used to take a saved preprocessor, model and calibration file and output predictions and calibrated uncertainties
     on new test data
@@ -42,6 +42,10 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
 
         featurize_on: (list), list of strings of column name in X_test to perform featurization on, needs to be same length and in
             same order as featurizers listed above, e.g., ['Composition', ['feature1', 'feature2'] ]
+
+        domain: (list), list of strings denoting filenames of saved domain.pkl objects, e.g., ['domain_gpr.pkl']
+
+        composition_column: (str), string denoting name of X_test column denoting material compositions. Will be needed if assessing domain with "elemental" method.
 
     Returns:
         pred_df: (pd.DataFrame), dataframe containing column of model predictions (y_pred) and, if applicable, calibrated uncertainties (y_err).
@@ -80,6 +84,8 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
         else:
             raise ValueError('You must provide X_train as .xlsx or .csv file, or loaded pandas DataFrame')
     features_to_keep = X_train.columns.tolist()
+    #extra_columns = [col for col in X_test.columns.tolist() if col not in features_to_keep]
+    #X_extra = X_test[extra_columns]
 
     # Load in y_train data so can return true values if that data point is queried as test data
     if isinstance(y_train, str):
@@ -98,6 +104,8 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
             gen = joblib.load(f)
             gen.featurize_df = pd.DataFrame(X_test[f_on])
             df_test, _ = gen.evaluate(X=df_test, y=pd.Series(np.zeros(shape=df_test.shape[0])), savepath=None, make_new_dir=False)
+        df_test = df_test[features_to_keep]
+    else:
         df_test = df_test[features_to_keep]
 
     # Check if any of the featurized rows are in the training data. If so, append the true target value
@@ -164,10 +172,28 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
         pred_df = pd.DataFrame(y_pred_new, columns=['y_pred'])
 
     for col in X_test.columns.tolist():
-        pred_df[col] = X_test[col]
+        if col not in features_to_keep:
+            pred_df[col] = X_test[col]
 
     # Add the y_true column into the predicted dataframe:
     pred_df['y_true'] = y_true_list
+
+    # Concatenate the extra columns to the prediction dataframe
+    #pred_df = pd.concat([pred_df, X_extra], axis=1)
+
+    # Evaluate the domain predictions on the test data
+    domains_list = list()
+    if domain is not None:
+        for domain_type in domain:
+            domain_check = joblib.load(domain_type)
+            if domain_check.check_type == 'elemental':
+                if composition_column is None:
+                    print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
+                domains_list.append(domain_check.predict(X_test[composition_column]))
+            else:
+                domains_list.append(domain_check.predict(df_test))
+        domain_df = pd.concat(domains_list, axis=1)
+        pred_df = pd.concat([pred_df, domain_df], axis=1)
 
     return pred_df
 
@@ -189,6 +215,8 @@ def make_prediction_dlhub(input_dict):
 
             featurize_on: (list), list of strings of column name in X_test to perform featurization on, needs to be same length and in
                 same order as featurizers listed above, e.g., ['Composition', ['feature1', 'feature2'] ]
+
+            composition_column: (str), string denoting name of X_test column denoting material compositions. Will be needed if assessing domain with "elemental" method.
 
     Returns:
         pred_df: (pd.DataFrame), dataframe containing column of model predictions (y_pred) and, if applicable, calibrated uncertainties (y_err).
@@ -224,19 +252,25 @@ def make_prediction_dlhub(input_dict):
         y_train = pd.read_csv('y_train.csv')
 
     # Load featurizers
-    featurizers = input_dict['featurizers']
-    featurize_on = input_dict['featurize_on']
+    try:
+        featurizers = input_dict['featurizers']
+        featurize_on = input_dict['featurize_on']
+    except:
+        featurizers = None
+        featurize_on = None
     df_test = X_test
     if featurizers is not None:
         # Load in the featurizers
         for f, f_on in zip(featurizers, featurize_on):
             try:
                 gen = joblib.load(f+'.pkl')
-                print('generator', gen)
+                #print('generator', gen)
             except:
                 gen = joblib.load(f)
             gen.featurize_df = pd.DataFrame(X_test[f_on])
             df_test, _ = gen.evaluate(X=df_test, y=pd.Series(np.zeros(shape=df_test.shape[0])), savepath=None, make_new_dir=False)
+        df_test = df_test[features_to_keep]
+    else:
         df_test = df_test[features_to_keep]
 
     # Check if any of the featurized rows are in the training data. If so, append the true target value
@@ -302,11 +336,34 @@ def make_prediction_dlhub(input_dict):
     else:
         pred_df = pd.DataFrame(y_pred_new, columns=['y_pred'])
 
-    for col in X_test.columns.tolist():
-        pred_df[col] = X_test[col]
-
     # Add the y_true column into the predicted dataframe:
     pred_df['y_true'] = y_true_list
+
+    # Evaluate the domain predictions on the test data, if such files exist
+    files = os.listdir(os.getcwd())
+    domain = list()
+    for f in files:
+        if 'domain_' in f:
+            domain.append(f)
+    try:
+        composition_column = input_dict['composition_column']
+    except:
+        composition_column = None
+    domains_list = list()
+    if len(domain) > 0:
+        for domain_type in domain:
+            domain_check = joblib.load(domain_type)
+            if domain_check.check_type == 'elemental':
+                if composition_column is None:
+                    print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
+                domains_list.append(domain_check.predict(X_test[composition_column]))
+            else:
+                domains_list.append(domain_check.predict(df_test))
+        domain_df = pd.concat(domains_list, axis=1)
+        pred_df = pd.concat([pred_df, domain_df], axis=1)
+
+    for col in X_test.columns.tolist():
+        pred_df[col] = X_test[col]
 
     return pred_df
 
