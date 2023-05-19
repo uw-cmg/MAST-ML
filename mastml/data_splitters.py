@@ -1225,10 +1225,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         if domain is not None:
             domains_test = list()
             domains_train = list()
+            domain_checks = list()
             for domain_type in domain:
                 if domain_type[0] == 'elemental':
                     check = Domain(domain_type[0])
                     check.fit(domain_type[1][train_ind])
+                    domain_checks.append(check)
 
                     domains_test.append(check.predict(domain_type[1][test_ind]))
                     domains_train.append(check.predict(domain_type[1][train_ind]))
@@ -1236,6 +1238,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 elif domain_type == 'gpr':
                     check = Domain(domain_type)
                     check.fit(X_train, y_train)
+                    domain_checks.append(check)
 
                     domains_test.append(check.predict(X_test))
                     domains_train.append(check.predict(X_train))
@@ -1243,6 +1246,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 elif domain_type == 'feature_range':
                     check = Domain(domain_type)
                     check.fit(X_train, y_train)
+                    domain_checks.append(check)
 
                     domains_test.append(check.predict(X_test))
                     domains_train.append(check.predict(X_train))
@@ -1415,7 +1419,8 @@ class BaseSplitter(ms.BaseCrossValidator):
             groups = None
 
         if domain is not None:
-            joblib.dump(check, open(os.path.join(splitpath, 'domain.pkl'), 'wb'))
+            for check in domain_checks:
+                joblib.dump(check, open(os.path.join(splitpath, 'domain_'+str(check.check_type)+'.pkl'), 'wb'))
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
