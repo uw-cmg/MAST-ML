@@ -85,7 +85,7 @@ from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
-from mastml.domain import Domain, domain_check
+from mastml.domain import domain_check
 from mastml.mastml import parallel
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -899,6 +899,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                         self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
 
                         if has_model_errors is True:
+                            model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitouterpath,
+                                                                    file_extension=file_extension)
+                            model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitouterpath,
+                                                                     file_extension=file_extension)
+                            self._save_split_data(df=model_errors_test_all, filename='model_errors_test',
+                                                  savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+                            self._save_split_data(df=model_errors_train_all, filename='model_errors_train',
+                                                  savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
                             model_errors_leaveout, num_removed_learners_leaveout = ErrorUtils()._get_model_errors(model=best_model,
                                                                                     X=X_leaveout_preprocessed,
                                                                                     X_train=X_train_bestmodel,
@@ -1024,8 +1032,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                     y_pred_leaveout_all = pd.Series(np.array(y_pred_leaveout_all))
 
                     if has_model_errors is True:
+                        model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
+                        model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir, file_extension=file_extension)
                         model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir, file_extension=file_extension)
                         num_removed_learners_leaveout_all = self._collect_data(filename='num_removed_learners_leaveout', savepath=splitdir, file_extension=file_extension)
+                        self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                        self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors', file_extension=file_extension)
                         self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors', file_extension=file_extension)
                         self._save_split_data(df=num_removed_learners_leaveout_all, filename='num_removed_learners_leaveout', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
                         if recalibrate_errors is True:
