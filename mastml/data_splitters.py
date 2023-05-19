@@ -85,7 +85,7 @@ from mastml.error_analysis import ErrorUtils
 from mastml.metrics import Metrics
 from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
-from mastml.domain import domain_check
+from mastml.domain import Domain
 from mastml.mastml import parallel
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -1071,8 +1071,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
 
         if domain is not None:
-            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitdir, columns=['domain'], file_extension=file_extension)
-            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitdir, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitdir, columns=domains_train.columns.tolist(), file_extension=file_extension)
+            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitdir, columns=domains_test.columns.tolist(), file_extension=file_extension)
 
         if has_model_errors is True:
             model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
@@ -1223,20 +1223,25 @@ class BaseSplitter(ms.BaseCrossValidator):
                         file_extension, image_dpi, domain, train_ind, test_ind, **kwargs):
 
         if domain is not None:
+            domains_test = list()
+            domains_train = list()
+            for domain_type in domain:
+                if domain_type[0] == 'elemental':
+                    check = Domain(domain_type[0])
+                    check.fit(domain_type[1][train_ind])
 
-            if domain[0] == 'elemental':
-                check = domain_check(domain[0])
-                check.fit(domain[1][train_ind])
+                    domains_test.append(check.predict(domain_type[1][test_ind]))
+                    domains_train.append(check.predict(domain_type[1][train_ind]))
 
-                domains_test = check.predict(domain[1][test_ind])
-                domains_train = check.predict(domain[1][train_ind])
+                elif domain_type == 'gpr':
+                    check = Domain(domain_type)
+                    check.fit(X_train, y_train)
 
-            elif domain == 'gpr':
-                check = domain_check(domain)
-                check.fit(X_train, y_train)
+                    domains_test.append(check.predict(X_test))
+                    domains_train.append(check.predict(X_train))
 
-                domains_test = check.predict(X_test)
-                domains_train = check.predict(X_train)
+            domains_test = pd.concat(domains_test, axis=1)
+            domains_train = pd.concat(domains_train, axis=1)
 
         X_train_orig = copy.deepcopy(X_train)
         X_test_orig = copy.deepcopy(X_test)
@@ -1261,8 +1266,8 @@ class BaseSplitter(ms.BaseCrossValidator):
         self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
 
         if domain is not None:
-            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitpath, columns=['domain'], file_extension=file_extension)
-            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitpath, columns=['domain'], file_extension=file_extension)
+            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitpath, columns=domains_train.columns.tolist(), file_extension=file_extension)
+            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitpath, columns=domains_test.columns.tolist(), file_extension=file_extension)
 
         if X_extra_train is not None:
             self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
@@ -1403,7 +1408,7 @@ class BaseSplitter(ms.BaseCrossValidator):
             groups = None
 
         if domain is not None:
-            dill.dump(check, open(os.path.join(splitpath, 'domain.dill'), 'wb'))
+            joblib.dump(check, open(os.path.join(splitpath, 'domain.pkl'), 'wb'))
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
