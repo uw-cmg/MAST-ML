@@ -30,6 +30,7 @@ from pprint import pprint
 import numpy as np
 import re
 import os
+import docker
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -138,6 +139,25 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         print('Class attributes for,', self.model)
         pprint(self.model.__dict__)
         return
+
+
+class HostedModel():
+
+    def __init__(self, container_name):
+        self.container_name = container_name
+
+    def predict(self, df):
+        df.to_csv('/tmp/test.csv', index=False)
+        client = docker.from_env()
+        x = client.containers.run(
+            self.container_name,
+            'python3 predict.py',
+            volumes=['/tmp:/mnt'],
+        )
+
+        df = pd.read_csv('/tmp/prediction.csv')
+
+        return df
 
 class EnsembleModel(BaseEstimator, TransformerMixin):
     """
