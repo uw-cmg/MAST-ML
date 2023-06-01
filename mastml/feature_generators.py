@@ -61,6 +61,7 @@ import pandas as pd
 from datetime import datetime
 from copy import copy
 import pickle
+from tqdm import tqdm
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
@@ -456,7 +457,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         magpiedata_dict_min_site2site3 = {}
         magpiedata_dict_difference_site2site3 = {}
 
-        for i, composition in enumerate(compositions):
+        for i, composition in tqdm(enumerate(compositions), 'Featurizing compositions:'):
             if has_sublattices:
                 magpiedata_collected = self._get_computed_magpie_features(composition=composition, data_path=MAGPIE_DATA_PATH, site_dict=site_dict_list[i])
             else:
@@ -1245,7 +1246,7 @@ class ElementalFractionGenerator(BaseGenerator):
     def generate_elementfraction_features(self):
         el_frac_list = list()
         compositions_list = self.featurize_df[self.featurize_df.columns[0]].tolist()
-        for comp_str in compositions_list:
+        for comp_str in tqdm(compositions_list, 'Featurizing compositions'):
             # As of early 2021, there are 118 elements, though only ~80 of them can form stable non-radioactive chemical compounds.
             el_frac_onehot = np.zeros((118,))
             comp = Composition(comp_str)
