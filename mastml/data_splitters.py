@@ -690,7 +690,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         else:
                             model_errors_leaveout_cal = None
 
-                        if verbosity > 0:
+                        if verbosity >= 1:
                             make_plots(plots=plots,
                                        y_true=y_leaveout,
                                        y_pred=y_pred_leaveout,
@@ -801,7 +801,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                             pd.DataFrame(recalibrate_avg_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
                             pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
                     # Make all leaveout data plots
-                    if verbosity > 0:
+                    if verbosity >= 1:
                         make_plots(plots=plots,
                                    y_true=y_leaveout_all,
                                    y_pred=y_pred_leaveout_all,
@@ -1123,7 +1123,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all test data plots
         dataset_stdev = np.std(np.unique(y_train_all))
-        if verbosity > 1:
+        if verbosity >= 1:
             make_plots(plots=plots,
                        y_true=y_test_all,
                        y_pred=y_pred_all,
@@ -1148,7 +1148,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all train data plots
         dataset_stdev = np.std(np.unique(y_train_all))
-        if verbosity > 1:
+        if verbosity >= 1:
             make_plots(plots=plots,
                        y_true=y_train_all,
                        y_pred=y_pred_train_all,
@@ -1361,7 +1361,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all test data plots
         dataset_stdev = np.std(y_train)
-        if verbosity > 2:
+        if verbosity >= 2:
             make_plots(plots=plots,
                        y_true=y_test,
                        y_pred=y_pred,
@@ -1383,7 +1383,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Make all train data plots
         dataset_stdev = np.std(y_train)
-        if verbosity > 2:
+        if verbosity >= 2:
             make_plots(plots=plots,
                        y_true=y_train,
                        y_pred=y_pred_train,
