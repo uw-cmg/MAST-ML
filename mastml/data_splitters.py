@@ -48,7 +48,6 @@ Bootstrap:
 """
 
 import numpy as np
-import dill
 import os
 import sys
 import pandas as pd
@@ -63,6 +62,8 @@ import warnings
 import shutil
 import itertools
 from scipy.spatial.distance import minkowski
+from tqdm import tqdm
+
 try:
     import keras
 except:
@@ -474,7 +475,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 split_outer_count = 0
                 if len(leaveout_inds) > 0:
 
-                    for leaveout_ind in leaveout_inds:
+                    for leaveout_ind in tqdm(leaveout_inds, 'Running outer split'):
                         X_subsplit = X.loc[~X.index.isin(leaveout_ind)]
                         y_subsplit = y.loc[~y.index.isin(leaveout_ind)]
                         X_leaveout = X.loc[X.index.isin(leaveout_ind)]
@@ -1026,7 +1027,9 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Serial
         else:
-            [_evaluate_split_sets_serial(data=i, groups=groups, domain=domain) for i in data]
+            for i in tqdm(data, 'Running splits'):
+                _evaluate_split_sets_serial(data=i, groups=groups, domain=domain)
+            #[_evaluate_split_sets_serial(data=i, groups=groups, domain=domain) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         if groups is not None:
