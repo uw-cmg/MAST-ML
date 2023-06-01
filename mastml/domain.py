@@ -32,11 +32,11 @@ class Domain():
         condition = [True if i in ref else False for i in x]
 
         if all(condition):
-            return 'in_domain'
+            return 1
         elif any(condition):
-            return 'maybe_in_domain'
+            return 0
         else:
-            return 'out_of_domain'
+            return -1
 
     def fit(self, X_train=None, y_train=None):
 
@@ -104,7 +104,7 @@ class Domain():
 
             _, std = self.pipe.predict(X_test.values, return_std=True)
             domain_vals = std <= self.max_std
-            domain_vals = ['in_domain' if i == True else 'out_of_domain' for i in domain_vals]
+            domain_vals = [1 if i == True else -1 for i in domain_vals]
             domains['domain_gpr'] = domain_vals
 
         elif self.check_type == 'feature_range':
