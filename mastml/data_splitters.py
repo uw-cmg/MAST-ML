@@ -63,6 +63,8 @@ import shutil
 import itertools
 from scipy.spatial.distance import minkowski
 from tqdm import tqdm
+import json
+from mastml.mastml import NumpyEncoder
 
 try:
     import keras
@@ -392,7 +394,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                 #train_inds.append(np.concatenate([train, train_inds_extra]))
         return X_splits, y_splits, train_inds, test_inds
 
-    def evaluate(self, X, y, models, mastml=None, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
+    def evaluate(self, X, y, models, preprocessor=None, groups=None, hyperopts=None, selectors=None, metrics=None,
                  plots=None, savepath=None, X_extra=None, X_force_train=None, y_force_train=None, leaveout_inds=list(list()),
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
@@ -473,9 +475,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                 splitdir = self._setup_savedir(model=model, selector=selector, preprocessor=preprocessor, savepath=savepath)
                 self.splitdirs.append(splitdir)
                 split_outer_count = 0
+                split_summary_list_outer = dict()
+
                 if len(leaveout_inds) > 0:
 
                     for leaveout_ind in tqdm(leaveout_inds, 'Running outer split'):
+                        split_summary_list_outer[split_outer_count] = dict()
+                        split_summary_list_outer[split_outer_count]['leaveout_ind'] = np.array(leaveout_ind).ravel()
+
                         X_subsplit = X.loc[~X.index.isin(leaveout_ind)]
                         y_subsplit = y.loc[~y.index.isin(leaveout_ind)]
                         X_leaveout = X.loc[X.index.isin(leaveout_ind)]
@@ -506,26 +513,26 @@ class BaseSplitter(ms.BaseCrossValidator):
                         os.mkdir(splitouterpath)
 
                         # Save the left-out data indices
-                        if file_extension == '.xlsx':
-                            pd.DataFrame({'leaveout_inds': leaveout_ind}).to_excel(os.path.join(splitouterpath, 'leaveout_inds'+file_extension), index=False)
-                        elif file_extension == '.csv':
-                            pd.DataFrame({'leaveout_inds': leaveout_ind}).to_csv(os.path.join(splitouterpath, 'leaveout_inds' + file_extension), index=False)
-
-                        # Save the left-out data groups
-                        if groups is not None:
-                            groups_leaveout.name = 'leaveout_groups'
+                        if verbosity >= 0:
                             if file_extension == '.xlsx':
-                                groups_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+                                pd.DataFrame({'leaveout_inds': leaveout_ind}).to_excel(os.path.join(splitouterpath, 'leaveout_inds'+file_extension), index=False)
                             elif file_extension == '.csv':
-                                groups_leaveout.to_csv(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+                                pd.DataFrame({'leaveout_inds': leaveout_ind}).to_csv(os.path.join(splitouterpath, 'leaveout_inds' + file_extension), index=False)
 
-                        outerdir = self._evaluate_split_sets(X_splits,
+                            # Save the left-out data groups
+                            if groups is not None:
+                                groups_leaveout.name = 'leaveout_groups'
+                                if file_extension == '.xlsx':
+                                    groups_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+                                elif file_extension == '.csv':
+                                    groups_leaveout.to_csv(os.path.join(splitouterpath, 'leaveout_groups'+file_extension), index=False)
+
+                        outerdir, split_summary_list = self._evaluate_split_sets(X_splits,
                                                              y_splits,
                                                              train_inds,
                                                              test_inds,
                                                              model,
                                                              model_name,
-                                                             mastml,
                                                              selector,
                                                              preprocessor,
                                                              X_extra_subsplit,
@@ -549,7 +556,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              domain,
                                                              recalibrate_power,
                                                              **kwargs)
-                        split_outer_count += 1
+
+                        # Save the split summary dict
+                        with open(os.path.join(splitouterpath, 'split_summary.json'), 'w') as f:
+                            json.dump(split_summary_list, f, cls=NumpyEncoder)
+
+                        split_summary_list_flat = flatten_split_summary(split_summary_list)
+                        with open(os.path.join(splitouterpath, 'split_summary_allsplits.json'), 'w') as f:
+                            json.dump(split_summary_list_flat, f, cls=NumpyEncoder)
 
                         best_split_dict = self._get_best_split(savepath=splitouterpath,
                                                                model=model,
@@ -594,10 +608,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                         else:
                             best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
-                        if file_extension == '.xlsx':
-                            X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
-                        elif file_extension == '.csv':
-                            X_train_bestmodel = preprocessor.transform(pd.read_csv(best_split_dict['X_train']))  # Need to preprocess the Xtrain data
+
+                        #if file_extension == '.xlsx':
+                        #    X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
+                        #elif file_extension == '.csv':
+                        #    X_train_bestmodel = preprocessor.transform(pd.read_csv(best_split_dict['X_train']))  # Need to preprocess the Xtrain data
 
                         with open(os.path.join(splitouterpath, 'selected_features.txt')) as f:
                             selected_features = [line.rstrip() for line in f]
@@ -608,56 +623,74 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_pred_leaveout = y_pred_leaveout.ravel()
                         y_pred_leaveout = pd.Series(y_pred_leaveout, name='y_pred_leaveout')
 
+                        split_summary_list_outer[split_outer_count]['preds_leaveout'] = np.array(y_pred_leaveout).ravel()
+                        split_summary_list_outer[split_outer_count]['trues_leaveout'] = np.array(y_leaveout).ravel()
+
                         stats_dict_leaveout = Metrics(metrics_list=metrics).evaluate(y_true=y_leaveout,
                                                                                      y_pred=y_pred_leaveout)
                         df_stats_leaveout = pd.DataFrame().from_records([stats_dict_leaveout])
+
+                        split_summary_list_outer[split_outer_count]['stats_leaveout'] = stats_dict_leaveout
+
+
                         if file_extension == '.xlsx':
                             df_stats_leaveout.to_excel(os.path.join(splitouterpath, 'leaveout_stats_summary'+file_extension), index=False)
                         elif file_extension == '.csv':
                             df_stats_leaveout.to_csv(os.path.join(splitouterpath, 'leaveout_stats_summary' + file_extension), index=False)
-                        # At level of splitouterpath, do analysis over all splits (e.g. parity plot over all splits)
-                        if groups is not None:
-                            groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitouterpath, file_extension=file_extension, iterdirs=False)
-                        else:
-                            groups_leaveout_all = None
-                        y_test_all = self._collect_data(filename='y_test', savepath=splitouterpath, file_extension=file_extension)
-                        y_train_all = self._collect_data(filename='y_train', savepath=splitouterpath, file_extension=file_extension)
-                        y_pred_all = self._collect_data(filename='y_pred', savepath=splitouterpath, file_extension=file_extension)
-                        y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitouterpath, file_extension=file_extension)
-                        residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitouterpath, file_extension=file_extension)
-                        residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitouterpath, file_extension=file_extension)
-                        X_train_all = self._collect_df_data(filename='X_train', savepath=splitouterpath, file_extension=file_extension)
-                        X_test_all = self._collect_df_data(filename='X_test', savepath=splitouterpath, file_extension=file_extension)
 
-                        # Save the data gathered over all the splits
-                        self._save_split_data(df=X_train_all, filename='X_train', savepath=splitouterpath, columns=X_train_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_test_all, filename='X_test', savepath=splitouterpath, columns=X_test_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=y_test_all, filename='y_test', savepath=splitouterpath, columns='y_test', file_extension=file_extension)
-                        self._save_split_data(df=y_train_all, filename='y_train', savepath=splitouterpath, columns='y_train', file_extension=file_extension)
-                        self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitouterpath, columns='y_pred', file_extension=file_extension)
-                        self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitouterpath, columns='y_pred_train', file_extension=file_extension)
-                        self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
-                        self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
+                        # At level of splitouterpath, do analysis over all splits (e.g. parity plot over all splits)
+                        if verbosity >= 0:
+                            if groups is not None:
+                                groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitouterpath, file_extension=file_extension, iterdirs=False)
+                            else:
+                                groups_leaveout_all = None
+                            y_test_all = self._collect_data(filename='y_test', savepath=splitouterpath, file_extension=file_extension)
+                            y_train_all = self._collect_data(filename='y_train', savepath=splitouterpath, file_extension=file_extension)
+                            y_pred_all = self._collect_data(filename='y_pred', savepath=splitouterpath, file_extension=file_extension)
+                            y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitouterpath, file_extension=file_extension)
+                            residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitouterpath, file_extension=file_extension)
+                            residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitouterpath, file_extension=file_extension)
+                            X_train_all = self._collect_df_data(filename='X_train', savepath=splitouterpath, file_extension=file_extension)
+                            X_test_all = self._collect_df_data(filename='X_test', savepath=splitouterpath, file_extension=file_extension)
+
+                            # Save the data gathered over all the splits
+                            self._save_split_data(df=X_train_all, filename='X_train', savepath=splitouterpath, columns=X_train_all.columns.tolist(), file_extension=file_extension)
+                            self._save_split_data(df=X_test_all, filename='X_test', savepath=splitouterpath, columns=X_test_all.columns.tolist(), file_extension=file_extension)
+                            self._save_split_data(df=y_test_all, filename='y_test', savepath=splitouterpath, columns='y_test', file_extension=file_extension)
+                            self._save_split_data(df=y_train_all, filename='y_train', savepath=splitouterpath, columns='y_train', file_extension=file_extension)
+                            self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitouterpath, columns='y_pred', file_extension=file_extension)
+                            self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitouterpath, columns='y_pred_train', file_extension=file_extension)
+                            self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
+                            self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
 
                         if has_model_errors is True:
-                            model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitouterpath,
-                                                                    file_extension=file_extension)
-                            model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitouterpath,
-                                                                     file_extension=file_extension)
-                            self._save_split_data(df=model_errors_test_all, filename='model_errors_test',
+                            if verbosity >= 0:
+                                model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitouterpath, file_extension=file_extension)
+                                model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitouterpath, file_extension=file_extension)
+                                self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+                                self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+                            try:
+                                model_errors_leaveout, num_removed_learners_leaveout = ErrorUtils()._get_model_errors(model=best_model,
+                                                                                        X=X_leaveout_preprocessed,
+                                                                                        X_test=X_leaveout_preprocessed,
+                                                                                        X_train=X_train_bestmodel,
+                                                                                       error_method=error_method,
+                                                                                        remove_outlier_learners=remove_outlier_learners)
+                            except:
+                                model_errors_leaveout, num_removed_learners_leaveout = ErrorUtils()._get_model_errors(model=best_model,
+                                                                                        X=X_leaveout_preprocessed,
+                                                                                        X_test=X_leaveout_preprocessed,
+                                                                                        X_train=None,
+                                                                                        error_method=error_method,
+                                                                                        remove_outlier_learners=remove_outlier_learners)
+                            if verbosity >= 0:
+                                self._save_split_data(df=model_errors_leaveout, filename='model_errors_leaveout',
                                                   savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
-                            self._save_split_data(df=model_errors_train_all, filename='model_errors_train',
-                                                  savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
-                            model_errors_leaveout, num_removed_learners_leaveout = ErrorUtils()._get_model_errors(model=best_model,
-                                                                                    X=X_leaveout_preprocessed,
-                                                                                    X_train=X_train_bestmodel,
-                                                                                    X_test=X_leaveout_preprocessed,
-                                                                                   error_method=error_method,
-                                                                                    remove_outlier_learners=remove_outlier_learners)
-                            self._save_split_data(df=model_errors_leaveout, filename='model_errors_leaveout',
-                                                  savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
-                            self._save_split_data(df=num_removed_learners_leaveout, filename='num_removed_learners_leaveout',
+                                self._save_split_data(df=num_removed_learners_leaveout, filename='num_removed_learners_leaveout',
                                                   savepath=splitouterpath, columns='num_removed_learners', file_extension=file_extension)
+
+                            split_summary_list_outer[split_outer_count]['model_errors_leaveout'] = np.array(model_errors_leaveout).ravel()
+
                         else:
                             model_errors_leaveout = None
 
@@ -665,15 +698,17 @@ class BaseSplitter(ms.BaseCrossValidator):
                         y_leaveout = pd.Series(np.array(y_leaveout))
                         y_pred_leaveout = pd.Series(np.array(y_pred_leaveout))
 
-                        self._save_split_data(df=X_leaveout, filename='X_leaveout', savepath=splitouterpath, columns=X_leaveout.columns.tolist(), file_extension=file_extension)
-                        if X_extra is not None:
-                            self._save_split_data(df=X_extra_leaveout, filename='X_extra_leaveout', savepath=splitouterpath, columns=X_extra_leaveout.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=y_leaveout, filename='y_leaveout', savepath=splitouterpath, columns='y_leaveout', file_extension=file_extension)
-                        self._save_split_data(df=y_pred_leaveout, filename='y_pred_leaveout', savepath=splitouterpath, columns='y_pred_leaveout', file_extension=file_extension)
+                        if verbosity >= 0:
+                            self._save_split_data(df=X_leaveout, filename='X_leaveout', savepath=splitouterpath, columns=X_leaveout.columns.tolist(), file_extension=file_extension)
+                            if X_extra is not None:
+                                self._save_split_data(df=X_extra_leaveout, filename='X_extra_leaveout', savepath=splitouterpath, columns=X_extra_leaveout.columns.tolist(), file_extension=file_extension)
+                            self._save_split_data(df=y_leaveout, filename='y_leaveout', savepath=splitouterpath, columns='y_leaveout', file_extension=file_extension)
+                            self._save_split_data(df=y_pred_leaveout, filename='y_pred_leaveout', savepath=splitouterpath, columns='y_pred_leaveout', file_extension=file_extension)
 
-                        residuals_leaveout = y_pred_leaveout-y_leaveout
-                        self._save_split_data(df=residuals_leaveout, filename='residuals_leaveout', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
+                            residuals_leaveout = y_pred_leaveout-y_leaveout
+                            self._save_split_data(df=residuals_leaveout, filename='residuals_leaveout', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
 
+                        # 6/2/2023 HERE
                         if recalibrate_errors is True:
                             recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath,
                                                                               data_type='test', file_extension=file_extension)
@@ -685,8 +720,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                 model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**2 + recalibrate_dict['b']*model_errors_leaveout + recalibrate_dict['c']
                             elif recalibrate_power == 3:
                                 model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**3 + recalibrate_dict['b']*model_errors_leaveout**2 + recalibrate_dict['c']*model_errors_leaveout + recalibrate_dict['d']
-                            self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
+
+                            if verbosity >= 0:
+                                self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
                                                   savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+
+                            split_summary_list_outer[split_outer_count]['model_errors_leaveout_cal'] = np.array(model_errors_leaveout_cal).ravel()
                         else:
                             model_errors_leaveout_cal = None
 
@@ -714,78 +753,87 @@ class BaseSplitter(ms.BaseCrossValidator):
                                        equal_sized_bins=rve_equal_sized_bins)
 
                         # Update the MASTML metadata file to include the leftout data info
+                        '''
                         if mastml is not None:
-                            mastml._update_metadata(outerdir=outerdir,
-                                                    split_name='split_summary',
-                                                    leaveout_stats=df_stats_leaveout,
-                                                    X_leaveout=X_leaveout,
-                                                    X_extra_leaveout=X_extra_leaveout,
-                                                    y_leaveout=y_leaveout,
-                                                    y_pred_leaveout=y_pred_leaveout,
-                                                    residuals_leaveout=residuals_leaveout,
-                                                    model_errors_leaveout=model_errors_leaveout,
-                                                    model_errors_leaveout_cal=model_errors_leaveout_cal,
-                                                    )
-                            mastml._save_mastml_metadata()
+                            if verbosity >= 0:
+                                mastml._update_metadata(outerdir=outerdir,
+                                                        split_name='split_summary',
+                                                        leaveout_stats=df_stats_leaveout,
+                                                        X_leaveout=X_leaveout,
+                                                        X_extra_leaveout=X_extra_leaveout,
+                                                        y_leaveout=y_leaveout,
+                                                        y_pred_leaveout=y_pred_leaveout,
+                                                        residuals_leaveout=residuals_leaveout,
+                                                        model_errors_leaveout=model_errors_leaveout,
+                                                        model_errors_leaveout_cal=model_errors_leaveout_cal,
+                                                        )
+                                mastml._save_mastml_metadata()
+                        '''
+
+                        split_outer_count += 1
 
                     # At level of splitdir, collect and save all leaveout data
-                    if groups is not None:
-                        groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitdir, file_extension=file_extension)
-                    else:
-                        groups_leaveout_all = None
-                    y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir, file_extension=file_extension)
-                    y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir, file_extension=file_extension)
-                    residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir, file_extension=file_extension)
-                    self._save_split_data(df=residuals_leaveout_all, filename='residuals_leaveout', savepath=splitdir, columns='residuals', file_extension=file_extension)
-                    self._save_split_data(df=y_leaveout_all, filename='y_leaveout', savepath=splitdir, columns='y_leaveout', file_extension=file_extension)
-                    self._save_split_data(df=y_pred_leaveout_all, filename='y_pred_leaveout', savepath=splitdir, columns='y_pred_leaveout', file_extension=file_extension)
+                    if verbosity >= 0:
+                        if groups is not None:
+                            groups_leaveout_all = self._collect_data(filename='leaveout_groups', savepath=splitdir, file_extension=file_extension)
+                        else:
+                            groups_leaveout_all = None
 
-                    # At level of splitodir, collect and save all train/test data
-                    y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
-                    y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
-                    y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
-                    y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir, file_extension=file_extension)
-                    residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir, file_extension=file_extension)
-                    residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir, file_extension=file_extension)
-                    X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
-                    X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
-                    X_leaveout_all = self._collect_df_data(filename='X_leaveout', savepath=splitdir, file_extension=file_extension)
-                    if X_extra is not None:
-                        X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
-                        X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir, file_extension=file_extension)
-                        X_extra_leaveout_all = self._collect_df_data(filename='X_extra_leaveout', savepath=splitdir, file_extension=file_extension)
-                    self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist(), file_extension=file_extension)
-                    self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
-                    self._save_split_data(df=X_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_leaveout_all.columns.tolist(), file_extension=file_extension)
-                    if X_extra is not None:
-                        self._save_split_data(df=X_extra_train_all, filename='X_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_extra_test_all, filename='X_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
-                        self._save_split_data(df=X_extra_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist(), file_extension=file_extension)
-                    self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
-                    self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir,  columns='y_train', file_extension=file_extension)
-                    self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
-                    self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
-                    self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitdir, columns='residuals', file_extension=file_extension)
-                    self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitdir, columns='residuals', file_extension=file_extension)
+                        y_leaveout_all = self._collect_data(filename='y_leaveout', savepath=splitdir, file_extension=file_extension)
+                        leaveout_inds_all = self._collect_data(filename='leaveout_inds', savepath=splitdir, file_extension=file_extension)
+                        y_pred_leaveout_all = self._collect_data(filename='y_pred_leaveout', savepath=splitdir, file_extension=file_extension)
+                        residuals_leaveout_all = self._collect_data(filename='residuals_leaveout', savepath=splitdir, file_extension=file_extension)
+                        self._save_split_data(df=residuals_leaveout_all, filename='residuals_leaveout', savepath=splitdir, columns='residuals', file_extension=file_extension)
+                        self._save_split_data(df=y_leaveout_all, filename='y_leaveout', savepath=splitdir, columns='y_leaveout', file_extension=file_extension)
+                        self._save_split_data(df=y_pred_leaveout_all, filename='y_pred_leaveout', savepath=splitdir, columns='y_pred_leaveout', file_extension=file_extension)
 
-                    # Remake the Series so that indices are sequential (needed for math)
-                    y_leaveout_all = pd.Series(np.array(y_leaveout_all))
-                    y_pred_leaveout_all = pd.Series(np.array(y_pred_leaveout_all))
+                        # At level of splitodir, collect and save all train/test data
+                        y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
+                        y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
+                        y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
+                        y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir, file_extension=file_extension)
+                        residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir, file_extension=file_extension)
+                        residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir, file_extension=file_extension)
+                        X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
+                        X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
+                        X_leaveout_all = self._collect_df_data(filename='X_leaveout', savepath=splitdir, file_extension=file_extension)
+                        if X_extra is not None:
+                            X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
+                            X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir, file_extension=file_extension)
+                            X_extra_leaveout_all = self._collect_df_data(filename='X_extra_leaveout', savepath=splitdir, file_extension=file_extension)
+                        self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=X_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_leaveout_all.columns.tolist(), file_extension=file_extension)
+                        if X_extra is not None:
+                            self._save_split_data(df=X_extra_train_all, filename='X_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
+                            self._save_split_data(df=X_extra_test_all, filename='X_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
+                            self._save_split_data(df=X_extra_leaveout_all, filename='X_leaveout', savepath=splitdir, columns=X_extra_leaveout_all.columns.tolist(), file_extension=file_extension)
+                        self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
+                        self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir,  columns='y_train', file_extension=file_extension)
+                        self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
+                        self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
+                        self._save_split_data(df=residuals_test_all, filename='residuals_test', savepath=splitdir, columns='residuals', file_extension=file_extension)
+                        self._save_split_data(df=residuals_train_all, filename='residuals_train', savepath=splitdir, columns='residuals', file_extension=file_extension)
+
+                        # Remake the Series so that indices are sequential (needed for math)
+                        y_leaveout_all = pd.Series(np.array(y_leaveout_all))
+                        y_pred_leaveout_all = pd.Series(np.array(y_pred_leaveout_all))
 
                     if has_model_errors is True:
-                        model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
-                        model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir, file_extension=file_extension)
-                        model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir, file_extension=file_extension)
-                        num_removed_learners_leaveout_all = self._collect_data(filename='num_removed_learners_leaveout', savepath=splitdir, file_extension=file_extension)
-                        self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-                        self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-                        self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-                        self._save_split_data(df=num_removed_learners_leaveout_all, filename='num_removed_learners_leaveout', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
-                        if recalibrate_errors is True:
-                            model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir, file_extension=file_extension)
-                            self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-                        else:
-                            model_errors_leaveout_all_calibrated = None
+                        if verbosity >= 0:
+                            model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
+                            model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir, file_extension=file_extension)
+                            model_errors_leaveout_all = self._collect_data(filename='model_errors_leaveout', savepath=splitdir, file_extension=file_extension)
+                            num_removed_learners_leaveout_all = self._collect_data(filename='num_removed_learners_leaveout', savepath=splitdir, file_extension=file_extension)
+                            self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                            self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                            self._save_split_data(df=model_errors_leaveout_all, filename='model_errors_leaveout', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                            self._save_split_data(df=num_removed_learners_leaveout_all, filename='num_removed_learners_leaveout', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
+                            if recalibrate_errors is True:
+                                model_errors_leaveout_all_calibrated = self._collect_data(filename='model_errors_leaveout_calibrated', savepath=splitdir, file_extension=file_extension)
+                                self._save_split_data(df=model_errors_leaveout_all_calibrated, filename='model_errors_leaveout_calibrated', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                            else:
+                                model_errors_leaveout_all_calibrated = None
                     else:
                         model_errors_leaveout_all = None
                         model_errors_leaveout_all_calibrated = None
@@ -800,6 +848,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                         elif file_extension == '.csv':
                             pd.DataFrame(recalibrate_avg_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
                             pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
+
                     # Make all leaveout data plots
                     if verbosity >= 1:
                         make_plots(plots=plots,
@@ -833,44 +882,58 @@ class BaseSplitter(ms.BaseCrossValidator):
                     except:
                         df_stats_leaveout = None
 
+                    '''
                     if mastml is not None:
                         outerdir = splitdir.split('/')[-1]
                         if 'split_outer' in outerdir:
                             # For nested CV or left out data runs with outer and inner splits, need the model dir one level up
                             outerdir = os.path.join(splitdir.split('/')[-2], splitdir.split('/')[-1])
-                        mastml._update_metadata(outerdir=outerdir,
-                                                split_name='split_outer_summary',
-                                                model=model,
-                                                splitter=self,
-                                                preprocessor=preprocessor,
-                                                selector=selector,
-                                                hyperopt=hyperopt,
-                                                train_stats=None,
-                                                test_stats=None,
-                                                leaveout_stats=df_stats_leaveout,
-                                                X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
-                                                X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
-                                                X_leaveout=pd.DataFrame(np.array(X_leaveout_all), columns=X_leaveout_all.columns.tolist()),
-                                                X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra is not None else None,
-                                                X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra is not None else None,
-                                                X_extra_leaveout=pd.DataFrame(np.array(X_extra_leaveout_all), columns=X_extra_leaveout_all.columns.tolist()) if X_extra is not None else None,
-                                                y_train=y_train_all,
-                                                y_test=y_test_all,
-                                                y_leaveout=y_leaveout_all,
-                                                y_pred_train=y_pred_train_all,
-                                                y_pred=y_pred_all,
-                                                y_pred_leaveout=y_pred_leaveout_all,
-                                                residuals_train=residuals_train_all,
-                                                residuals_test=residuals_test_all,
-                                                residuals_leaveout=residuals_leaveout_all,
-                                                model_errors_train=None,
-                                                model_errors_test=None,
-                                                model_errors_leaveout=model_errors_leaveout_all,
-                                                model_errors_train_cal=None,
-                                                model_errors_test_cal=None,
-                                                model_errors_leaveout_cal=model_errors_leaveout_all_calibrated,
-                                                dataset_stdev=None)
-                        mastml._save_mastml_metadata()
+                        
+                        if verbosity >= 0:
+                            mastml._update_metadata(outerdir=outerdir,
+                                                    split_name='split_outer_summary',
+                                                    model=model,
+                                                    splitter=self,
+                                                    preprocessor=preprocessor,
+                                                    selector=selector,
+                                                    hyperopt=hyperopt,
+                                                    train_stats=None,
+                                                    test_stats=None,
+                                                    leaveout_stats=df_stats_leaveout,
+                                                    leaveout_inds=leaveout_inds_all,
+                                                    #X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
+                                                    #X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
+                                                    #X_leaveout=pd.DataFrame(np.array(X_leaveout_all), columns=X_leaveout_all.columns.tolist()),
+                                                    #X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra is not None else None,
+                                                    #X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra is not None else None,
+                                                    #X_extra_leaveout=pd.DataFrame(np.array(X_extra_leaveout_all), columns=X_extra_leaveout_all.columns.tolist()) if X_extra is not None else None,
+                                                    y_train=y_train_all,
+                                                    y_test=y_test_all,
+                                                    y_leaveout=y_leaveout_all,
+                                                    y_pred_train=y_pred_train_all,
+                                                    y_pred=y_pred_all,
+                                                    y_pred_leaveout=y_pred_leaveout_all,
+                                                    residuals_train=residuals_train_all,
+                                                    residuals_test=residuals_test_all,
+                                                    residuals_leaveout=residuals_leaveout_all,
+                                                    model_errors_train=None,
+                                                    model_errors_test=None,
+                                                    model_errors_leaveout=model_errors_leaveout_all,
+                                                    model_errors_train_cal=None,
+                                                    model_errors_test_cal=None,
+                                                    model_errors_leaveout_cal=model_errors_leaveout_all_calibrated,
+                                                    dataset_stdev=None)
+                            mastml._save_mastml_metadata()
+                    '''
+
+                    # Save the outer split summary file
+                    # Save the split summary dict
+                    with open(os.path.join(splitdir, 'split_summary_outer.json'), 'w') as f:
+                        json.dump(split_summary_list_outer, f, cls=NumpyEncoder)
+
+                    split_summary_list_outer_flat = flatten_split_summary(split_summary_list_outer)
+                    with open(os.path.join(splitdir, 'split_summary_outer_allsplits.json'), 'w') as f:
+                        json.dump(split_summary_list_outer_flat, f, cls=NumpyEncoder)
 
                     # Remove all the splitdirs if set to True
                     if remove_split_dirs == True:
@@ -884,13 +947,12 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                                    X_force_train=X_force_train,
                                                                                    y_force_train=y_force_train)
 
-                    self._evaluate_split_sets(X_splits,
+                    outerdir, split_summary_list = self._evaluate_split_sets(X_splits,
                                               y_splits,
                                               train_inds,
                                               test_inds,
                                               model,
                                               model_name,
-                                              mastml,
                                               selector,
                                               preprocessor,
                                               X_extra,
@@ -914,6 +976,16 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               domain,
                                               recalibrate_power,
                                               **kwargs)
+
+                    # Save the split summary dict
+                    with open(os.path.join(splitdir, 'split_summary.json'), 'w') as f:
+                        json.dump(split_summary_list, f, cls=NumpyEncoder)
+
+                    split_summary_list_flat = flatten_split_summary(split_summary_list)
+                    with open(os.path.join(splitdir, 'split_summary_allsplits.json'), 'w') as f:
+                        json.dump(split_summary_list_flat, f, cls=NumpyEncoder)
+
+                    #if verbosity >= 0:
                     best_split_dict = self._get_best_split(savepath=splitdir,
                                                            model=model,
                                                            preprocessor=preprocessor,
@@ -956,12 +1028,13 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         return
 
-    def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, mastml, selector, preprocessor,
+    def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
                              file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, recalibrate_power, **kwargs):
 
-        def _evaluate_split_sets_serial(data, groups=None, domain=None):
+        def _evaluate_split_sets_serial(data, verbosity, groups=None, domain=None, split_summary_dict=None):
+
             Xs, ys, train_ind, test_ind, split_count = data
             # TODO: not copying this causes issues with KerasRegressor when doing different split types. But, doing this breaks BaggingRegressor with KerasRegressor networks
             #model_orig = copy.deepcopy(model)
@@ -996,102 +1069,117 @@ class BaseSplitter(ms.BaseCrossValidator):
             os.mkdir(splitpath)
 
             # Save the test data indices and train data indices
-            if file_extension == '.xlsx':
-                pd.DataFrame({'test_inds': test_ind}).to_excel(os.path.join(splitpath, 'test_inds'+file_extension), index=False)
-                pd.DataFrame({'train_inds': train_ind}).to_excel(os.path.join(splitpath, 'train_inds'+file_extension), index=False)
-            elif file_extension == '.csv':
-                pd.DataFrame({'test_inds': test_ind}).to_csv(os.path.join(splitpath, 'test_inds' + file_extension), index=False)
-                pd.DataFrame({'train_inds': train_ind}).to_csv(os.path.join(splitpath, 'train_inds' + file_extension), index=False)
+            if verbosity >= 0:
+                if file_extension == '.xlsx':
+                    pd.DataFrame({'test_inds': test_ind}).to_excel(os.path.join(splitpath, 'test_inds'+file_extension), index=False)
+                    pd.DataFrame({'train_inds': train_ind}).to_excel(os.path.join(splitpath, 'train_inds'+file_extension), index=False)
+                elif file_extension == '.csv':
+                    pd.DataFrame({'test_inds': test_ind}).to_csv(os.path.join(splitpath, 'test_inds' + file_extension), index=False)
+                    pd.DataFrame({'train_inds': train_ind}).to_csv(os.path.join(splitpath, 'train_inds' + file_extension), index=False)
 
-            self._evaluate_split(X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor_orig,
+            split_summary = self._evaluate_split(X_train, X_test, y_train, y_test, model, model_name, preprocessor_orig,
                                  selector_orig,
                                  hyperopt_orig, metrics, plots, group, group_train,
                                  splitpath, has_model_errors, X_extra_train, X_extra_test, error_method,
                                  remove_outlier_learners,
                                  verbosity, baseline_test, distance_metric, file_extension, image_dpi,
-                                 domain, train_ind, test_ind,
-                                 **kwargs)
+                                 domain, train_ind, test_ind)
+
+            split_summary_dict[split_count] = split_summary
 
             #self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
             #                     hyperopt_orig, metrics, plots, group, group_train,
             #                     splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
             #                     verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
-            return
+            return split_summary_dict
 
+        split_summary_dict = dict()
         split_counts = list(range(len(y_splits)))
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
         # Parallel
         if parallel_run is True:
-            parallel(_evaluate_split_sets_serial, x=data, groups=groups, domain=domain)
+            # TODO: how to get split summary list from this?
+            parallel(_evaluate_split_sets_serial, x=data, verbosity=verbosity, groups=groups, domain=domain)
 
         # Serial
         else:
             for i in tqdm(data, 'Running splits'):
-                _evaluate_split_sets_serial(data=i, groups=groups, domain=domain)
+                split_summary_dict = _evaluate_split_sets_serial(data=i, verbosity=verbosity, groups=groups, domain=domain, split_summary_dict=split_summary_dict)
             #[_evaluate_split_sets_serial(data=i, groups=groups, domain=domain) for i in data]
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
-        if groups is not None:
-            groups_test_all = self._collect_data(filename='test_groups', savepath=splitdir, file_extension=file_extension)
-            groups_train_all = self._collect_data(filename='train_groups', savepath=splitdir, file_extension=file_extension)
-        else:
-            groups_test_all = None
-            groups_train_all = None
+        if verbosity >= 0:
+            y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
+            y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
+            y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
+            y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir, file_extension=file_extension)
+            residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir, file_extension=file_extension)
+            residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir, file_extension=file_extension)
+            X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
+            X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
 
-        y_test_all = self._collect_data(filename='y_test', savepath=splitdir, file_extension=file_extension)
-        y_train_all = self._collect_data(filename='y_train', savepath=splitdir, file_extension=file_extension)
-        y_pred_all = self._collect_data(filename='y_pred', savepath=splitdir, file_extension=file_extension)
-        y_pred_train_all = self._collect_data(filename='y_pred_train', savepath=splitdir, file_extension=file_extension)
-        residuals_test_all = self._collect_data(filename='residuals_test', savepath=splitdir, file_extension=file_extension)
-        residuals_train_all = self._collect_data(filename='residuals_train', savepath=splitdir, file_extension=file_extension)
-        X_train_all = self._collect_df_data(filename='X_train', savepath=splitdir, file_extension=file_extension)
-        X_test_all = self._collect_df_data(filename='X_test', savepath=splitdir, file_extension=file_extension)
+            if groups is not None:
+                groups_test_all = self._collect_data(filename='test_groups', savepath=splitdir, file_extension=file_extension)
+                groups_train_all = self._collect_data(filename='train_groups', savepath=splitdir, file_extension=file_extension)
+            else:
+                groups_test_all = None
+                groups_train_all = None
 
-        if domain is not None:
-            domains_train = self._collect_df_data(filename='domains_train', savepath=splitdir, file_extension=file_extension)
-            domains_test = self._collect_df_data(filename='domains_test', savepath=splitdir, file_extension=file_extension)
+            if domain is not None:
+                domains_train = self._collect_df_data(filename='domains_train', savepath=splitdir, file_extension=file_extension)
+                domains_test = self._collect_df_data(filename='domains_test', savepath=splitdir, file_extension=file_extension)
 
-        if X_extra is not None:
-            try:
-                X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
-            except:
-                print('No X_extra_train data to collect')
-            X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir, file_extension=file_extension)
+            if X_extra is not None:
+                try:
+                    X_extra_train_all = self._collect_df_data(filename='X_extra_train', savepath=splitdir, file_extension=file_extension)
+                except:
+                    print('No X_extra_train data to collect')
+                X_extra_test_all = self._collect_df_data(filename='X_extra_test', savepath=splitdir, file_extension=file_extension)
 
-        # Save the data gathered over all the splits
-        self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist(), file_extension=file_extension)
-        self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
-        if X_extra is not None:
-            try:
-                self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
-            except:
-                print('No X_extra_train data to save')
-            self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
-        self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
-        self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train', file_extension=file_extension)
-        self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
-        self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
+            # Save the data gathered over all the splits
+            self._save_split_data(df=X_train_all, filename='X_train', savepath=splitdir, columns=X_train_all.columns.tolist(), file_extension=file_extension)
+            self._save_split_data(df=X_test_all, filename='X_test', savepath=splitdir, columns=X_test_all.columns.tolist(), file_extension=file_extension)
+            if X_extra is not None:
+                try:
+                    self._save_split_data(df=X_extra_train_all, filename='X_extra_train', savepath=splitdir, columns=X_extra_train_all.columns.tolist(), file_extension=file_extension)
+                except:
+                    print('No X_extra_train data to save')
+                self._save_split_data(df=X_extra_test_all, filename='X_extra_test', savepath=splitdir, columns=X_extra_test_all.columns.tolist(), file_extension=file_extension)
+            self._save_split_data(df=y_test_all, filename='y_test', savepath=splitdir, columns='y_test', file_extension=file_extension)
+            self._save_split_data(df=y_train_all, filename='y_train', savepath=splitdir, columns='y_train', file_extension=file_extension)
+            self._save_split_data(df=y_pred_all, filename='y_pred', savepath=splitdir, columns='y_pred', file_extension=file_extension)
+            self._save_split_data(df=y_pred_train_all, filename='y_pred_train', savepath=splitdir, columns='y_pred_train', file_extension=file_extension)
 
-        if domain is not None:
-            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitdir, columns=domains_train.columns.tolist(), file_extension=file_extension)
-            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitdir, columns=domains_test.columns.tolist(), file_extension=file_extension)
+            if domain is not None:
+                self._save_split_data(df=domains_train, filename='domains_train', savepath=splitdir, columns=domains_train.columns.tolist(), file_extension=file_extension)
+                self._save_split_data(df=domains_test, filename='domains_test', savepath=splitdir, columns=domains_test.columns.tolist(), file_extension=file_extension)
 
-        if has_model_errors is True:
-            model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
-            model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir, file_extension=file_extension)
-            num_removed_learners_test_all = self._collect_data(filename='num_removed_learners_test', savepath=splitdir, file_extension=file_extension)
-            num_removed_learners_train_all = self._collect_data(filename='num_removed_learners_train', savepath=splitdir, file_extension=file_extension)
-            # Save all the uncalibrated model errors data
-            self._save_split_data(df=model_errors_test_all, filename='model_errors_test', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-            self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors', file_extension=file_extension)
-            self._save_split_data(df=num_removed_learners_test_all, filename='num_removed_learners_test', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
-            self._save_split_data(df=num_removed_learners_train_all, filename='num_removed_learners_train', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
-        else:
-            model_errors_test_all = None
-            model_errors_train_all = None
+            if has_model_errors is True:
+                model_errors_test_all = self._collect_data(filename='model_errors_test', savepath=splitdir, file_extension=file_extension)
+                model_errors_train_all = self._collect_data(filename='model_errors_train', savepath=splitdir, file_extension=file_extension)
+                num_removed_learners_test_all = self._collect_data(filename='num_removed_learners_test', savepath=splitdir, file_extension=file_extension)
+                num_removed_learners_train_all = self._collect_data(filename='num_removed_learners_train', savepath=splitdir, file_extension=file_extension)
+                # Save all the uncalibrated model errors data
+                self._save_split_data(df=model_errors_train_all, filename='model_errors_train', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+                self._save_split_data(df=num_removed_learners_test_all, filename='num_removed_learners_test', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
+                self._save_split_data(df=num_removed_learners_train_all, filename='num_removed_learners_train', savepath=splitdir, columns='num_removed_learners', file_extension=file_extension)
+            else:
+                model_errors_test_all = None
+                model_errors_train_all = None
 
-        if recalibrate_errors is True:
+        if recalibrate_errors is True and has_model_errors is True:
+            err_test_all = list()
+            res_test_all = list()
+            # TODO: any issue with dict ordering here?
+            for i, v in split_summary_dict.items():
+                err_test_all.append(v['model_errors_test'])
+                res_test_all.append(v['preds']-v['trues'])
+            #model_errors_test_all = [item for sublist in err_test_all for item in sublist]
+            #residuals_test_all = [item for sublist in res_test_all for item in sublist]
+            model_errors_test_all = np.concatenate(err_test_all)
+            residuals_test_all = np.concatenate(res_test_all)
+
             model_errors_test_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all, power=recalibrate_power)
 
             # Write the recalibration values to file
@@ -1102,28 +1190,28 @@ class BaseSplitter(ms.BaseCrossValidator):
                 recal_df.to_csv(os.path.join(splitdir, 'recalibration_parameters_' + str('test') + file_extension), index=False)
 
             # Write the calibrated model errors to file
-            self._save_split_data(df=model_errors_test_all_cal, filename='model_errors_test_calibrated', savepath=splitdir, columns='model_errors', file_extension=file_extension)
+            if verbosity >= 0:
 
-            model_errors_train_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
-                                                                                       residuals=residuals_train_all,
-                                                                                      power=recalibrate_power)
+                model_errors_train_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
+                                                                                           residuals=residuals_train_all,
+                                                                                          power=recalibrate_power)
 
-            # Write the recalibration values to file
-            recal_df = pd.DataFrame(recal_dict, index=[0])
-            if file_extension == '.xlsx':
-                recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
-            elif file_extension == '.csv':
-                recal_df.to_csv(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
-            # Write the calibrated model errors to file
-            self._save_split_data(df=model_errors_train_all_cal, filename='model_errors_train_calibrated', savepath=splitdir,
-                                  columns='model_errors', file_extension=file_extension)
+                # Write the recalibration values to file
+                recal_df = pd.DataFrame(recal_dict, index=[0])
+                if file_extension == '.xlsx':
+                    recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
+                elif file_extension == '.csv':
+                    recal_df.to_csv(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
+                # Write the calibrated model errors to file
+                self._save_split_data(df=model_errors_train_all_cal, filename='model_errors_train_calibrated', savepath=splitdir,
+                                      columns='model_errors', file_extension=file_extension)
         else:
             model_errors_test_all_cal = None
             model_errors_train_all_cal = None
 
         # Make all test data plots
-        dataset_stdev = np.std(np.unique(y_train_all))
         if verbosity >= 1:
+            dataset_stdev = np.std(np.unique(y_train_all))
             make_plots(plots=plots,
                        y_true=y_test_all,
                        y_pred=y_pred_all,
@@ -1147,8 +1235,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                        equal_sized_bins=equal_sized_bins)
 
         # Make all train data plots
-        dataset_stdev = np.std(np.unique(y_train_all))
         if verbosity >= 1:
+            dataset_stdev = np.std(np.unique(y_train_all))
             make_plots(plots=plots,
                        y_true=y_train_all,
                        y_pred=y_pred_train_all,
@@ -1188,42 +1276,51 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Update the MASTML metadata file
         outerdir = splitdir.split('/')[-1]
+        '''
         if mastml is not None:
             if 'split_outer' in outerdir:
                 # For nested CV or left out data runs with outer and inner splits, need the model dir one level up
                 outerdir = os.path.join(splitdir.split('/')[-2], splitdir.split('/')[-1])
-            mastml._update_metadata(outerdir=outerdir,
-                                    split_name='split_summary',
-                                    model=model,
-                                    splitter=self,
-                                    preprocessor=preprocessor,
-                                    selector=selector,
-                                    hyperopt=hyperopt,
-                                    train_stats=df_stats_train,
-                                    test_stats=df_stats,
-                                    X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
-                                    X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
-                                    X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra is not None else None,
-                                    X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra is not None else None,
-                                    y_train=y_train_all,
-                                    y_test=y_test_all,
-                                    y_pred_train=y_pred_train_all,
-                                    y_pred=y_pred_all,
-                                    residuals_train=residuals_train_all,
-                                    residuals_test=residuals_test_all,
-                                    model_errors_train=model_errors_train_all,
-                                    model_errors_test=model_errors_test_all,
-                                    model_errors_train_cal=model_errors_train_all_cal,
-                                    model_errors_test_cal=model_errors_test_all_cal,
-                                    dataset_stdev=dataset_stdev)
-            mastml._save_mastml_metadata()
+            
+            if verbosity >= 0:
+                mastml._update_metadata(outerdir=outerdir,
+                                        split_name='split_summary',
+                                        model=model,
+                                        splitter=self,
+                                        preprocessor=preprocessor,
+                                        selector=selector,
+                                        hyperopt=hyperopt,
+                                        train_stats=df_stats_train,
+                                        test_stats=df_stats,
+                                        #X_train=pd.DataFrame(np.array(X_train_all), columns=X_train_all.columns.tolist()),
+                                        #X_test=pd.DataFrame(np.array(X_test_all), columns=X_test_all.columns.tolist()),
+                                        #X_extra_train=pd.DataFrame(np.array(X_extra_train_all), columns=X_extra_train_all.columns.tolist()) if X_extra is not None else None,
+                                        #X_extra_test=pd.DataFrame(np.array(X_extra_test_all), columns=X_extra_test_all.columns.tolist()) if X_extra is not None else None,
+                                        train_inds=train_inds,
+                                        test_inds=test_inds,
+                                        y_train=y_train_all,
+                                        y_test=y_test_all,
+                                        y_pred_train=y_pred_train_all,
+                                        y_pred=y_pred_all,
+                                        residuals_train=residuals_train_all,
+                                        residuals_test=residuals_test_all,
+                                        model_errors_train=model_errors_train_all,
+                                        model_errors_test=model_errors_test_all,
+                                        model_errors_train_cal=model_errors_train_all_cal,
+                                        model_errors_test_cal=model_errors_test_all_cal)
+                                        #dataset_stdev=dataset_stdev)
+                mastml._save_mastml_metadata()
+        '''
+        return outerdir, split_summary_dict
 
-        return outerdir
-
-    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, mastml, preprocessor, selector, hyperopt,
+    def _evaluate_split(self, X_train, X_test, y_train, y_test, model, model_name, preprocessor, selector, hyperopt,
                         metrics, plots, groups, groups_train, splitpath, has_model_errors, X_extra_train, X_extra_test,
                         error_method, remove_outlier_learners, verbosity, baseline_test, distance_metric,
-                        file_extension, image_dpi, domain, train_ind, test_ind, **kwargs):
+                        file_extension, image_dpi, domain, train_ind, test_ind):
+
+        split_summary = dict()
+        split_summary['train_ind'] = np.array(train_ind)
+        split_summary['test_ind'] = np.array(test_ind)
 
         if domain is not None:
             domains_test = list()
@@ -1235,16 +1332,22 @@ class BaseSplitter(ms.BaseCrossValidator):
                     check.fit(domain_type[1][train_ind])
                     domain_checks.append(check)
 
-                    domains_test.append(check.predict(domain_type[1][test_ind]))
+                    domain_test = check.predict(domain_type[1][test_ind])
+                    domains_test.append(domain_test)
                     domains_train.append(check.predict(domain_type[1][train_ind]))
+
+                    split_summary['domain_elemental'] = np.array(domain_test).ravel()
 
                 elif domain_type == 'gpr':
                     check = Domain(domain_type)
                     check.fit(X_train, y_train)
                     domain_checks.append(check)
 
-                    domains_test.append(check.predict(X_test))
+                    domain_test = check.predict(X_test)
+                    domains_test.append(domain_test)
                     domains_train.append(check.predict(X_train))
+
+                    split_summary['domain_gpr'] = np.array(domain_test).ravel()
 
                 elif domain_type == 'feature_range':
                     check = Domain(domain_type)
@@ -1264,33 +1367,35 @@ class BaseSplitter(ms.BaseCrossValidator):
         preprocessor2 = copy.deepcopy(preprocessor)
 
         # Preprocess the full split data
-        X_train = preprocessor1.evaluate(X_train, savepath=splitpath, file_name='train', file_extension=file_extension)
-        X_test = preprocessor1.evaluate(X_test, savepath=splitpath, file_name='test', file_extension=file_extension)
+        X_train = preprocessor1.evaluate(X_train, savepath=splitpath, file_name='train', file_extension=file_extension, verbosity=verbosity)
+        X_test = preprocessor1.evaluate(X_test, savepath=splitpath, file_name='test', file_extension=file_extension, verbosity=verbosity)
 
         # run feature selector to get new Xtrain, Xtest
-        X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath)
+        X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath, verbosity=verbosity)
         selected_features = selector.selected_features
 
-        X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected', file_extension=file_extension)
+        X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected', file_extension=file_extension, verbosity=verbosity)
         X_test = preprocessor2.transform(X_test_orig[selected_features])
 
-        self._save_split_data(df=X_train_orig[selected_features], filename='X_train', savepath=splitpath, columns=selected_features, file_extension=file_extension)
-        self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features, file_extension=file_extension)
-        self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train', file_extension=file_extension)
-        self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
+        split_summary['trues'] = np.array(y_test)
+        if verbosity >= 0:
+            self._save_split_data(df=X_train_orig[selected_features], filename='X_train', savepath=splitpath, columns=selected_features, file_extension=file_extension)
+            self._save_split_data(df=X_test_orig[selected_features], filename='X_test', savepath=splitpath, columns=selected_features, file_extension=file_extension)
+            self._save_split_data(df=y_train, filename='y_train', savepath=splitpath, columns='y_train', file_extension=file_extension)
+            self._save_split_data(df=y_test, filename='y_test', savepath=splitpath, columns='y_test', file_extension=file_extension)
 
-        if domain is not None:
-            self._save_split_data(df=domains_train, filename='domains_train', savepath=splitpath, columns=domains_train.columns.tolist(), file_extension=file_extension)
-            self._save_split_data(df=domains_test, filename='domains_test', savepath=splitpath, columns=domains_test.columns.tolist(), file_extension=file_extension)
+            if domain is not None:
+                self._save_split_data(df=domains_train, filename='domains_train', savepath=splitpath, columns=domains_train.columns.tolist(), file_extension=file_extension)
+                self._save_split_data(df=domains_test, filename='domains_test', savepath=splitpath, columns=domains_test.columns.tolist(), file_extension=file_extension)
 
-        if X_extra_train is not None:
-            self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
-        else:
-            X_extra_train = None
-        if X_extra_test is not None:
-            self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist(), file_extension=file_extension)
-        else:
-            X_extra_test = None
+            if X_extra_train is not None:
+                self._save_split_data(df=X_extra_train, filename='X_extra_train', savepath=splitpath, columns=X_extra_train.columns.tolist(), file_extension=file_extension)
+            else:
+                X_extra_train = None
+            if X_extra_test is not None:
+                self._save_split_data(df=X_extra_test, filename='X_extra_test', savepath=splitpath, columns=X_extra_test.columns.tolist(), file_extension=file_extension)
+            else:
+                X_extra_test = None
 
         # Here evaluate hyperopt instance, if provided, and get updated model instance
         if hyperopt is not None:
@@ -1318,10 +1423,12 @@ class BaseSplitter(ms.BaseCrossValidator):
         residuals_test = y_pred-y_test
         residuals_train = y_pred_train-y_train
 
-        self._save_split_data(df=y_pred, filename='y_pred', savepath=splitpath, columns='y_pred', file_extension=file_extension)
-        self._save_split_data(df=y_pred_train, filename='y_pred_train', savepath=splitpath, columns='y_pred_train', file_extension=file_extension)
-        self._save_split_data(df=residuals_test, filename='residuals_test', savepath=splitpath, columns='residuals', file_extension=file_extension)
-        self._save_split_data(df=residuals_train, filename='residuals_train', savepath=splitpath, columns='residuals', file_extension=file_extension)
+        split_summary['preds'] = np.array(y_pred)
+        if verbosity >= 0:
+            self._save_split_data(df=y_pred, filename='y_pred', savepath=splitpath, columns='y_pred', file_extension=file_extension)
+            self._save_split_data(df=y_pred_train, filename='y_pred_train', savepath=splitpath, columns='y_pred_train', file_extension=file_extension)
+            self._save_split_data(df=residuals_test, filename='residuals_test', savepath=splitpath, columns='residuals', file_extension=file_extension)
+            self._save_split_data(df=residuals_train, filename='residuals_train', savepath=splitpath, columns='residuals', file_extension=file_extension)
 
         if has_model_errors is True:
             model_errors_test, num_removed_learners_test = ErrorUtils()._get_model_errors(model=model,
@@ -1330,16 +1437,20 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                                 X_test=X_test,
                                                                error_method=error_method,
                                                                remove_outlier_learners=remove_outlier_learners)
-            self._save_split_data(df=model_errors_test, filename='model_errors_test', savepath=splitpath, columns='model_errors', file_extension=file_extension)
-            self._save_split_data(df=num_removed_learners_test, filename='num_removed_learners_test', savepath=splitpath, columns='num_removed_learners', file_extension=file_extension)
+            split_summary['model_errors_test'] = np.array(model_errors_test)
+            if verbosity >= 0:
+                self._save_split_data(df=model_errors_test, filename='model_errors_test', savepath=splitpath, columns='model_errors', file_extension=file_extension)
+                self._save_split_data(df=num_removed_learners_test, filename='num_removed_learners_test', savepath=splitpath, columns='num_removed_learners', file_extension=file_extension)
+
             model_errors_train, num_removed_learners_train = ErrorUtils()._get_model_errors(model=model,
                                                                 X=X_train,
                                                                 X_train=X_train,
                                                                 X_test=X_train, #predicting on train data so test/train is same
                                                                 error_method=error_method,
                                                                 remove_outlier_learners=remove_outlier_learners)
-            self._save_split_data(df=model_errors_train, filename='model_errors_train', savepath=splitpath, columns='model_errors', file_extension=file_extension)
-            self._save_split_data(df=num_removed_learners_train, filename='num_removed_learners_train', savepath=splitpath, columns='num_removed_learners', file_extension=file_extension)
+            if verbosity >= 0:
+                self._save_split_data(df=model_errors_train, filename='model_errors_train', savepath=splitpath, columns='model_errors', file_extension=file_extension)
+                self._save_split_data(df=num_removed_learners_train, filename='num_removed_learners_train', savepath=splitpath, columns='num_removed_learners', file_extension=file_extension)
         else:
             model_errors_test = None
             model_errors_train = None
@@ -1348,10 +1459,12 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # Save summary stats data for this split
         stats_dict = Metrics(metrics_list=metrics).evaluate(y_true=y_test, y_pred=y_pred)
+        split_summary['stats'] = stats_dict
         df_stats = pd.DataFrame().from_records([stats_dict])
         stats_dict_train = Metrics(metrics_list=metrics).evaluate(y_true=y_train, y_pred=y_pred_train)
         df_stats_train = pd.DataFrame().from_records([stats_dict_train])
 
+        #if verbosity >= 0:
         if file_extension == '.xlsx':
             df_stats.to_excel(os.path.join(splitpath, 'test_stats_summary' + file_extension), index=False)
             df_stats_train.to_excel(os.path.join(splitpath, 'train_stats_summary'+file_extension), index=False)
@@ -1408,15 +1521,16 @@ class BaseSplitter(ms.BaseCrossValidator):
             unique_groups = np.unique(groups)
             groups.name = 'test_groups'
             groups_train.name = 'train_groups'
-            if file_extension == '.xlsx':
-                groups.to_excel(os.path.join(splitpath, 'test_groups.xlsx'), index=False)
-                groups_train.to_excel(os.path.join(splitpath, 'train_groups.xlsx'), index=False)
-            elif file_extension == '.csv':
-                groups.to_csv(os.path.join(splitpath, 'test_groups.csv'), index=False)
-                groups_train.to_csv(os.path.join(splitpath, 'train_groups.csv'), index=False)
-            with open(os.path.join(splitpath, 'test_group.txt'), 'w') as f:
-                for group in unique_groups:
-                    f.write(str(group)+'\n')
+            if verbosity >= 0:
+                if file_extension == '.xlsx':
+                    groups.to_excel(os.path.join(splitpath, 'test_groups.xlsx'), index=False)
+                    groups_train.to_excel(os.path.join(splitpath, 'train_groups.xlsx'), index=False)
+                elif file_extension == '.csv':
+                    groups.to_csv(os.path.join(splitpath, 'test_groups.csv'), index=False)
+                    groups_train.to_csv(os.path.join(splitpath, 'train_groups.csv'), index=False)
+                with open(os.path.join(splitpath, 'test_group.txt'), 'w') as f:
+                    for group in unique_groups:
+                        f.write(str(group)+'\n')
         else:
             groups_train = None
             groups = None
@@ -1496,41 +1610,48 @@ class BaseSplitter(ms.BaseCrossValidator):
             y_combined = []
             for i in range(len(y_test)):
                 y_combined.append((y_test.iloc[i], y_pred.iloc[i], X_extra_test))
-            self._save_split_data(pd.DataFrame(y_combined), "y_combined", splitpath,
+            if verbosity >= 0:
+                self._save_split_data(pd.DataFrame(y_combined), "y_combined", splitpath,
                                   columns=["y_test", "y_pred", "X_extra_test"], file_extension=file_extension)
 
         # Update the MASTML metadata file
+        '''
         if mastml is not None:
             outerdir = splitpath.split('/')[-2]
             if 'split_outer' in outerdir:
                 # For nested CV or left out data runs with outer and inner splits, need the model dir one level up
                 outerdir = os.path.join(splitpath.split('/')[-3], splitpath.split('/')[-2])
-            mastml._update_metadata(outerdir=outerdir,
-                                    split_name=splitpath.split('/')[-1],
-                                    model=model,
-                                    splitter=self,
-                                    preprocessor=preprocessor,
-                                    selector=selector,
-                                    hyperopt=hyperopt,
-                                    test_stats=df_stats,
-                                    train_stats=df_stats_train,
-                                    X_train=X_train,
-                                    X_test=X_test,
-                                    X_extra_train=X_extra_train,
-                                    X_extra_test=X_extra_test,
-                                    y_train=y_train,
-                                    y_test=y_test,
-                                    y_pred_train=y_pred_train,
-                                    y_pred=y_pred,
-                                    residuals_train=residuals_train,
-                                    residuals_test=residuals_test,
-                                    model_errors_train=model_errors_train,
-                                    model_errors_test=model_errors_test,
-                                    dataset_stdev=dataset_stdev,
-                                    )
-            mastml._save_mastml_metadata()
+            
+            if verbosity >= 0:
+                mastml._update_metadata(outerdir=outerdir,
+                                        split_name=splitpath.split('/')[-1],
+                                        model=model,
+                                        splitter=self,
+                                        preprocessor=preprocessor,
+                                        selector=selector,
+                                        hyperopt=hyperopt,
+                                        test_stats=df_stats,
+                                        train_stats=df_stats_train,
+                                        train_inds=train_ind,
+                                        test_inds=test_ind,
+                                        #X_train=X_train,
+                                        #X_test=X_test,
+                                        #X_extra_train=X_extra_train,
+                                        #X_extra_test=X_extra_test,
+                                        y_train=y_train,
+                                        y_test=y_test,
+                                        y_pred_train=y_pred_train,
+                                        y_pred=y_pred,
+                                        residuals_train=residuals_train,
+                                        residuals_test=residuals_test,
+                                        model_errors_train=model_errors_train,
+                                        model_errors_test=model_errors_test,
+                                        dataset_stdev=dataset_stdev,
+                                        )
+                mastml._save_mastml_metadata()
+        '''
 
-        return
+        return split_summary
 
     def _setup_savedir(self, model, selector, preprocessor, savepath):
         now = datetime.now()
@@ -1617,7 +1738,7 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _get_best_split(self, savepath, model, preprocessor, best_run_metric, model_name, file_extension):
         dirs = os.listdir(savepath)
-        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d and 'summary' not in d]
 
         stats_files_dict = dict()
         for splitdir in splitdirs:
@@ -2517,3 +2638,22 @@ class Bootstrap(BaseSplitter):
         for trains, tests in self:
             split.append((trains.tolist(), tests.tolist()))
         return split
+
+
+def flatten_split_summary(split_summary):
+    # Takes a split_summary dict and flattens it along certain keys to produce a cohesive summary over all splits
+    split_summary_flat = dict()
+    keys = ['train_ind', 'test_ind', 'domain_gpr', 'domain_elemental', 'trues', 'preds', 'model_errors_test',
+            'leaveout_ind', 'trues_leaveout', 'preds_leaveout', 'model_errors_leaveout', 'model_errors_leaveout_cal']
+
+    for k in keys:
+        lst = list()
+        for split_number, split in split_summary.items():
+            if k in list(split.keys()):
+                lst.append(np.array(split[k]).ravel())
+        if len(lst) > 0:
+            split_summary_flat[k] = np.concatenate(lst)
+
+    return split_summary_flat
+
+

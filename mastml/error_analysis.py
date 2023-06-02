@@ -255,7 +255,7 @@ class ErrorUtils():
         return bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
 
     @classmethod
-    def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners', remove_outlier_learners=False):
+    def _get_model_errors(cls, model, X, X_test, X_train=None, error_method='stdev_weak_learners', remove_outlier_learners=False):
 
         err_down = list()
         err_up = list()
@@ -264,6 +264,7 @@ class ErrorUtils():
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
                                               'BaggingRegressor', 'AdaBoostRegressor']:
 
+            # TODO: jackknife needs X_train, but can't easily do that with verbosity =-1
             if error_method == 'jackknife_after_bootstrap':
                 model_errors_var = random_forest_error(forest=model.model, X_test=X_test, X_train=X_train)
                 # Wager method returns the variance. Take sqrt to turn into stdev

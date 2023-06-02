@@ -96,7 +96,7 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             return pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
         return self.preprocessor.fit_transform(X=X)
 
-    def evaluate(self, X, y=None, savepath=None, file_name='', make_new_dir=False, file_extension='.csv'):
+    def evaluate(self, X, y=None, savepath=None, file_name='', make_new_dir=False, file_extension='.csv', verbosity=0):
         if not savepath:
             savepath = os.getcwd()
         if make_new_dir is True:
@@ -105,13 +105,15 @@ class BasePreprocessor(BaseEstimator, TransformerMixin):
             savepath = splitdir
         if self.as_frame:
             Xnew = pd.DataFrame(self.preprocessor.fit_transform(X=X), columns=X.columns, index=X.index)
-            if file_extension == '.xlsx':
-                Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))
-            elif file_extension == '.csv':
-                Xnew.to_csv(os.path.join(savepath, 'data_preprocessed_' + file_name + '.csv'))
+            if verbosity >= 0:
+                if file_extension == '.xlsx':
+                    Xnew.to_excel(os.path.join(savepath, 'data_preprocessed_'+file_name+'.xlsx'))
+                elif file_extension == '.csv':
+                    Xnew.to_csv(os.path.join(savepath, 'data_preprocessed_' + file_name + '.csv'))
         else:
             Xnew = self.preprocessor.fit_transform(X=X)
-            np.savetxt(os.path.join(savepath, 'data_preprocessed_'+file_name+'.csv'), Xnew)
+            if verbosity >= 0:
+                np.savetxt(os.path.join(savepath, 'data_preprocessed_'+file_name+'.csv'), Xnew)
 
         # Save the fitted preprocessor, will be needed for DLHub upload later on
         joblib.dump(self, os.path.join(savepath, str(self.preprocessor.__class__.__name__) + ".pkl"))

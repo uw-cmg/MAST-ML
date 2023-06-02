@@ -103,7 +103,7 @@ class BaseSelector(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X
 
-    def evaluate(self, X, y, savepath=None, make_new_dir=False, file_extension='.csv'):
+    def evaluate(self, X, y, savepath=None, make_new_dir=False, file_extension='.csv', verbosity=0):
         if savepath is None:
             savepath = os.getcwd()
         self.fit(X=X, y=y)
@@ -116,103 +116,105 @@ class BaseSelector(BaseEstimator, TransformerMixin):
         with open(os.path.join(savepath, 'selected_features.txt'), 'w') as f:
             for feature in self.selected_features:
                 f.write(str(feature) + '\n')
-        if file_extension == '.xlsx':
-            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
-                self.feature_importances_sorted.to_excel(
-                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
-            if self.__class__.__name__ == 'PearsonSelector':
-                self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
-                self.highly_correlated_features.to_excel(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
-                self.highly_correlated_features_flagged.to_excel(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
-                self.features_highly_correlated_with_target.to_excel(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
-            if self.__class__.__name__ == 'MASTMLFeatureSelector':
-                self.mastml_forward_selection_df.to_excel(
-                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
 
-            if self.__class__.__name__ == 'ShapFeatureSelector':
-                self.feature_imp_shap.to_excel(
-                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx'))
-                if self.make_plot == True:
-                    if self.plot_type == 'beeswarm':
-                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
-                    #elif self.plot_type == 'waterfall':
-                    #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
-                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
-                    #elif self.plot_type == 'force':
-                    #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
-                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
-                        #for i, f in enumerate(self.shap_values):
-                        #    shap.plots.force(f, show=False)
-                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
-                    elif self.plot_type == 'bar':
-                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
-                    elif self.plot_type == 'all':
-                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
-                        plt.clf()
-                        #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
-                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
-                        #shap.plots.force(self.shap_values, show=False)
-                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
-                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+        if verbosity >= 0:
+            if file_extension == '.xlsx':
+                if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                    self.feature_importances_sorted.to_excel(
+                        os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.xlsx'))
+                if self.__class__.__name__ == 'PearsonSelector':
+                    self.full_correlation_matrix.to_excel(os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.xlsx'))
+                    self.highly_correlated_features.to_excel(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.xlsx'))
+                    self.highly_correlated_features_flagged.to_excel(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.xlsx'))
+                    self.features_highly_correlated_with_target.to_excel(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.xlsx'))
+                if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                    self.mastml_forward_selection_df.to_excel(
+                        os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.xlsx'))
 
-        elif file_extension == '.csv':
-            if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
-                self.feature_importances_sorted.to_csv(
-                    os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.csv'))
-            if self.__class__.__name__ == 'PearsonSelector':
-                self.full_correlation_matrix.to_csv(
-                    os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.csv'))
-                self.highly_correlated_features.to_csv(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.csv'))
-                self.highly_correlated_features_flagged.to_csv(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.csv'))
-                self.features_highly_correlated_with_target.to_csv(
-                    os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.csv'))
-            if self.__class__.__name__ == 'MASTMLFeatureSelector':
-                self.mastml_forward_selection_df.to_csv(
-                    os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.csv'))
+                if self.__class__.__name__ == 'ShapFeatureSelector':
+                    self.feature_imp_shap.to_excel(
+                        os.path.join(savepath, 'ShapFeatureSelector_sorted_features.xlsx'))
+                    if self.make_plot == True:
+                        if self.plot_type == 'beeswarm':
+                            shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                        #elif self.plot_type == 'waterfall':
+                        #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                        #elif self.plot_type == 'force':
+                        #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                            #for i, f in enumerate(self.shap_values):
+                            #    shap.plots.force(f, show=False)
+                            #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
+                        elif self.plot_type == 'bar':
+                            shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+                        elif self.plot_type == 'all':
+                            shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                            plt.clf()
+                            #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
+                            #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                            #shap.plots.force(self.shap_values, show=False)
+                            #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                            shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
 
-            if self.__class__.__name__ == 'ShapFeatureSelector':
-                self.feature_imp_shap.to_csv(
-                    os.path.join(savepath, 'ShapFeatureSelector_sorted_features.csv'))
-                if self.make_plot == True:
-                    if self.plot_type == 'beeswarm':
-                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
-                    #elif self.plot_type == 'waterfall':
-                    #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
-                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
-                    #elif self.plot_type == 'force':
-                    #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
-                    #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
-                        #for i, f in enumerate(self.shap_values):
-                        #    shap.plots.force(f, show=False)
-                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
-                    elif self.plot_type == 'bar':
-                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
-                    elif self.plot_type == 'all':
-                        shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
-                        plt.clf()
-                        #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
-                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
-                        #shap.plots.force(self.shap_values, show=False)
-                        #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
-                        shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
-                        plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+            elif file_extension == '.csv':
+                if self.__class__.__name__ == 'EnsembleModelFeatureSelector':
+                    self.feature_importances_sorted.to_csv(
+                        os.path.join(savepath, 'EnsembleModelFeatureSelector_feature_importances.csv'))
+                if self.__class__.__name__ == 'PearsonSelector':
+                    self.full_correlation_matrix.to_csv(
+                        os.path.join(savepath, 'PearsonSelector_fullcorrelationmatrix.csv'))
+                    self.highly_correlated_features.to_csv(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeatures.csv'))
+                    self.highly_correlated_features_flagged.to_csv(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedfeaturesflagged.csv'))
+                    self.features_highly_correlated_with_target.to_csv(
+                        os.path.join(savepath, 'PearsonSelector_highlycorrelatedwithtarget.csv'))
+                if self.__class__.__name__ == 'MASTMLFeatureSelector':
+                    self.mastml_forward_selection_df.to_csv(
+                        os.path.join(savepath, 'MASTMLFeatureSelector_featureselection_data.csv'))
 
-        if file_extension == '.xlsx':
-            X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
-        elif file_extension == '.csv':
-            X_select.to_csv(os.path.join(savepath, 'selected_features.csv'), index=False)
+                if self.__class__.__name__ == 'ShapFeatureSelector':
+                    self.feature_imp_shap.to_csv(
+                        os.path.join(savepath, 'ShapFeatureSelector_sorted_features.csv'))
+                    if self.make_plot == True:
+                        if self.plot_type == 'beeswarm':
+                            shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                        #elif self.plot_type == 'waterfall':
+                        #    shap.plots.waterfall(base_value=self.explainer.expected_value, shap_values=self.shap_values, max_display=self.max_display, show=False)
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                        #elif self.plot_type == 'force':
+                        #    shap.plots.force(base_value=self.explainer.expected_value, shap_values=self.shap_values.values, show=False, matplotlib=True, features=np.arange(0, self.shap_values.shape[1]))
+                        #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                            #for i, f in enumerate(self.shap_values):
+                            #    shap.plots.force(f, show=False)
+                            #    plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force_'+str(i)+'.png'), dpi=150, bbox_inches="tight")
+                        elif self.plot_type == 'bar':
+                            shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+                        elif self.plot_type == 'all':
+                            shap.plots.beeswarm(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_beeswarm.png'), dpi=150, bbox_inches="tight")
+                            plt.clf()
+                            #shap.plots.waterfall(self.shap_values, max_display=self.max_display, show=False)
+                            #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_waterfall.png'), dpi=150, bbox_inches="tight")
+                            #shap.plots.force(self.shap_values, show=False)
+                            #plt.savefig(os.path.join(savepath, 'SHAP_features_selected_force.png'), dpi=150, bbox_inches="tight")
+                            shap.plots.bar(self.shap_values, max_display=self.max_display, show=False)
+                            plt.savefig(os.path.join(savepath, 'SHAP_features_selected_bar.png'), dpi=150, bbox_inches="tight")
+
+            if file_extension == '.xlsx':
+                X_select.to_excel(os.path.join(savepath, 'selected_features.xlsx'), index=False)
+            elif file_extension == '.csv':
+                X_select.to_csv(os.path.join(savepath, 'selected_features.csv'), index=False)
 
         return X_select
 
