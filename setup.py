@@ -54,7 +54,8 @@ setup(
         "scipy",
         "shap",
         "sphinx-automodapi",
-        "statsmodels"
+        "statsmodels",
+        "madml",
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",

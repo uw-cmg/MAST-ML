@@ -1357,6 +1357,20 @@ class BaseSplitter(ms.BaseCrossValidator):
                     domains_test.append(check.predict(X_test))
                     domains_train.append(check.predict(X_train))
 
+                elif domain_type[0] == 'madml':
+                    check = Domain(
+                                   domain_type[0],
+                                   preprocessor,
+                                   model,
+                                   domain_type[1],
+                                   splitpath
+                                   )
+                    check.fit(X_train, y_train)
+                    domain_checks.append(check)
+
+                    domains_test.append(check.predict(X_test))
+                    domains_train.append(check.predict(X_train))
+
             domains_test = pd.concat(domains_test, axis=1)
             domains_train = pd.concat(domains_train, axis=1)
 

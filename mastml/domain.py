@@ -1,6 +1,7 @@
 '''
 This module contains a collection of routines to perform domain evaluations
 '''
+import os
 import re
 import itertools
 import numpy as np
@@ -12,10 +13,22 @@ from sklearn.model_selection import RepeatedKFold
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel, Matern
 
+from sklearn.model_selection import GridSearchCV
+from sklearn.cluster import AgglomerativeClustering
+from madml.ml.splitters import BootstrappedLeaveClusterOut
+from madml.models.space import distance_model
+from madml.models.combine import domain_model
+from madml.models.uq import calibration_model
+from madml.ml.assessment import nested_cv
+
 class Domain():
 
-    def __init__(self, check_type):
+    def __init__(self, check_type, preprocessor=None, model=None, n_repeats=None, path=None):
         self.check_type = check_type  # The type of domain check
+        self.n_repeats = n_repeats
+        self.model = model
+        self.preprocessor = preprocessor
+        self.path = path
 
     # Convert a string to elements
     def convert_string_to_elements(self, x):
@@ -88,6 +101,46 @@ class Domain():
                 self.feature_mins[f] = min(X_train[f])
                 self.feature_maxes[f] = max(X_train[f])
 
+        elif self.check_type == 'madml':
+
+            # The machine learning pipeline
+            pipe = Pipeline(steps=[
+                                   ('scaler', self.preprocessor.preprocessor),
+                                   ('model', self.model.model),
+                                   ])
+
+            gs_model = GridSearchCV(pipe, {}, cv=RepeatedKFold(n_repeats=1))
+            ds_model = distance_model(dist='kde')  #  Distance model
+            uq_model = calibration_model(params=[0.0, 1.0])  # UQ model
+
+            # Types of sampling to test
+            splits = [('calibration', RepeatedKFold(n_repeats=self.n_repeats))]
+
+            # Boostrap, cluster data, and generate splits
+            for i in [2, 3]:
+                #break  # For faster testing
+
+                # Cluster Splits
+                top_split = BootstrappedLeaveClusterOut(
+                                                        AgglomerativeClustering,
+                                                        n_repeats=self.n_repeats,
+                                                        n_clusters=i
+                                                        )
+
+                splits.append(('agglo_{}'.format(i), top_split))
+
+            # Fit models
+            model = domain_model(gs_model, ds_model, uq_model, splits)
+            cv = nested_cv(
+                           X_train.values,
+                           y_train.values,
+                           np.array(['None']*y_train.shape[0]),
+                           model,
+                           splits,
+                           save=os.path.join(self.path, 'madml_domain'),
+                           )
+            _, self.madml_model = cv.assess()
+
     def predict(self, X_test):
         domains = dict()
         if self.check_type == 'elemental':
@@ -131,6 +184,29 @@ class Domain():
                 features_outside_training_full.append(features_outside_training)
             domains['domain_feature_range_numfeatsinside'] = features_inside_training_range
             domains['domain_feature_range_featsoutside'] = features_outside_training_full
+
+        elif self.check_type == 'madml':
+            domains = self.madml_model.predict(X_test)
+
+            # Drop extra stuff
+            domains = domains.drop([
+                                    'y_pred',
+                                    'y_pred/std(y)',
+                                    'y_stdu',
+                                    'y_stdu/std(y)',
+                                    'y_stdc',
+                                    'y_stdc/std(y)',
+                                    'dist',
+                                    ], axis=1)
+
+            for col in domains.columns:
+                if ('OD' in col) or ('y_stdc/std(y)' in col):
+                    domains = domains.drop(col, axis=1)
+
+            # To convert bool to integers
+            domains = domains.applymap(lambda x: 1 if x else 0)
+
+            return domains
 
         domains = pd.DataFrame(domains)
 
