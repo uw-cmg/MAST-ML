@@ -23,9 +23,9 @@ from madml.ml.assessment import nested_cv
 
 class Domain():
 
-    def __init__(self, check_type, preprocessor=None, model=None, n_repeats=None, path=None):
+    def __init__(self, check_type, preprocessor=None, model=None, params=None, path=None):
         self.check_type = check_type  # The type of domain check
-        self.n_repeats = n_repeats
+        self.params = params
         self.model = model
         self.preprocessor = preprocessor
         self.path = path
@@ -109,21 +109,33 @@ class Domain():
                                    ('model', self.model.model),
                                    ])
 
-            gs_model = GridSearchCV(pipe, {}, cv=RepeatedKFold(n_repeats=1))
+            # Need GridSearchCV object for compatability
+            gs_model = GridSearchCV(
+                                    pipe,
+                                    {},
+                                    cv=((slice(None), slice(None)),),
+                                    )
             ds_model = distance_model(dist='kde')  #  Distance model
-            uq_model = calibration_model(params=[0.0, 1.0])  # UQ model
+
+            if 'uq_function' in self.params:
+                uq_model = calibration_model(
+                                             uq_func=self.params['uq_function'],
+                                             prior=True
+                                             )
+            else:
+                uq_model = calibration_model(params=[0.0, 1.0])  # UQ model
 
             # Types of sampling to test
-            splits = [('calibration', RepeatedKFold(n_repeats=self.n_repeats))]
+            splits = [('calibration', RepeatedKFold(n_repeats=self.params['n_repeats']))]
 
             # Boostrap, cluster data, and generate splits
             for i in [2, 3]:
-                #break  # For faster testing
+                break  # For faster testing
 
                 # Cluster Splits
                 top_split = BootstrappedLeaveClusterOut(
                                                         AgglomerativeClustering,
-                                                        n_repeats=self.n_repeats,
+                                                        n_repeats=self.params['n_repeats'],
                                                         n_clusters=i
                                                         )
 
