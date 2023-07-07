@@ -130,7 +130,6 @@ class Domain():
 
             # Boostrap, cluster data, and generate splits
             for i in [2, 3]:
-                break  # For faster testing
 
                 # Cluster Splits
                 top_split = BootstrappedLeaveClusterOut(
@@ -208,7 +207,6 @@ class Domain():
                                     'y_stdu/std(y)',
                                     'y_stdc',
                                     'y_stdc/std(y)',
-                                    'dist',
                                     ], axis=1)
 
             for col in domains.columns:

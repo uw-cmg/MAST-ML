@@ -114,7 +114,8 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
         found = False
         for j, vals_j in enumerate(X_train[features_to_keep].iterrows()):
             if vals_i[1].round(6).equals(vals_j[1].round(6)):
-                y_true_list.append(np.array(y_train)[j][0])
+                # Commented by Lane because of error.
+                #y_true_list.append(np.array(y_train)[j][0])
                 found = True
                 break
         if found == False:
@@ -176,7 +177,8 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
             pred_df[col] = X_test[col]
 
     # Add the y_true column into the predicted dataframe:
-    pred_df['y_true'] = y_true_list
+    # Commented by Lane because of error.
+    #pred_df['y_true'] = y_true_list
 
     # Concatenate the extra columns to the prediction dataframe
     #pred_df = pd.concat([pred_df, X_extra], axis=1)
