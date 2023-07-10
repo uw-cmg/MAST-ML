@@ -214,7 +214,9 @@ class Domain():
                     domains = domains.drop(col, axis=1)
 
             # To convert bool to integers
-            domains = domains.applymap(lambda x: 1 if x else 0)
+            dist = domains['dist']
+            domains = domains[domains.columns.difference(['dist'])].applymap(lambda x: 1 if x else 0)
+            domains['dist'] = dist
 
             return domains
 

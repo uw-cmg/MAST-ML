@@ -122,6 +122,7 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
             y_true_list.append(np.nan)
 
     # Load preprocessor
+    df_madml = df_test  # MADML does it's own feature transformations
     if preprocessor is not None:
         preprocessor = joblib.load(preprocessor)
         df_test = preprocessor.transform(df_test)
@@ -192,6 +193,9 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
                 if composition_column is None:
                     print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
                 domains_list.append(domain_check.predict(X_test[composition_column]))
+            # MADML does it's own feature transformations
+            elif domain_check.check_type == 'madml':
+                domains_list.append(domain_check.predict(df_madml))
             else:
                 domains_list.append(domain_check.predict(df_test))
         domain_df = pd.concat(domains_list, axis=1)
