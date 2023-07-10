@@ -117,7 +117,9 @@ class Domain():
                                     )
             ds_model = distance_model(dist='kde')  #  Distance model
 
-            if 'uq_function' in self.params:
+            if 'uq_coeffs' in self.params:
+                uq_model = calibration_model(params=self.params['uq_coeffs'])
+            elif 'uq_function' in self.params:
                 uq_model = calibration_model(
                                              uq_func=self.params['uq_function'],
                                              prior=True
