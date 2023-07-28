@@ -12,7 +12,7 @@ openpyxl
 pandas
 pathos
 pymatgen
-pyyaml==5.4.1
+pyyaml>=5.4.1
 scikit-learn
 scikit-optimize
 scikit-learn-extra
