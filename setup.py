@@ -47,7 +47,7 @@ setup(
         "pandas",
         "pathos",
         "pymatgen",
-        "pyyaml==5.4.1",
+        "pyyaml>=5.4.1",
         "scikit-learn==1.1.3",
         "scikit-optimize",
         "scikit-learn-extra",
