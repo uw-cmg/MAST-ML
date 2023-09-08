@@ -31,6 +31,8 @@ import numpy as np
 import re
 import os
 import docker
+import udocker
+import subprocess
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -147,15 +149,22 @@ class HostedModel():
         self.container_name = container_name
 
     def predict(self, df):
-        df.to_csv('/tmp/test.csv', index=False)
-        client = docker.from_env()
-        x = client.containers.run(
-            self.container_name,
-            'python3 predict.py',
-            volumes=['/tmp:/mnt'],
-        )
 
-        df = pd.read_csv('/tmp/prediction.csv')
+        df.to_csv('./test.csv', index=False)
+
+        command = 'udocker --allow-root run -v '
+        command += '{}:/mnt '.format(os.getcwd())
+        command += self.container_name
+
+        subprocess.check_output(
+                                command,
+                                shell=True
+                                )
+
+        df = pd.read_csv('./prediction.csv')
+
+        os.remove('./test.csv')
+        os.remove('./prediction.csv')
 
         return df
 

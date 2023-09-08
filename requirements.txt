@@ -21,3 +21,4 @@ shap
 sphinx-automodapi
 statsmodels
 madml
+udocker
