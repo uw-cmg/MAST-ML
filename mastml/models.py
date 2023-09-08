@@ -30,8 +30,6 @@ from pprint import pprint
 import numpy as np
 import re
 import os
-import docker
-import udocker
 import subprocess
 
 from sklearn.base import BaseEstimator, TransformerMixin
