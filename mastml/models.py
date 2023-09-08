@@ -159,7 +159,7 @@ class HostedModel():
                                 shell=True
                                 )
 
-        df = pd.read_csv('./prediction.csv')
+        df = pd.read_csv('/mnt/prediction.csv')
 
         os.remove('./test.csv')
         os.remove('/mnt/prediction.csv')
