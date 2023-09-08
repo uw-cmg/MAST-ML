@@ -162,7 +162,7 @@ class HostedModel():
         df = pd.read_csv('./prediction.csv')
 
         os.remove('./test.csv')
-        os.remove('./prediction.csv')
+        os.remove('/mnt/prediction.csv')
 
         return df
 
