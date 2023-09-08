@@ -148,7 +148,7 @@ class HostedModel():
 
     def predict(self, df):
 
-        df.to_csv('./test.csv', index=False)
+        df.to_csv('/mnt/test.csv', index=False)
 
         command = 'udocker --allow-root run -v '
         command += '{}:/mnt '.format(os.getcwd())
@@ -161,7 +161,7 @@ class HostedModel():
 
         df = pd.read_csv('/mnt/prediction.csv')
 
-        os.remove('./test.csv')
+        os.remove('/mnt/test.csv')
         os.remove('/mnt/prediction.csv')
 
         return df
