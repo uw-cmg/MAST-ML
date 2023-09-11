@@ -153,6 +153,7 @@ class HostedModel():
         command = 'udocker --allow-root run -v '
         command += '{}:/mnt '.format(os.getcwd())
         command += self.container_name
+        command += ' python3 predict.py'
 
         subprocess.check_output(
                                 command,
