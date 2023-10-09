@@ -1033,7 +1033,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
                              file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, recalibrate_power, **kwargs):
 
-        def _evaluate_split_sets_serial(data, verbosity, groups=None, domain=None, split_summary_dict=None):
+        def _evaluate_split_sets_serial(data, verbosity, groups=None, domain=None):
 
             Xs, ys, train_ind, test_ind, split_count = data
             # TODO: not copying this causes issues with KerasRegressor when doing different split types. But, doing this breaks BaggingRegressor with KerasRegressor networks
@@ -1085,13 +1085,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                                  verbosity, baseline_test, distance_metric, file_extension, image_dpi,
                                  domain, train_ind, test_ind)
 
-            split_summary_dict[split_count] = split_summary
-
             #self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
             #                     hyperopt_orig, metrics, plots, group, group_train,
             #                     splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
             #                     verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
-            return split_summary_dict
+            return split_summary, split_count
 
         split_summary_dict = dict()
         split_counts = list(range(len(y_splits)))
@@ -1100,13 +1098,19 @@ class BaseSplitter(ms.BaseCrossValidator):
         # Parallel
         if parallel_run is True:
             # TODO: how to get split summary list from this?
-            parallel(_evaluate_split_sets_serial, x=data, verbosity=verbosity, groups=groups, domain=domain)
-
+            split_summary_dict = parallel(
+                                          _evaluate_split_sets_serial,
+                                          x=data,
+                                          verbosity=verbosity,
+                                          groups=groups,
+                                          domain=domain,
+                                          )
         # Serial
         else:
             for i in tqdm(data, 'Running splits'):
-                split_summary_dict = _evaluate_split_sets_serial(data=i, verbosity=verbosity, groups=groups, domain=domain, split_summary_dict=split_summary_dict)
-            #[_evaluate_split_sets_serial(data=i, groups=groups, domain=domain) for i in data]
+                split_summary_dict = _evaluate_split_sets_serial(data=i, verbosity=verbosity, groups=groups, domain=domain)
+
+        split_summary_dict = {i[1]: i[0] for i in split_summary_dict}
 
         # At level of splitdir, do analysis over all splits (e.g. parity plot over all splits)
         if verbosity >= 0:
