@@ -361,7 +361,7 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        df = df.select_dtypes(['number']).dropna(axis=1)
+        #df = df.select_dtypes(['number']).dropna(axis=1)
 
         if self.remove_constant_columns is True:
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
@@ -884,6 +884,19 @@ class ElementalFeatureGenerator(BaseGenerator):
         for element in magpiedata_atomic:
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
                 if feature_value is not 'NaN':
+
+                    if magpie_feature not in magpiedata_composition_average.keys():
+                        magpiedata_composition_average[magpie_feature] = 0.0
+
+                    if magpie_feature not in magpiedata_arithmetic_average.keys():
+                        magpiedata_arithmetic_average[magpie_feature] = 0.0
+
+                    if magpie_feature not in magpiedata_max.keys():
+                        magpiedata_max[magpie_feature] = 0.0
+
+                    if magpie_feature not in magpiedata_min.keys():
+                        magpiedata_min[magpie_feature] = 0.0
+
                     # Composition average features
                     magpiedata_composition_average[magpie_feature] += feature_value*float(composition[element])/atoms_per_formula_unit
                     # Arithmetic average features
@@ -914,8 +927,22 @@ class ElementalFeatureGenerator(BaseGenerator):
                     # Here, calc magpie values over the particular site
                     for magpiedata in magpie_data_by_site_collected:
                         for magpie_feature, feature_value in magpiedata.items():
-                            if feature_value is not 'NaN':
+                            condition = feature_value is not 'NaN'
+                            if condition:
                                 if site == "Site1":
+
+                                    if magpie_feature not in magpiedata_composition_average_site1.keys():
+                                        magpiedata_composition_average_site1[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_arithmetic_average_site1.keys():
+                                        magpiedata_arithmetic_average_site1[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_max_site1.keys():
+                                        magpiedata_max_site1[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_min_site1.keys():
+                                        magpiedata_min_site1[magpie_feature] = 0.0
+
                                     # Composition weighted average by site
                                     magpiedata_composition_average_site1[magpie_feature] += feature_value*float(site_dict[site][element])/site1_total
                                     # Arithmetic average by site
@@ -935,6 +962,19 @@ class ElementalFeatureGenerator(BaseGenerator):
                                     # Difference features (max - min)
                                     magpiedata_difference_site1[magpie_feature] = magpiedata_max_site1[magpie_feature] - magpiedata_min_site1[magpie_feature]
                                 elif site == "Site2":
+
+                                    if magpie_feature not in magpiedata_composition_average_site2.keys():
+                                        magpiedata_composition_average_site2[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_arithmetic_average_site2.keys():
+                                        magpiedata_arithmetic_average_site2[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_max_site2.keys():
+                                        magpiedata_max_site2[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_min_site2.keys():
+                                        magpiedata_min_site2[magpie_feature] = 0.0
+
                                     # Composition weighted average by site
                                     magpiedata_composition_average_site2[magpie_feature] += feature_value*float(site_dict[site][element])/site2_total
                                     # Arithmetic average by site
@@ -954,6 +994,19 @@ class ElementalFeatureGenerator(BaseGenerator):
                                     # Difference features (max - min)
                                     magpiedata_difference_site2[magpie_feature] = magpiedata_max_site2[magpie_feature] - magpiedata_min_site2[magpie_feature]
                                 elif site == "Site3":
+
+                                    if magpie_feature not in magpiedata_composition_average_site3.keys():
+                                        magpiedata_composition_average_site3[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_arithmetic_average_site3.keys():
+                                        magpiedata_arithmetic_average_site3[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_max_site3.keys():
+                                        magpiedata_max_site3[magpie_feature] = 0.0
+
+                                    if magpie_feature not in magpiedata_min_site3.keys():
+                                        magpiedata_min_site3[magpie_feature] = 0.0
+
                                     # Composition weighted average by site
                                     magpiedata_composition_average_site3[magpie_feature] += feature_value*float(site_dict[site][element])/site3_total
                                     # Arithmetic average by site
@@ -1236,7 +1289,7 @@ class ElementalFractionGenerator(BaseGenerator):
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        df = df.select_dtypes(['number']).dropna(axis=1)
+        #df = df.select_dtypes(['number']).dropna(axis=1)
 
         if self.remove_constant_columns is True:
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
@@ -1804,14 +1857,14 @@ class DataframeUtilities(object):
 
         # warn on empty rows
         before_count = df.shape[0]
-        df = df.dropna(axis=0, how='all')
+        #df = df.dropna(axis=0, how='all')
         lost_count = before_count - df.shape[0]
         if lost_count > 0:
             print(f'Dropping {lost_count}/{before_count} rows for being totally empty')
 
         # drop columns with any empty cells
         before_count = df.shape[1]
-        df = df.select_dtypes(['number']).dropna(axis=1)
+        #df = df.select_dtypes(['number']).dropna(axis=1)
         lost_count = before_count - df.shape[1]
         if lost_count > 0:
             print(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
@@ -1856,8 +1909,11 @@ class DataframeUtilities(object):
         for i, feature in enumerate(x_and_y_features):
             column_dict[i] = feature
         dataframe = dataframe.rename(columns=column_dict)
+
+        '''
         if remove_first_row == bool(True):
             dataframe = dataframe.drop([0])  # Need to remove feature names from first row so can obtain data
+        '''
         return dataframe
 
     @classmethod
@@ -1880,5 +1936,5 @@ class DataframeUtilities(object):
     def remove_constant_columns(cls, dataframe):
         nunique = dataframe.apply(pd.Series.nunique)
         cols_to_drop = nunique[nunique == 1].index
-        dataframe = dataframe.drop(cols_to_drop, axis=1)
+        #dataframe = dataframe.drop(cols_to_drop, axis=1)
         return dataframe
