@@ -355,13 +355,15 @@ class ElementalFeatureGenerator(BaseGenerator):
         #self.original_features = self.df.columns
         return self
 
-    def transform(self, X=None):
+    def transform(self, X=None, dropna=False):
 
         df = self.generate_magpie_features()
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        #df = df.select_dtypes(['number']).dropna(axis=1)
+
+        if dropna is True:
+            df = df.select_dtypes(['number']).dropna(axis=1)
 
         if self.remove_constant_columns is True:
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
@@ -1283,13 +1285,15 @@ class ElementalFractionGenerator(BaseGenerator):
         self.y = y
         return self
 
-    def transform(self, X=None):
+    def transform(self, X=None, dropna=False):
 
         df = self.generate_elementfraction_features()
 
         # delete missing values, generation makes a lot of garbage.
         df = DataframeUtilities().clean_dataframe(df)
-        #df = df.select_dtypes(['number']).dropna(axis=1)
+
+        if dropna is True:
+            df = df.select_dtypes(['number']).dropna(axis=1)
 
         if self.remove_constant_columns is True:
             df = DataframeUtilities().remove_constant_columns(dataframe=df)
@@ -1852,19 +1856,25 @@ class DataframeUtilities(object):
 
     """
     @classmethod
-    def clean_dataframe(cls, df):
+    def clean_dataframe(cls, df, dropna=False):
         df = df.apply(pd.to_numeric, errors='coerce')  # convert non-number to NaN
 
         # warn on empty rows
         before_count = df.shape[0]
-        #df = df.dropna(axis=0, how='all')
+
+        if dropna is True:
+            df = df.dropna(axis=0, how='all')
+
         lost_count = before_count - df.shape[0]
         if lost_count > 0:
             print(f'Dropping {lost_count}/{before_count} rows for being totally empty')
 
         # drop columns with any empty cells
         before_count = df.shape[1]
-        #df = df.select_dtypes(['number']).dropna(axis=1)
+
+        if dropna is True:
+            df = df.select_dtypes(['number']).dropna(axis=1)
+
         lost_count = before_count - df.shape[1]
         if lost_count > 0:
             print(f'Dropping {lost_count}/{before_count} generated columns due to missing values')
