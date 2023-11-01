@@ -194,6 +194,8 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
                 if composition_column is None:
                     print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
                 domains_list.append(domain_check.predict(X_test[composition_column]))
+            elif domain_check.check_type == 'madml':
+                domains_list.append(domain_check.predict(X_test))
             else:
                 domains_list.append(domain_check.predict(df_test))
         domain_df = pd.concat(domains_list, axis=1)
@@ -361,6 +363,8 @@ def make_prediction_dlhub(input_dict):
                 if composition_column is None:
                     print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
                 domains_list.append(domain_check.predict(X_test[composition_column]))
+            elif domain_check.check_type == 'madml':
+                domains_list.append(domain_check.predict(X_test))
             else:
                 domains_list.append(domain_check.predict(df_test))
         domain_df = pd.concat(domains_list, axis=1)
