@@ -1091,7 +1091,6 @@ class BaseSplitter(ms.BaseCrossValidator):
             #                     verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
             return split_summary, split_count
 
-        split_summary_dict = dict()
         split_counts = list(range(len(y_splits)))
         data = list(zip(X_splits, y_splits, train_inds, test_inds, split_counts))
 
@@ -1107,8 +1106,10 @@ class BaseSplitter(ms.BaseCrossValidator):
                                           )
         # Serial
         else:
+            split_summary_dict = []
             for i in tqdm(data, 'Running splits'):
-                split_summary_dict = _evaluate_split_sets_serial(data=i, verbosity=verbosity, groups=groups, domain=domain)
+                summary = _evaluate_split_sets_serial(data=i, verbosity=verbosity, groups=groups, domain=domain)
+                split_summary_dict.append(summary)
 
         split_summary_dict = {i[1]: i[0] for i in split_summary_dict}
 
