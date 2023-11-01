@@ -128,7 +128,7 @@ class Domain():
                 uq_model = calibration_model(params=[0.0, 1.0])  # UQ model
 
             # Types of sampling to test
-            splits = [('calibration', RepeatedKFold(n_repeats=self.params['n_repeats']))]
+            splits = [('fit', RepeatedKFold(n_repeats=self.params['n_repeats']))]
 
             # Boostrap, cluster data, and generate splits
             for i in [2, 3]:

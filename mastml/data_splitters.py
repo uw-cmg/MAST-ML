@@ -64,6 +64,7 @@ import itertools
 from scipy.spatial.distance import minkowski
 from tqdm import tqdm
 import json
+import dill
 from mastml.mastml import NumpyEncoder
 
 try:
@@ -1085,10 +1086,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                                  verbosity, baseline_test, distance_metric, file_extension, image_dpi,
                                  domain, train_ind, test_ind)
 
-            #self._evaluate_split(X_train, X_test, y_train, y_test, model_orig, model_name, mastml, preprocessor_orig, selector_orig,
-            #                     hyperopt_orig, metrics, plots, group, group_train,
-            #                     splitpath, has_model_errors, X_extra_train, X_extra_test, error_method, remove_outlier_learners,
-            #                     verbosity, baseline_test, distance_metric, domain_distance, file_extension, image_dpi, **kwargs)
             return split_summary, split_count
 
         split_counts = list(range(len(y_splits)))
@@ -1556,7 +1553,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         if domain is not None:
             for check in domain_checks:
-                joblib.dump(check, open(os.path.join(splitpath, 'domain_'+str(check.check_type)+'.pkl'), 'wb'))
+                try:
+                    joblib.dump(check, open(os.path.join(splitpath, 'domain_'+str(check.check_type)+'.pkl'), 'wb'))
+                except:
+                    dill.dump(check, open(os.path.join(splitpath, 'domain_'+str(check.check_type)+'.pkl'), 'wb'))
 
         # Save the fitted model, will be needed for DLHub upload later on
         if model_name == 'KerasRegressor':
