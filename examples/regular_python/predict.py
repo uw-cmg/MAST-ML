@@ -36,3 +36,19 @@ pred_df = make_prediction(
                           )
 
 print(pred_df)
+
+# Use custom thresholds for predicitons instead
+
+thresholds = [('dist', 'id', 0.75), ('dist', 'id_bin', 0.2)]
+
+pred_df = make_prediction(
+                          X_train=X,
+                          y_train=y,
+                          X_test=X,
+                          model=model_path,
+                          preprocessor=preprocessor_path,
+                          domain=domain_path,
+                          madml_thresholds=thresholds
+                          )
+
+print(pred_df)

@@ -154,7 +154,7 @@ class Domain():
                            )
             _, self.madml_model = cv.assess()
 
-    def predict(self, X_test):
+    def predict(self, X_test, *args, **kwargs):
         domains = dict()
         if self.check_type == 'elemental':
 
@@ -199,7 +199,12 @@ class Domain():
             domains['domain_feature_range_featsoutside'] = features_outside_training_full
 
         elif self.check_type == 'madml':
-            domains = self.madml_model.predict(X_test)
+
+            if "madml_thresholds" in kwargs.keys():
+                th = kwargs['madml_thresholds']
+                domains = self.madml_model.predict(X_test, th)
+            else:
+                domains = self.madml_model.predict(X_test)
 
             # Drop extra stuff
             domains = domains.drop([

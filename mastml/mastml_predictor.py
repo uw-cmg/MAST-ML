@@ -13,7 +13,20 @@ import numpy as np
 import os
 from mastml import feature_generators
 
-def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibration_file=None, featurizers=None, featurize_on=None, domain=None, composition_column=None):
+def make_prediction(
+                    X_test,
+                    X_train,
+                    y_train,
+                    model,
+                    preprocessor=None,
+                    calibration_file=None,
+                    featurizers=None,
+                    featurize_on=None,
+                    domain=None,
+                    composition_column=None,
+                    *args,
+                    **kwargs,
+                    ):
     '''
     Method used to take a saved preprocessor, model and calibration file and output predictions and calibrated uncertainties
     on new test data
@@ -195,7 +208,7 @@ def make_prediction(X_test, X_train, y_train, model, preprocessor=None, calibrat
                     print("Error: trying to assess domain with 'elemental' method but no composition_column has been specified")
                 domains_list.append(domain_check.predict(X_test[composition_column]))
             elif domain_check.check_type == 'madml':
-                domains_list.append(domain_check.predict(X_test))
+                domains_list.append(domain_check.predict(X_test, *args, **kwargs))
             else:
                 domains_list.append(domain_check.predict(df_test))
         domain_df = pd.concat(domains_list, axis=1)
