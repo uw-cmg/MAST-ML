@@ -39,7 +39,7 @@ print(pred_df)
 
 # Use custom thresholds for predicitons instead
 
-thresholds = [('dist', 'id', 0.75), ('dist', 'id_bin', 0.2)]
+thresholds = [('residual', 0.75), ('uncertainty', 0.2)]
 
 pred_df = make_prediction(
                           X_train=X,

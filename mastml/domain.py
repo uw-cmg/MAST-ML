@@ -201,7 +201,18 @@ class Domain():
         elif self.check_type == 'madml':
 
             if "madml_thresholds" in kwargs.keys():
-                th = kwargs['madml_thresholds']
+                t = kwargs['madml_thresholds']
+                th = []
+                for i in t:
+                    i = ['dist', i[0], i[1]]
+                    
+                    if i[1] == 'residual':
+                        i[1] = 'id'
+                    elif i[1] == 'uncertainty':
+                        i[1] = 'id_bin'
+
+                    th.append(i)
+
                 domains = self.madml_model.predict(X_test, th)
             else:
                 domains = self.madml_model.predict(X_test)
@@ -219,6 +230,26 @@ class Domain():
             for col in domains.columns:
                 if ('OD' in col) or ('y_stdc/std(y)' in col):
                     domains = domains.drop(col, axis=1)
+
+            # Rename some columns
+            cols = []
+            for col in domains.columns:
+                splits = col.split(' ')
+                if 'Max' in col:
+                    number = ' '.join(splits[-2:])
+                else:
+                    number = splits[-1]
+
+                if 'ID_BIN' in col:
+                    c = f'Uncertainty for {number}'
+                    cols.append(c)
+                elif 'ID' in col:
+                    c = f'Residual for {number}'
+                    cols.append(c)
+                else:
+                    cols.append(col)
+
+            domains.columns = cols
 
             # To convert bool to integers
             dist = domains['dist']
