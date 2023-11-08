@@ -11,6 +11,7 @@ RUN apt upgrade -y
 # Install needed software
 RUN apt install python3-pip git -y
 RUN pip install -U pip
+RUN pip install git+https://github.com/uw-cmg/MAST-ML.git@dev_lane
 
 # Define the working directory
 WORKDIR /home
@@ -23,7 +24,3 @@ COPY RandomForestRegressor.pkl .
 COPY domain_madml.pkl .
 COPY recalibration_parameters_train.csv .
 COPY StandardScaler.pkl .
-
-# Install other python packages user should start from clean environment
-COPY requirements.txt .
-RUN pip install -r requirements.txt
