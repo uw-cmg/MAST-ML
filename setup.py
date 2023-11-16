@@ -33,7 +33,7 @@ setup(
     include_package_data = True,
     version=verstr,
     install_requires=[
-        "scikit-learn==1.1.3",
+        "scikit-learn",
         "scikit-optimize",
         "citrination-client",
         "dlhub_sdk",
