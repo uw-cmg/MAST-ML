@@ -115,8 +115,14 @@ class Domain():
                                     {},
                                     cv=((slice(None), slice(None)),),
                                     )
-            ds_model = distance_model(dist='kde')  #  Distance model
 
+            ds_model = distance_model(dist='kde')  #  Distance model
+            if 'bandwidth' in self.params:
+                ds_model.bandwidth= self.params['bandwidth']
+            if 'kernel' in self.params:
+                ds_model.kernel = self.params['kernel']
+
+            # Uncertainty estimation model
             if 'uq_coeffs' in self.params:
                 uq_model = calibration_model(params=self.params['uq_coeffs'])
             elif 'uq_function' in self.params:
@@ -131,7 +137,12 @@ class Domain():
             splits = [('fit', RepeatedKFold(n_repeats=self.params['n_repeats']))]
 
             # Boostrap, cluster data, and generate splits
-            for i in [2, 3]:
+            if 'n_clusters' in self.params:
+                n_clusters = self.params['n_clusters']
+            else:
+                n_clusters = [2, 3]
+
+            for i in n_clusters:
 
                 # Cluster Splits
                 top_split = BootstrappedLeaveClusterOut(
@@ -144,6 +155,15 @@ class Domain():
 
             # Fit models
             model = domain_model(gs_model, ds_model, uq_model, splits)
+            
+            # Arguments may have different names in MADML implementation
+            if 'bins' in self.params:
+                model.bins = self.params['bins']
+            if 'gt_residual' in self.params:
+                model.gts = self.params['gt_residual']
+            if 'gt_uncertainty' in self.params:
+                model.gtb = self.params['gt_uncertainty']
+
             cv = nested_cv(
                            X_train.values,
                            y_train.values,
