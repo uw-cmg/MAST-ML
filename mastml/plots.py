@@ -45,6 +45,8 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+from madml.plots import cdf
+
 try:
     import statsmodels.api as sm
 except:
@@ -1014,6 +1016,9 @@ class Error():
         model_errors = np.delete(model_errors, zero_indices)
         model_errors_cal = np.delete(model_errors_cal, zero_indices)
 
+        z_values = residuals/model_errors
+        z_values_cal = residuals/model_errors_cal
+
         # make data for gaussian plot
         gaussian_x = np.linspace(-5, 5, 1000)
         # create plot
@@ -1029,6 +1034,9 @@ class Error():
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
+
+        cdf(z_values, savepath, subsave='_uncalibrated')
+        cdf(z_values_cal, savepath, subsave='_calibrated')
 
         if show_figure is True:
             plt.show()
