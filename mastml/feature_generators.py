@@ -62,6 +62,7 @@ from datetime import datetime
 from copy import copy
 import pickle
 from tqdm import tqdm
+from scipy import constants
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
@@ -72,6 +73,7 @@ try:
     import matminer.featurizers.site
     from matminer.featurizers.composition import ElementProperty, OxidationStates
     from matminer.featurizers.conversions import StrToComposition, CompositionToOxidComposition
+    from matminer.featurizers.composition.alloy import Miedema
 except:
     print('matminer is an optional dependency. To install matminer, do pip install matminer')
 
@@ -305,6 +307,115 @@ class DeepChemFeatureGenerator(BaseGenerator):
 
         df = df[sorted(df.columns.tolist())]
         return df, self.y
+
+class ElementalFeatureGenerator_Extra(BaseGenerator):
+
+    def __init__(self, featurize_df, remove_constant_columns=False):
+        super(BaseGenerator, self).__init__()
+        self.featurize_df = featurize_df
+        self.remove_constant_columns = remove_constant_columns
+
+    def fit(self, X=None, y=None):
+        self.y = y
+        return self
+
+    def transform(self, X=None):
+
+        df = self.generate_features()
+
+        # delete missing values, generation makes a lot of garbage.
+        df = DataframeUtilities().clean_dataframe(df)
+        df = df.select_dtypes(['number']).dropna(axis=1)
+
+        if self.remove_constant_columns is True:
+            df = DataframeUtilities().remove_constant_columns(dataframe=df)
+
+        df = df[sorted(df.columns.tolist())]
+        return df, self.y
+
+    def generate_features(self):
+
+        comp = pd.DataFrame()
+        comp['comp'] = self.featurize_df.values
+        comp = comp['comp'].apply(Composition)
+        rad = comp.apply(lambda x: [i.atomic_radius for i in x])
+        frac = comp.apply(lambda x: [x.get_atomic_fraction(i) for i in x])
+        elec = comp.apply(lambda x: [i.X for i in x])
+
+        dfcalc = pd.DataFrame()
+
+        dfcalc['comp']  = self.featurize_df.values
+        dfcalc['compobj'] = comp
+        dfcalc['rad'] = rad
+        dfcalc['frac'] = frac
+        dfcalc['elec'] = elec
+
+        data = {
+                'comp': [],
+                'rbar': [],
+                'xbar': [],
+                'smix': [],
+                'delta': [],
+                'gamma': [],
+                'hmix': [],
+                }
+        hmodel = Miedema()
+        for v in dfcalc[['comp', 'compobj', 'rad', 'frac', 'elec']].values:
+            cb, ob, rb, fb, eb = v
+
+            rbar = 0.0
+            xbar = 0.0
+            delta = 0.0
+            smix = 0.0
+            hmix = 0.0
+            for i in zip(rb, fb, eb):
+                r, f, e = i
+
+                rbar += r*f
+                xbar += f*e
+                smix += f*np.log(f)
+
+            smix *= -constants.gas_constant
+
+            for i in zip(rb, fb, eb):
+                r, f, e = i
+
+                delta += f*(1-r/rbar)**2
+
+            delta **= 0.5
+
+            rmin = min(rb)
+            rmax = max(rb)
+            ravg = np.mean(rb)
+
+            gamma = 1-(((ravg+rmin)**2-ravg**2)/((ravg+rmin)**2))**0.5
+            gamma /= 1-(((ravg+rmax)**2-ravg**2)/((ravg+rmax)**2))**0.5
+
+
+            els = [str(i) for i in ob.elements]
+
+            iters = range(len(els))
+            for i in iters:
+                for j in iters:
+                    h = hmodel.deltaH_chem([els[i], els[j]], [fb[i], fb[j]], 'amor')
+                    hmix += h*fb[i]*fb[j]
+
+            hmix *= 4
+
+            data['comp'].append(cb)
+            data['rbar'].append(rbar)
+            data['xbar'].append(xbar)
+            data['smix'].append(smix)
+            data['delta'].append(delta)
+            data['gamma'].append(gamma)
+            data['hmix'].append(h)
+
+        data = pd.DataFrame(data)
+        print(data)
+
+        return data
+
+
 
 class ElementalFeatureGenerator(BaseGenerator):
     """
