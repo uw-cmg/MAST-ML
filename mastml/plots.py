@@ -731,6 +731,8 @@ class Error():
 
                 is_calibrated: (bool), whether or not the model errors have been recalibrated (default False)
 
+                name_str: (str), extra string to append to saved figure name. Useful for distinguishing figures if running as post-processing.
+
             Returns:
                 None
 
@@ -747,6 +749,8 @@ class Error():
                 model_errors_cal: (pd.Series), series containing the calibrated predicted model errors
 
                 show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
+
+                name_str: (str), extra string to append to saved figure name. Useful for distinguishing figures if running as post-processing.
 
             Returns:
                 None
@@ -773,6 +777,8 @@ class Error():
 
                 equal_sized_bins: (bool), whether to bin values such that an equal number of points reside in each bin
 
+                name_str: (str), extra string to append to saved figure name. Useful for distinguishing figures if running as post-processing.
+
             Returns:
                 None
 
@@ -798,6 +804,8 @@ class Error():
 
                 equal_sized_bins: (bool), whether to bin values such that an equal number of points reside in each bin
 
+                name_str: (str), extra string to append to saved figure name. Useful for distinguishing figures if running as post-processing.
+
             Returns:
                 None
 
@@ -810,7 +818,8 @@ class Error():
         return
 
     @classmethod
-    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False, image_dpi=250):
+    def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False,
+                   image_dpi=250, name_str=None):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -839,7 +848,11 @@ class Error():
         if is_calibrated == True:
             calibrate = 'calibrated'
 
-        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=image_dpi, bbox_inches='tight')
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath, 'rstat_histogram_' + str(data_type) + '_' + calibrate + '_' + name_str + '.png'),
+                        dpi=image_dpi, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_'+calibrate+'.png'), dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -849,7 +862,7 @@ class Error():
 
     @classmethod
     def plot_rstat_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
-                                     show_figure=False, image_dpi=250):
+                                     show_figure=False, image_dpi=250, name_str=None):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
         zero_indices = []
@@ -877,7 +890,12 @@ class Error():
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
-        fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
+
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath, 'rstat_histogram_' + str(data_type) + '_uncal_cal_overlay' + '_' + name_str + '.png'),
+                        dpi=image_dpi, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
             plt.show()
@@ -888,7 +906,7 @@ class Error():
     @classmethod
     def plot_real_vs_predicted_error(cls, savepath, data_type, model_errors, residuals, dataset_stdev,
                                      show_figure=False, is_calibrated=False, well_sampled_number=30, image_dpi=250,
-                                     number_of_bins=15, equal_sized_bins=False):
+                                     number_of_bins=15, equal_sized_bins=False, name_str=None):
 
         bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
@@ -998,7 +1016,11 @@ class Error():
         if is_calibrated == True:
             calibrate = 'calibrated'
 
-        fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '_' + name_str + '.png'),
+                    dpi=image_dpi, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
                     dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
@@ -1012,7 +1034,7 @@ class Error():
     def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, data_type, model_errors, model_errors_cal,
                                                        residuals, dataset_stdev, show_figure=False,
                                                        well_sampled_number=30, image_dpi=250,
-                                                       number_of_bins=15, equal_sized_bins=False):
+                                                       number_of_bins=15, equal_sized_bins=False, name_str=None):
 
         bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                                      residuals=residuals,
@@ -1147,7 +1169,11 @@ class Error():
 
         ax.legend(loc='lower right', fontsize=8)
 
-        fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay' + '_' + name_str + '.png'),
+                        dpi=image_dpi, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
                     dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
