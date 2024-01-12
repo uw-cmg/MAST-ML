@@ -971,6 +971,12 @@ class Error():
     '''
 
     @classmethod
+    def plot_cdf(cls, savepath, residuals, model_errors, data_type):
+        z_values = residuals/model_errors
+        cdf(z_values, savepath, subsave=data_type) #'_uncalibrated'
+        return
+
+    @classmethod
     def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False, image_dpi=250):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
@@ -1037,8 +1043,8 @@ class Error():
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
 
-        cdf(z_values, savepath, subsave='_uncalibrated')
-        cdf(z_values_cal, savepath, subsave='_calibrated')
+        #cdf(z_values, savepath, subsave='_uncalibrated')
+        #cdf(z_values_cal, savepath, subsave='_calibrated')
 
         if show_figure is True:
             plt.show()
@@ -1900,6 +1906,13 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
         '''
         if has_model_errors is True:
             try:
+                Error.plot_cdf(savepath=savepath,
+                               residuals=residuals,
+                               model_errors=model_errors,
+                               data_type='_'+data_type+'_uncalibrated')
+            except:
+                print('Warning: unable to maek Error.plot_cdf plot. Skipping...')
+            try:
                 Error.plot_rstat(savepath=savepath,
                                  data_type=data_type,
                                  model_errors=model_errors,
@@ -1924,6 +1937,13 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
             except:
                 print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
             if recalibrate_errors is True:
+                try:
+                    Error.plot_cdf(savepath=savepath,
+                                   residuals=residuals,
+                                   model_errors=model_errors_cal,
+                                   data_type='_' + data_type + '_calibrated')
+                except:
+                    print('Warning: unable to maek Error.plot_cdf plot. Skipping...')
                 try:
                     Error.plot_rstat(savepath=savepath,
                                      data_type=data_type,
