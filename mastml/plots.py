@@ -706,36 +706,16 @@ class Error():
         None
 
     Methods:
-        plot_normalized_error: Method to plot the normalized residual errors of a model prediction
-            Args:
-                residuals: (pd.Series), series containing the true errors (model residuals)
 
+        plot_cdf: Method for plotting the cumulative distribution function of the r-statistic (also called Z-score)
+            Args:
                 savepath: (str), string denoting the save path to save the figure to
 
                 data_type: (str), string denoting the data type, e.g. train, test, leftout
 
-                model_errors: (pd.Series), series containing the predicted model errors (optional, default None)
-
-                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
-
-            Returns:
-                None
-
-        plot_cumulative_normalized_error: Method to plot the cumulative normalized residual errors of a model prediction
-            Args:
                 residuals: (pd.Series), series containing the true errors (model residuals)
 
-                savepath: (str), string denoting the save path to save the figure to
-
-                data_type: (str), string denoting the data type, e.g. train, test, leftout
-
-                model_errors: (pd.Series), series containing the predicted model errors (optional, default None)
-
-                show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
-
-
-            Returns:
-                None
+                model_errors: (pd.Series), series containing the predicted model errors
 
         plot_rstat: Method for plotting the r-statistic distribution (true divided by predicted error)
             Args:
@@ -775,8 +755,6 @@ class Error():
             Args:
                 savepath: (str), string denoting the save path to save the figure to
 
-                model: (mastml.models object), a MAST-ML model object, e.g. SklearnModel or EnsembleModel
-
                 data_type: (str), string denoting the data type, e.g. train, test, leftout
 
                 model_errors: (pd.Series), series containing the predicted model errors
@@ -789,7 +767,11 @@ class Error():
 
                 is_calibrated: (bool), whether or not the model errors have been recalibrated (default False)
 
-                well_sampled_fraction: (float), number denoting whether a bin qualifies as well-sampled or not. Default to 0.025 (2.5% of total samples). Only affects visuals, not fitting
+                well_sampled_number: (int), number denoting whether a bin qualifies as well-sampled or not. Only affects visuals, not fitting
+
+                number_of_bins: (int), number of bins to use in plotting.
+
+                equal_sized_bins: (bool), whether to bin values such that an equal number of points reside in each bin
 
             Returns:
                 None
@@ -797,8 +779,6 @@ class Error():
         plot_real_vs_predicted_error_uncal_cal_overlay: Method for making the residual vs. error plot for two cases together: using the as-obtained uncalibrated model errors and calibrated errors
             Args:
                 savepath: (str), string denoting the save path to save the figure to
-
-                model: (mastml.models object), a MAST-ML model object, e.g. SklearnModel or EnsembleModel
 
                 data_type: (str), string denoting the data type, e.g. train, test, leftout
 
@@ -812,163 +792,16 @@ class Error():
 
                 show_figure: (bool), whether or not the generated figure is output to the notebook screen (default False)
 
-                well_sampled_fraction: (float), number denoting whether a bin qualifies as well-sampled or not. Default to 0.025 (2.5% of total samples). Only affects visuals, not fitting
+                well_sampled_number: (int), number denoting whether a bin qualifies as well-sampled or not.  Only affects visuals, not fitting
+
+                number_of_bins: (int), number of bins to use in plotting.
+
+                equal_sized_bins: (bool), whether to bin values such that an equal number of points reside in each bin
 
             Returns:
                 None
 
     """
-
-    '''
-    @classmethod
-    def plot_qq(cls, residuals, savepath, data_type, show_figure, image_dpi=250):
-        x_align = 0.64
-        fig, ax = make_fig_ax(x_align=x_align)
-        fig = sm.qqplot(data=residuals, dist=scipy.stats.distributions.norm, line='45', fit=True,
-                            ax=ax, markerfacecolor='blue', markeredgecolor='darkblue',
-                            zorder=2, markersize=10, alpha=0.7)
-        ax.set_xlim(-5, 5)
-        ax.set_ylim(-5, 5)
-        ax.set_xlabel('Normal distribution quantiles', fontsize=14)
-        ax.set_ylabel('Model residual quantiles', fontsize=14)
-        ax.get_lines()[1].set_color("black")
-        ax.get_lines()[1].set_linewidth("1.5")
-        ax.get_lines()[1].set_linestyle("--")
-        ax.xaxis.get_label().set_fontsize(12)
-        ax.yaxis.get_label().set_fontsize(12)
-        fig.savefig(os.path.join(savepath, 'qq_plot_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
-        if show_figure is True:
-            plt.show()
-        else:
-            plt.close()
-        return
-
-    @classmethod
-    def plot_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False, file_extension='.csv', image_dpi=250):
-
-        x_align = 0.64
-        fig, ax = make_fig_ax(x_align=x_align)
-        mu = 0
-        sigma = 1
-        residuals[residuals == 0.0] = 10**-6
-        normalized_residuals = residuals / np.std(residuals)
-        density_residuals = gaussian_kde(normalized_residuals)
-        x = np.linspace(mu - 5 * sigma, mu + 5 * sigma, residuals.shape[0])
-        ax.plot(x, norm.pdf(x, mu, sigma), linewidth=4, color='blue', label="Analytical Gaussian")
-        ax.plot(x, density_residuals(x), linewidth=4, color='green', label="Model Residuals")
-        maxx = 5
-        minn = -5
-
-        if model_errors is not None:
-            model_errors[model_errors == 0.0] = 0.0001
-            rstat = residuals / model_errors
-            density_errors = gaussian_kde(rstat)
-            maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)), max(density_errors(x)))
-            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)), max(density_errors(x)))
-            ax.plot(x, density_errors(x), linewidth=4, color='purple', label="Model Errors")
-            # Save data to csv file
-            data_dict = {"Plotted x values": x, "model_errors": model_errors,
-                         # "analytical gaussian (plotted y blue values)": norm.pdf(x, mu, sigma),
-                         "residuals": residuals,
-                         "model normalized residuals (plotted y green values)": density_residuals(x),
-                         "model errors (plotted y purple values)": density_errors(x)}
-        else:
-            # Save data to csv file
-            data_dict = {"x values": x,
-                         # "analytical gaussian": norm.pdf(x, mu, sigma),
-                         "model normalized residuals (plotted y green values)": density_residuals(x)}
-            maxy = max(max(density_residuals(x)), max(norm.pdf(x, mu, sigma)))
-            miny = min(min(density_residuals(x)), min(norm.pdf(x, mu, sigma)))
-
-        if file_extension == '.xlsx':
-            pd.DataFrame(data_dict).to_excel(os.path.join(savepath, 'normalized_error_data_'+str(data_type)+'.xlsx'))
-        elif file_extension == '.csv':
-            pd.DataFrame(data_dict).to_csv(os.path.join(savepath, 'normalized_error_data_' + str(data_type) + '.csv'))
-        ax.legend(loc=0, fontsize=12, frameon=False)
-        ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
-        ax.set_ylabel("Probability density", fontsize=18)
-        _set_tick_labels_different(ax, maxx, minn, maxy, miny)
-        fig.savefig(os.path.join(savepath, 'normalized_errors_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
-        if show_figure is True:
-            plt.show()
-        else:
-            plt.close()
-        return
-
-    @classmethod
-    def plot_cumulative_normalized_error(cls, residuals, savepath, data_type, model_errors=None, show_figure=False, file_extension='.csv', image_dpi=250):
-
-        x_align = 0.64
-        fig, ax = make_fig_ax(x_align=x_align)
-
-        analytic_gau = np.random.normal(0, 1, 10000)
-        analytic_gau = abs(analytic_gau)
-        n_analytic = np.arange(1, len(analytic_gau) + 1) / np.float(len(analytic_gau))
-        X_analytic = np.sort(analytic_gau)
-        residuals[residuals == 0.0] = 10 ** -6
-        normalized_residuals = abs((residuals) / np.std(residuals))
-        n_residuals = np.arange(1, len(normalized_residuals) + 1) / np.float(len(normalized_residuals))
-        X_residuals = np.sort(normalized_residuals)  # r"$\mathrm{Predicted \/ Value}, \mathit{eV}$"
-        ax.set_xlabel(r"$\mathrm{x}/\mathit{\sigma}$", fontsize=18)
-        ax.set_ylabel("Fraction", fontsize=18)
-        ax.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
-        ax.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
-        ax.set_xlim([0, 5])
-
-        if model_errors is not None:
-            model_errors[model_errors == 0.0] = 0.0001
-            rstat = abs((residuals) / model_errors)
-            n_errors = np.arange(1, len(rstat) + 1) / np.float(len(rstat))
-            X_errors = np.sort(rstat)
-            ax.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
-            # Save data to csv file
-            data_dict = {  # "Analytical Gaussian values": analytic_gau,
-                # "Analytical Gaussian (sorted, blue data)": X_analytic,
-                "residuals": residuals,
-                "normalized residuals": normalized_residuals,
-                "Model Residuals (sorted, green data)": X_residuals,
-                "Model error values (r value: (ytrue-ypred)/(model error avg))": rstat,
-                "Model errors (sorted, purple values)": X_errors}
-        else:
-            # Save data to csv file
-            data_dict = {  # "x analytical": X_analytic,
-                # "analytical gaussian": n_analytic,
-                "Model Residuals (sorted, green data)": X_residuals,
-                "model residuals": n_residuals}
-        # Save this way to avoid issue with different array sizes in data_dict
-        df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in data_dict.items()]))
-        if file_extension == '.xlsx':
-            df.to_excel(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.xlsx'), index=False)
-        elif file_extension == '.csv':
-            df.to_csv(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.csv'), index=False)
-
-        ax.legend(loc=0, fontsize=14, frameon=False)
-        xlabels = np.linspace(2, 3, 3)
-        ylabels = np.linspace(0.9, 1, 2)
-        axin = zoomed_inset_axes(ax, 2.5, loc=7)
-        axin.step(X_residuals, n_residuals, linewidth=3, color='green', label="Model Residuals")
-        axin.step(X_analytic, n_analytic, linewidth=3, color='blue', label="Analytical Gaussian")
-        if model_errors is not None:
-            axin.step(X_errors, n_errors, linewidth=3, color='purple', label="Model Errors")
-        axin.set_xticklabels(xlabels, fontsize=8, rotation=90)
-        axin.set_yticklabels(ylabels, fontsize=8)
-        axin.set_xlim([2, 3])
-        axin.set_ylim([0.9, 1])
-
-        maxx = 5
-        minn = 0
-        maxy = 1.1
-        miny = 0
-        _set_tick_labels_different(ax, maxx, minn, maxy, miny)
-
-        mark_inset(ax, axin, loc1=1, loc2=2)
-        fig.savefig(os.path.join(savepath, 'cumulative_normalized_errors_'+str(data_type)+'.png'), dpi=image_dpi, bbox_inches='tight')
-        if show_figure is True:
-            plt.show()
-        else:
-            plt.close()
-        return
-    '''
 
     @classmethod
     def plot_cdf(cls, savepath, residuals, model_errors, data_type):
@@ -1062,21 +895,6 @@ class Error():
                                                                                                              dataset_stdev=dataset_stdev,
                                                                                                              number_of_bins=number_of_bins,
                                                                                                              equal_sized_bins=equal_sized_bins)
-        '''
-        model_name = model.model.__class__.__name__
-        if model_name == 'RandomForestRegressor':
-            model_type = 'RF'
-        elif model_name == 'GradientBoostingRegressor':
-            model_type = 'GBR'
-        elif model_name == 'ExtraTreesRegressor':
-            model_type = 'ET'
-        elif model_name == 'GaussianProcessRegressor':
-            model_type = 'GPR'
-        elif model_name == 'BaggingRegressor':
-            model_type = 'BR'
-        elif model_name == 'AdaBoostRegressor':
-            model_type = 'ABR'
-        '''
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
@@ -1208,21 +1026,6 @@ class Error():
                                                                                                                              number_of_bins=number_of_bins,
                                                                                                                              equal_sized_bins=equal_sized_bins)
 
-        '''
-        model_name = model.model.__class__.__name__
-        if model_name == 'RandomForestRegressor':
-            model_type = 'RF'
-        elif model_name == 'GradientBoostingRegressor':
-            model_type = 'GBR'
-        elif model_name == 'ExtraTreesRegressor':
-            model_type = 'ET'
-        elif model_name == 'GaussianProcessRegressor':
-            model_type = 'GPR'
-        elif model_name == 'BaggingRegressor':
-            model_type = 'BR'
-        elif model_name == 'AdaBoostRegressor':
-            model_type = 'ABR'
-        '''
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
