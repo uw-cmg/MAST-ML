@@ -819,6 +819,7 @@ class Error():
 
     """
 
+    '''
     @classmethod
     def plot_qq(cls, residuals, savepath, data_type, show_figure, image_dpi=250):
         x_align = 0.64
@@ -967,6 +968,7 @@ class Error():
         else:
             plt.close()
         return
+    '''
 
     @classmethod
     def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False, image_dpi=250):
@@ -1865,6 +1867,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
 
     if 'Error' in plots:
+        '''
         try:
             Error.plot_qq(residuals=residuals,
                           savepath=savepath,
@@ -1873,6 +1876,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                           image_dpi=image_dpi)
         except:
             print('Warning: unable to make Error.plot_qq plot. Skipping...')
+        
         try:
             Error.plot_normalized_error(residuals=residuals,
                                         savepath=savepath,
@@ -1893,6 +1897,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                     image_dpi=image_dpi)
         except:
             print('Warning: unable to make Error.plot_cumulative_normalized_error plot. Skipping...')
+        '''
         if has_model_errors is True:
             try:
                 Error.plot_rstat(savepath=savepath,
