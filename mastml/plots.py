@@ -1053,7 +1053,7 @@ class Error():
         return
 
     @classmethod
-    def plot_real_vs_predicted_error(cls, savepath, model, data_type, model_errors, residuals, dataset_stdev,
+    def plot_real_vs_predicted_error(cls, savepath, data_type, model_errors, residuals, dataset_stdev,
                                      show_figure=False, is_calibrated=False, well_sampled_number=30, image_dpi=250,
                                      number_of_bins=15, equal_sized_bins=False):
 
@@ -1062,7 +1062,7 @@ class Error():
                                                                                                              dataset_stdev=dataset_stdev,
                                                                                                              number_of_bins=number_of_bins,
                                                                                                              equal_sized_bins=equal_sized_bins)
-
+        '''
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
             model_type = 'RF'
@@ -1076,6 +1076,7 @@ class Error():
             model_type = 'BR'
         elif model_name == 'AdaBoostRegressor':
             model_type = 'ABR'
+        '''
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
@@ -1125,7 +1126,7 @@ class Error():
         ax.errorbar(bin_values_wellsampled, rms_residual_values_wellsampled, yerr=yerr_wellsampled, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
         ax.errorbar(bin_values_poorlysampled, rms_residual_values_poorlysampled, yerr=yerr_poorlysampled, ecolor='blue', capsize=2, linewidth=0, elinewidth=1, alpha=0.4)
 
-        ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+        ax.set_xlabel('Model errors / dataset stdev', fontsize=12)
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
         ax.tick_params(labelsize=10)
 
@@ -1179,7 +1180,7 @@ class Error():
         if is_calibrated == True:
             calibrate = 'calibrated'
 
-        fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
+        fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_' + calibrate + '.png'),
                     dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
@@ -1190,7 +1191,7 @@ class Error():
         return
 
     @classmethod
-    def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, model, data_type, model_errors, model_errors_cal,
+    def plot_real_vs_predicted_error_uncal_cal_overlay(cls, savepath, data_type, model_errors, model_errors_cal,
                                                        residuals, dataset_stdev, show_figure=False,
                                                        well_sampled_number=30, image_dpi=250,
                                                        number_of_bins=15, equal_sized_bins=False):
@@ -1207,6 +1208,7 @@ class Error():
                                                                                                                              number_of_bins=number_of_bins,
                                                                                                                              equal_sized_bins=equal_sized_bins)
 
+        '''
         model_name = model.model.__class__.__name__
         if model_name == 'RandomForestRegressor':
             model_type = 'RF'
@@ -1220,6 +1222,7 @@ class Error():
             model_type = 'BR'
         elif model_name == 'AdaBoostRegressor':
             model_type = 'ABR'
+        '''
 
         if data_type not in ['train', 'test', 'leaveout']:
             print('Error: data_test_type must be one of "train", "test" or "leaveout"')
@@ -1280,7 +1283,7 @@ class Error():
         ax.errorbar(bin_values_wellsampled_cal, rms_residual_values_wellsampled_cal, yerr=yerr_wellsampled_cal, ecolor='blue', capsize=2, linewidth=0, elinewidth=1)
         ax.errorbar(bin_values_poorlysampled_cal, rms_residual_values_poorlysampled_cal, yerr=yerr_poorlysampled_cal, ecolor='blue', capsize=2, linewidth=0, elinewidth=1, alpha=0.4)
 
-        ax.set_xlabel(str(model_type) + ' model errors / dataset stdev', fontsize=12)
+        ax.set_xlabel('Model errors / dataset stdev', fontsize=12)
         ax.set_ylabel('RMS Absolute residuals\n / dataset stdev', fontsize=12)
         ax.tick_params(labelsize=10)
 
@@ -1341,7 +1344,7 @@ class Error():
 
         ax.legend(loc='lower right', fontsize=8)
 
-        fig.savefig(os.path.join(savepath, str(model_type) + '_residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
+        fig.savefig(os.path.join(savepath, 'Residuals_vs_modelerror_' + str(data_type) + '_uncal_cal_overlay.png'),
                     dpi=image_dpi, bbox_inches='tight')
 
         if show_figure is True:
@@ -1924,7 +1927,6 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 print('Warning: unable to make Error.plot_rstat plot. Skipping...')
             try:
                 Error.plot_real_vs_predicted_error(savepath=savepath,
-                                                   model=model,
                                                    data_type=data_type,
                                                    model_errors=model_errors,
                                                    residuals=residuals,
@@ -1966,7 +1968,6 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                     print('Warning: unable to make Error.plot_rstat_uncal_cal_overlay plot. Skipping...')
                 try:
                     Error.plot_real_vs_predicted_error(savepath=savepath,
-                                                       model=model,
                                                        data_type=data_type,
                                                        residuals=residuals,
                                                        model_errors=model_errors_cal,
@@ -1980,7 +1981,6 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                     print('Warning: unable to make Error.plot_real_vs_predicted_error plot. Skipping...')
                 try:
                     Error.plot_real_vs_predicted_error_uncal_cal_overlay(savepath=savepath,
-                                                                         model=model,
                                                                          data_type=data_type,
                                                                          model_errors=model_errors,
                                                                          model_errors_cal=model_errors_cal,
