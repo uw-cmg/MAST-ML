@@ -986,6 +986,9 @@ class Error():
                 zero_indices.append(i)
         residuals = np.delete(residuals, zero_indices)
         model_errors = np.delete(model_errors, zero_indices)
+
+        z_values = residuals/model_errors
+
         # make data for gaussian plot
         gaussian_x = np.linspace(-5, 5, 1000)
         # create plot
@@ -993,10 +996,10 @@ class Error():
         fig, ax = make_fig_ax(x_align=x_align)
         ax.set_xlabel('residuals / model error estimates')
         ax.set_ylabel('relative counts')
-        ax.hist(residuals/model_errors, bins=30, color='blue', edgecolor='black', density=True)
+        ax.hist(z_values, bins=30, color='blue', edgecolor='black', density=True)
         ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
-        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes)
-        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes)
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes)
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes)
 
         if is_calibrated == False:
             calibrate = 'uncalibrated'
@@ -1034,17 +1037,14 @@ class Error():
         fig, ax = make_fig_ax(x_align=x_align)
         ax.set_xlabel('residuals / model error estimates')
         ax.set_ylabel('relative counts')
-        ax.hist(residuals/model_errors, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
-        ax.hist(residuals/model_errors_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
+        ax.hist(z_values, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
+        ax.hist(z_values_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
         ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
-        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
-        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(residuals / model_errors)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
-        ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
-        ax.text(0.05, 0.75, 'std = %.3f' % (np.std(residuals / model_errors_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
+        ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
+        ax.text(0.05, 0.75, 'std = %.3f' % (np.std(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         fig.savefig(os.path.join(savepath, 'rstat_histogram_'+str(data_type)+'_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
-
-        #cdf(z_values, savepath, subsave='_uncalibrated')
-        #cdf(z_values_cal, savepath, subsave='_calibrated')
 
         if show_figure is True:
             plt.show()
