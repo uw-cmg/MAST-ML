@@ -839,7 +839,8 @@ class Error():
         ax.set_xlabel('residuals / model error estimates')
         ax.set_ylabel('relative counts')
         ax.hist(z_values, bins=30, color='blue', edgecolor='black', density=True)
-        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
+        pdf_vals = stats.norm.pdf(gaussian_x, 0, 1)
+        ax.plot(gaussian_x, pdf_vals, label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
         ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes)
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes)
 
@@ -858,6 +859,14 @@ class Error():
             plt.show()
         else:
             plt.close()
+
+        data = {'r_stat': z_values, 'gaussian_x': gaussian_x, 'pdf_vals': pdf_vals}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_' + name_str + '.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '.csv'), index=False)
+
         return
 
     @classmethod
@@ -885,7 +894,8 @@ class Error():
         ax.set_ylabel('relative counts')
         ax.hist(z_values, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
         ax.hist(z_values_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
-        ax.plot(gaussian_x, stats.norm.pdf(gaussian_x, 0, 1), label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
+        pdf_vals = stats.norm.pdf(gaussian_x, 0, 1)
+        ax.plot(gaussian_x, pdf_vals, label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
         ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
@@ -901,6 +911,14 @@ class Error():
             plt.show()
         else:
             plt.close()
+
+        data = {'r_stat': z_values, 'r_stat_cal': z_values_cal, 'gaussian_x': gaussian_x, 'pdf_vals': pdf_vals}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_' + name_str + '_uncal_cal_overlay.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_uncal_cal_overlay.csv'), index=False)
+
         return
 
     @classmethod
@@ -1209,6 +1227,14 @@ class Error():
         else:
             plt.close()
 
+        data = {'ebars_norm_wellsampled': bin_values_wellsampled, 'rms_residual_values_wellsampled': rms_residual_values_wellsampled, 'yerr_wellsampled': yerr_wellsampled,
+                'ebars_norm_poorlysampled': bin_values_poorlysampled, 'rms_residual_values_poorlysampled': rms_residual_values_poorlysampled, 'yerr_poorlysampled': yerr_poorlysampled}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type + '_' + calibrate + '_' + name_str + '.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type + '_' + calibrate + '.csv'), index=False)
+
         return
 
     @classmethod
@@ -1361,6 +1387,17 @@ class Error():
             plt.show()
         else:
             plt.close()
+
+        data = {'ebars_norm_wellsampled_uncal': bin_values_wellsampled_uncal, 'rms_residual_values_wellsampled_uncal': rms_residual_values_wellsampled_uncal, 'yerr_wellsampled': yerr_wellsampled_uncal,
+                'ebars_norm_poorlysampled_uncal': bin_values_poorlysampled_uncal, 'rms_residual_values_poorlysampled_uncal': rms_residual_values_poorlysampled_uncal, 'yerr_poorlysampled': yerr_poorlysampled_uncal,
+                'ebars_norm_wellsampled_cal': bin_values_wellsampled_cal, 'rms_residual_values_wellsampled_cal': rms_residual_values_wellsampled_cal, 'yerr_wellsampled': yerr_wellsampled_cal,
+                'ebars_norm_poorlysampled_cal': bin_values_poorlysampled_cal, 'rms_residual_values_poorlysampled_cal': rms_residual_values_poorlysampled_cal, 'yerr_poorlysampled': yerr_poorlysampled_cal,
+                }
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type + '_' + name_str + '_uncal_cal_overlay.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type  + '_uncal_cal_overlay.csv'), index=False)
 
         return
 
