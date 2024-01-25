@@ -26,6 +26,7 @@ from math import log, ceil
 import scipy
 from scipy.stats import gaussian_kde, norm
 import scipy.stats as stats
+import json
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
@@ -812,10 +813,165 @@ class Error():
     """
 
     @classmethod
-    def plot_cdf(cls, savepath, residuals, model_errors, data_type):
-        z_values = residuals/model_errors
-        cdf(z_values, savepath, subsave=data_type) #'_uncalibrated'
-        return
+    def plot_cdf(cls, savepath, data_type, residuals, model_errors, is_calibrated=False, name_str=None):
+
+        nz = 10000
+
+        x = residuals/model_errors
+        nx = len(x)
+        z = np.random.normal(0, np.var(x), nz)  # Altered variance
+
+        # Need sorting
+        x = sorted(x)
+        z = sorted(z)
+
+        # Cummulative fractions
+        xfrac = np.arange(nx) / (nx - 1)
+        zfrac = np.arange(nz) / (nz - 1)
+
+        # Interpolation to compare cdf
+        eval_points = sorted(list(set(x + z)))
+        y_pred = np.interp(eval_points, x, xfrac)  # Predicted
+        y = np.interp(eval_points, z, zfrac)  # Standard Normal
+
+        # Area between ideal distribution and observed
+        absres = np.abs(y_pred - y)
+        areacdf = np.trapz(absres, x=eval_points, dx=0.00001)
+        areaparity = np.trapz(absres, x=y, dx=0.00001)
+
+        parity_name = 'cdf_parity'
+
+        area_label = 'Observed Distribution'
+        area_label += '\nMiscalibration Area: {:.3f}'.format(areaparity)
+
+        fig, ax = plt.subplots()
+
+        ax.plot(y, y_pred, zorder=0, color='b', linewidth=4, label=area_label)
+
+        # Line of best fit
+        ax.plot(y, y, color='k', linestyle=':', zorder=1, linewidth=4, label='Ideal')
+
+        ax.legend(loc='best')
+
+        ax.set_ylabel('Predicted CDF')
+        ax.set_xlabel('Standard Normal CDF')
+
+        h = 8
+        w = 8
+
+        fig.set_size_inches(h, w, forward=True)
+        ax.set_aspect('equal')
+        fig.tight_layout()
+
+        if is_calibrated == False:
+            calibrate = 'uncalibrated'
+        else:
+            calibrate = 'calibrated'
+
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath,'{}_{}_{}_{}.png'.format(parity_name, data_type, calibrate, name_str)), dpi=300, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, '{}_{}_{}.png'.format(parity_name, data_type, calibrate)), dpi=300,bbox_inches='tight')
+
+        plt.close(fig)
+
+        data = {}
+        data['y'] = list(y)
+        data['y_pred'] = list(y_pred)
+        data['Area'] = areaparity
+        if name_str is not None:
+            with open(os.path.join(savepath,'{}_{}_{}_{}.json'.format(parity_name, data_type, calibrate, name_str)), 'w') as handle:
+                json.dump(data, handle)
+        else:
+            with open(os.path.join(savepath,'{}_{}_{}.json'.format(parity_name, data_type, calibrate)), 'w') as handle:
+                json.dump(data, handle)
+
+        return areaparity
+
+    @classmethod
+    def plot_cdf_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal, name_str=None):
+
+        nz = 10000
+
+        x = residuals/model_errors
+        x_cal = residuals/model_errors_cal
+
+        nx = len(x)
+        z = np.random.normal(0, np.var(x), nz)  # Altered variance
+
+        # Need sorting
+        x = sorted(x)
+        x_cal = sorted(x_cal)
+        z = sorted(z)
+
+        # Cummulative fractions
+        xfrac = np.arange(nx) / (nx - 1)
+        xfrac_cal = np.arange(nx) / (nx - 1)
+        zfrac = np.arange(nz) / (nz - 1)
+
+        # Interpolation to compare cdf
+        eval_points = sorted(list(set(x + z)))
+        y_pred = np.interp(eval_points, x, xfrac)  # Predicted
+        eval_points_cal = sorted(list(set(x_cal + z)))
+        y_pred_cal = np.interp(eval_points_cal, x_cal, xfrac_cal)
+        y = np.interp(eval_points, z, zfrac)  # Standard Normal
+
+        # Area between ideal distribution and observed
+        absres = np.abs(y_pred - y)
+        areacdf = np.trapz(absres, x=eval_points, dx=0.00001)
+        areaparity = np.trapz(absres, x=y, dx=0.00001)
+        absres_cal = np.abs(y_pred_cal - y)
+        areacdf_cal = np.trapz(absres_cal, x=eval_points_cal, dx=0.00001)
+        areaparity_cal = np.trapz(absres_cal, x=y, dx=0.00001)
+
+        parity_name = 'cdf_parity'
+
+        area_label = 'Uncalibrated'
+        area_label += '\nMiscalibration Area (Uncalibrated): {:.3f}'.format(areaparity)
+        area_label_cal = 'Calibrated'
+        area_label_cal += '\nMiscalibration Area (Calibrated): {:.3f}'.format(areaparity_cal)
+
+        fig, ax = plt.subplots()
+
+        ax.plot(y, y_pred, zorder=0, color='grey', linewidth=4, label=area_label)
+        ax.plot(y, y_pred_cal, zorder=0, color='blue', linewidth=4, label=area_label_cal)
+
+        # Line of best fit
+        ax.plot(y, y, color='k', linestyle=':', zorder=1, linewidth=4, label='Ideal')
+
+        ax.legend(loc='best', fontsize=10)
+
+        ax.set_ylabel('Predicted CDF')
+        ax.set_xlabel('Standard Normal CDF')
+
+        h = 8
+        w = 8
+
+        fig.set_size_inches(h, w, forward=True)
+        ax.set_aspect('equal')
+        fig.tight_layout()
+
+        if name_str is not None:
+            fig.savefig(os.path.join(savepath,'{}_{}_uncal_cal_overlay_{}.png'.format(parity_name, data_type, name_str)), dpi=300, bbox_inches='tight')
+        else:
+            fig.savefig(os.path.join(savepath, '{}_{}_uncal_cal_overlay.png'.format(parity_name, data_type)), dpi=300,bbox_inches='tight')
+
+        plt.close(fig)
+
+        data = {}
+        data['y'] = list(y)
+        data['y_pred'] = list(y_pred)
+        data['Area'] = areaparity
+        data['y_pred_cal'] = list(y_pred_cal)
+        data['Area_cal'] = areaparity_cal
+        if name_str is not None:
+            with open(os.path.join(savepath,'{}_{}_uncal_cal_overlay_{}.json'.format(parity_name, data_type, name_str)), 'w') as handle:
+                json.dump(data, handle)
+        else:
+            with open(os.path.join(savepath,'{}_{}_uncal_cal_overlay.json'.format(parity_name, data_type)), 'w') as handle:
+                json.dump(data, handle)
+
+        return areaparity, areaparity_cal
 
     @classmethod
     def plot_rstat(cls, savepath, data_type, residuals, model_errors, show_figure=False, is_calibrated=False,
@@ -841,8 +997,8 @@ class Error():
         ax.hist(z_values, bins=30, color='blue', edgecolor='black', density=True)
         pdf_vals = stats.norm.pdf(gaussian_x, 0, 1)
         ax.plot(gaussian_x, pdf_vals, label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
-        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes)
-        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes)
+        ax.text(0.05, 0.9, 'mean = %.3f' % (np.mean(z_values)), transform=ax.transAxes, fontsize=10)
+        ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes, fontsize=10)
 
         if is_calibrated == False:
             calibrate = 'uncalibrated'
