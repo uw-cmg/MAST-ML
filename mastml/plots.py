@@ -46,8 +46,6 @@ from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from madml.plots import cdf
-
 try:
     import statsmodels.api as sm
 except:
@@ -2084,7 +2082,8 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 Error.plot_cdf(savepath=savepath,
                                residuals=residuals,
                                model_errors=model_errors,
-                               data_type='_'+data_type+'_uncalibrated')
+                               data_type=data_type,
+                               is_calibrated=False)
             except:
                 print('Warning: unable to maek Error.plot_cdf plot. Skipping...')
             try:
@@ -2127,9 +2126,18 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                     Error.plot_cdf(savepath=savepath,
                                    residuals=residuals,
                                    model_errors=model_errors_cal,
-                                   data_type='_' + data_type + '_calibrated')
+                                   data_type=data_type,
+                                   is_calibrated=True)
                 except:
-                    print('Warning: unable to maek Error.plot_cdf plot. Skipping...')
+                    print('Warning: unable to make Error.plot_cdf plot. Skipping...')
+                try:
+                    Error.plot_cdf_uncal_cal_overlay(savepath=savepath,
+                                                     data_type=data_type,
+                                                     residuals=residuals,
+                                                     model_errors=model_errors,
+                                                     model_errors_cal=model_errors_cal)
+                except:
+                    print('Warning: unable to make Error.plot_cdf_uncal_cal_overlay plot. Skipping...')
                 try:
                     Error.plot_rstat(savepath=savepath,
                                      data_type=data_type,
