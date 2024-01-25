@@ -904,11 +904,192 @@ class Error():
         return
 
     @classmethod
+    def plot_rstat_per_bin(cls, savepath, data_type, residuals, model_errors, dataset_stdev, number_of_bins=15,
+                           equal_sized_bins=False, is_calibrated=False, image_dpi=250, name_str=None):
+
+        # Eliminate model errors with value 0, so that the ratios can be calculated
+        zero_indices = []
+        for i in range(0, len(model_errors)):
+            if model_errors[i] == 0:
+                zero_indices.append(i)
+        residuals = np.delete(residuals, zero_indices)
+        model_errors = np.delete(model_errors, zero_indices)
+
+        digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
+        # Get the binned z-scores
+        data_dict = dict()
+        counts = 0
+        for b, r, e in zip(digitized, residuals, model_errors):
+            if b not in data_dict.keys():
+                data_dict[b] = {'res': list(), 'err': list(), 'z': list()}
+            data_dict[b]['res'].append(r)
+            data_dict[b]['err'].append(e)
+            data_dict[b]['z'].append(r / e)
+            if b < 2:
+                counts += 1
+
+        bin_z_means = list()
+        bin_z_stds = list()
+        res_means = list()
+        err_means = list()
+        for k in data_dict.keys():
+            v = data_dict[k]
+            bin_z_means.append(np.mean(v['z']))
+            res_means.append(np.mean(v['res']))
+            err_means.append(np.mean(v['err']))
+            bin_z_stds.append(np.std(v['z']))
+
+        # Make the plot of r-stat (z-scores) per bin
+        plt.clf()
+        plt.scatter(err_values, bin_z_means[0:number_of_bins], color='blue', s=100)
+        plt.plot([min(err_values), max(err_values)], [0, 0], color='black', linestyle='--')
+        plt.plot([min(err_values), max(err_values)], [1, 1], color='gray', linestyle='--')
+        plt.plot([min(err_values), max(err_values)], [-1, -1], color='gray', linestyle='--')
+
+        plt.errorbar(x=err_values, y=bin_z_means[0:number_of_bins], yerr=bin_z_stds[0:number_of_bins], ecolor='blue', elinewidth=1.5,
+                     capsize=2, linewidth=0)
+        plt.xlabel('Model errors / dataset stdev', fontsize=12)
+        plt.xticks(fontsize=12)
+        plt.ylabel('Residuals / model error estimates', fontsize=12)
+        plt.yticks(fontsize=12)
+
+        if is_calibrated == False:
+            calibrate = 'uncalibrated'
+        if is_calibrated == True:
+            calibrate = 'calibrated'
+
+        if name_str is not None:
+            plt.savefig(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + calibrate + '_' + name_str + '.png'), dpi=image_dpi, bbox_inches='tight')
+        else:
+            plt.savefig(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + calibrate + '.png'), dpi=image_dpi, bbox_inches='tight')
+
+        data = {'err_values': err_values, 'bin_means': bin_z_means, 'bin_stds': bin_z_stds}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        df.to_csv(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + calibrate + '.csv'), index=False)
+
+        return
+
+    @classmethod
+    def plot_rstat_per_bin_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
+                                             dataset_stdev, number_of_bins=15, equal_sized_bins=False,
+                                             image_dpi=250, name_str=None):
+
+        # Eliminate model errors with value 0, so that the ratios can be calculated
+        zero_indices = []
+        for i in range(0, len(model_errors)):
+            if model_errors[i] == 0:
+                zero_indices.append(i)
+        residuals = np.delete(residuals, zero_indices)
+        model_errors = np.delete(model_errors, zero_indices)
+
+        digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
+
+        # Eliminate model errors with value 0, so that the ratios can be calculated
+        zero_indices = []
+        for i in range(0, len(model_errors_cal)):
+            if model_errors_cal[i] == 0:
+                zero_indices.append(i)
+        residuals = np.delete(residuals, zero_indices)
+        model_errors_cal = np.delete(model_errors_cal, zero_indices)
+
+        digitized_recal, err_values_recal, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
+
+        # Get the binned z-scores (uncal)
+        data_dict = dict()
+        counts = 0
+        for b, r, e in zip(digitized, residuals, model_errors):
+            if b not in data_dict.keys():
+                data_dict[b] = {'res': list(), 'err': list(), 'z': list()}
+            data_dict[b]['res'].append(r)
+            data_dict[b]['err'].append(e)
+            data_dict[b]['z'].append(r / e)
+            if b < 2:
+                counts += 1
+
+        bin_z_means = list()
+        bin_z_stds = list()
+        res_means = list()
+        err_means = list()
+        for k in data_dict.keys():
+            v = data_dict[k]
+            bin_z_means.append(np.mean(v['z']))
+            res_means.append(np.mean(v['res']))
+            err_means.append(np.mean(v['err']))
+            bin_z_stds.append(np.std(v['z']))
+
+        # Get the binned z-scores (cal)
+        data_dict_recal = dict()
+        for b, r, e in zip(digitized_recal, residuals, model_errors_cal):
+            if b not in data_dict_recal.keys():
+                data_dict_recal[b] = {'res': list(), 'err': list(), 'z': list()}
+            data_dict_recal[b]['res'].append(r)
+            data_dict_recal[b]['err'].append(e)
+            data_dict_recal[b]['z'].append(r / e)
+
+        bin_z_means_recal = list()
+        bin_z_stds_recal = list()
+        for k in data_dict_recal.keys():
+            v = data_dict_recal[k]
+            bin_z_means_recal.append(np.mean(v['z']))
+            bin_z_stds_recal.append(np.std(v['z']))
+
+        # Make the plot of r-stat (z-scores) per bin
+        # Uncal values
+        plt.scatter(err_values, bin_z_means[0:number_of_bins], color='gray', s=50, label='uncalibrated', alpha=0.5)
+        plt.plot([min(err_values), max(err_values)], [0, 0], color='black', linestyle='--')
+        plt.plot([min(err_values), max(err_values)], [1, 1], color='gray', linestyle='--')
+        plt.plot([min(err_values), max(err_values)], [-1, -1], color='gray', linestyle='--')
+
+        plt.errorbar(x=err_values, y=bin_z_means[0:number_of_bins], yerr=bin_z_stds[0:number_of_bins], ecolor='gray', elinewidth=1.5,
+                     capsize=2, linewidth=0, alpha=0.3)
+
+        # Recal values
+        plt.scatter(err_values_recal, bin_z_means_recal[0:number_of_bins], color='blue', s=50, label='calibrated', alpha=0.5)
+        plt.plot([min(err_values_recal), max(err_values_recal)], [0, 0], color='black', linestyle='--')
+        plt.plot([min(err_values_recal), max(err_values_recal)], [1, 1], color='gray', linestyle='--')
+        plt.plot([min(err_values_recal), max(err_values_recal)], [-1, -1], color='gray', linestyle='--')
+
+        plt.errorbar(x=err_values_recal, y=bin_z_means_recal[0:number_of_bins], yerr=bin_z_stds_recal[0:number_of_bins], ecolor='blue',
+                     elinewidth=1.5, capsize=2, linewidth=0, alpha=0.3)
+        plt.xlabel('Model errors / dataset stdev', fontsize=12)
+        plt.xticks(fontsize=12)
+        plt.ylabel('Residuals / model error estimates', fontsize=12)
+        plt.yticks(fontsize=12)
+
+        plt.legend(loc='best', fontsize=10)
+
+        if name_str is not None:
+            plt.savefig(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + 'uncal_cal_overlay' + '_' + name_str + '.png'), dpi=image_dpi, bbox_inches='tight')
+        else:
+            plt.savefig(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + 'uncal_cal_overlay' + '.png'), dpi=image_dpi, bbox_inches='tight')
+
+        data = {'err_values': err_values, 'bin_means': bin_z_means, 'bin_stds': bin_z_stds}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + name_str + '.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '.csv'), index=False)
+
+        return
+
+    @classmethod
     def plot_real_vs_predicted_error(cls, savepath, data_type, model_errors, residuals, dataset_stdev,
                                      show_figure=False, is_calibrated=False, well_sampled_number=30, image_dpi=250,
                                      number_of_bins=15, equal_sized_bins=False, name_str=None):
 
-        bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
+        digitized, bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
                                                                                                              dataset_stdev=dataset_stdev,
                                                                                                              number_of_bins=number_of_bins,
@@ -1036,13 +1217,13 @@ class Error():
                                                        well_sampled_number=30, image_dpi=250,
                                                        number_of_bins=15, equal_sized_bins=False, name_str=None):
 
-        bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
+        digitized_uncal, bin_values_uncal, rms_residual_values_uncal, num_values_per_bin_uncal, number_of_bins_uncal, ms_residual_values_uncal, var_sq_residual_values_uncal = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                                                      residuals=residuals,
                                                                                                                                      dataset_stdev=dataset_stdev,
                                                                                                                                      number_of_bins=number_of_bins,
                                                                                                                                      equal_sized_bins=equal_sized_bins)
 
-        bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal, ms_residual_values_cal, var_sq_residual_values_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
+        digitized_cal, bin_values_cal, rms_residual_values_cal, num_values_per_bin_cal, number_of_bins_cal, ms_residual_values_cal, var_sq_residual_values_cal = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
                                                                                                                              residuals=residuals,
                                                                                                                              dataset_stdev=dataset_stdev,
                                                                                                                              number_of_bins=number_of_bins,
@@ -1705,37 +1886,6 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 print('Warning: unable to make Scatter.plot_predicted_vs_true_bars plot. Skipping...')
 
     if 'Error' in plots:
-        '''
-        try:
-            Error.plot_qq(residuals=residuals,
-                          savepath=savepath,
-                          data_type=data_type,
-                          show_figure=show_figure,
-                          image_dpi=image_dpi)
-        except:
-            print('Warning: unable to make Error.plot_qq plot. Skipping...')
-        
-        try:
-            Error.plot_normalized_error(residuals=residuals,
-                                        savepath=savepath,
-                                        data_type=data_type,
-                                        model_errors=model_errors,
-                                        show_figure=show_figure,
-                                        file_extension=file_extension,
-                                        image_dpi=image_dpi)
-        except:
-            print('Warning: unable to make Error.plot_normalized_error plot. Skipping...')
-        try:
-            Error.plot_cumulative_normalized_error(residuals=residuals,
-                                                   savepath=savepath,
-                                                   data_type=data_type,
-                                                   model_errors=model_errors,
-                                                   show_figure=show_figure,
-                                                    file_extension=file_extension,
-                                                    image_dpi=image_dpi)
-        except:
-            print('Warning: unable to make Error.plot_cumulative_normalized_error plot. Skipping...')
-        '''
         if has_model_errors is True:
             try:
                 Error.plot_cdf(savepath=savepath,
@@ -1754,6 +1904,18 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                  image_dpi=image_dpi)
             except:
                 print('Warning: unable to make Error.plot_rstat plot. Skipping...')
+            try:
+                Error.plot_rstat_per_bin(savepath=savepath,
+                                         data_type=data_type,
+                                         residuals=residuals,
+                                         model_errors=model_errors,
+                                         dataset_stdev=dataset_stdev,
+                                         number_of_bins=number_of_bins,
+                                         equal_sized_bins=equal_sized_bins,
+                                         is_calibrated=False,
+                                         image_dpi=image_dpi)
+            except:
+                print('Warning: unable to make Error.plot_rstat_per_bin plot. Skipping...')
             try:
                 Error.plot_real_vs_predicted_error(savepath=savepath,
                                                    data_type=data_type,
@@ -1786,6 +1948,18 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 except:
                     print('Warning: unable to make Error.plot_rstat plot. Skipping...')
                 try:
+                    Error.plot_rstat_per_bin(savepath=savepath,
+                                             data_type=data_type,
+                                             residuals=residuals,
+                                             model_errors=model_errors_cal,
+                                             dataset_stdev=dataset_stdev,
+                                             number_of_bins=number_of_bins,
+                                             equal_sized_bins=equal_sized_bins,
+                                             is_calibrated=True,
+                                             image_dpi=image_dpi)
+                except:
+                    print('Warning: unable to make Error.plot_rstat_per_bin plot. Skipping...')
+                try:
                     Error.plot_rstat_uncal_cal_overlay(savepath=savepath,
                                                        data_type=data_type,
                                                        residuals=residuals,
@@ -1795,6 +1969,18 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                        image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_rstat_uncal_cal_overlay plot. Skipping...')
+                try:
+                    plot_rstat_per_bin_uncal_cal_overlay(savepath=savepath,
+                                                         data_type=data_type,
+                                                         residuals=residuals,
+                                                         model_errors=model_errors,
+                                                         model_errors_cal=model_errors_cal,
+                                                         dataset_stdev=dataset_stdev,
+                                                         number_of_bins=number_of_bins,
+                                                         equal_sized_bins=equal_sized_bins,
+                                                         image_dpi=image_dpi)
+                except:
+                    print('Warning: unable to make Error.plot_rstat_per_bin_uncal_cal_overlay plot. Skipping...')
                 try:
                     Error.plot_real_vs_predicted_error(savepath=savepath,
                                                        data_type=data_type,

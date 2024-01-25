@@ -252,7 +252,7 @@ class ErrorUtils():
         var_sq_residual_values = np.array(Var_squarederr_res)
         num_values_per_bin = np.array(weights)
 
-        return bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
+        return digitized, bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
 
     @classmethod
     def _get_model_errors(cls, model, X, X_test, X_train=None, error_method='stdev_weak_learners', remove_outlier_learners=False):
