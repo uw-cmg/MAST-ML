@@ -1137,6 +1137,91 @@ class Error():
 
         return
 
+    @classmethod
+    def plot_cdf_miscal_per_bin_uncal_cal_overlay(cls, savepath, data_type, residuals, model_errors, model_errors_cal,
+                                                  dataset_stdev, number_of_bins=15, equal_sized_bins=False,
+                                                  image_dpi=250, name_str=None):
+        digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
+
+        digitized_recal, err_values_recal, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors_cal,
+                                                                                                             residuals=residuals,
+                                                                                                             dataset_stdev=dataset_stdev,
+                                                                                                             number_of_bins=number_of_bins,
+                                                                                                             equal_sized_bins=equal_sized_bins)
+
+        # Get the binned residuals and error bars
+        data_dict = dict()
+        counts = 0
+        for b, r, e in zip(digitized, residuals, model_errors):
+            if b not in data_dict.keys():
+                data_dict[b] = {'res': list(), 'err': list(), 'z': list()}
+            data_dict[b]['res'].append(r)
+            data_dict[b]['err'].append(e)
+            data_dict[b]['z'].append(r / e)
+            if b < 2:
+                counts += 1
+
+        data_dict_recal = dict()
+        counts = 0
+        for b, r, e in zip(digitized_recal, residuals, model_errors_cal):
+            if b not in data_dict_recal.keys():
+                data_dict_recal[b] = {'res': list(), 'err': list(), 'z': list()}
+            data_dict_recal[b]['res'].append(r)
+            data_dict_recal[b]['err'].append(e)
+            data_dict_recal[b]['z'].append(r / e)
+            if b < 2:
+                counts += 1
+
+        # Get the CDF parity miscalibration area per bin
+        miscal_list = list()
+        for b in data_dict.keys():
+            res = np.array(data_dict[b]['res']).ravel()
+            err = np.array(data_dict[b]['err']).ravel()
+            miscal = Error().plot_cdf(savepath=savepath, data_type=data_type, residuals=res, model_errors=err, save=False)
+            miscal_list.append(miscal)
+
+        miscal_list_recal = list()
+        for b in data_dict_recal.keys():
+            res = np.array(data_dict_recal[b]['res']).ravel()
+            err = np.array(data_dict_recal[b]['err']).ravel()
+            miscal = Error().plot_cdf(savepath=savepath, data_type=data_type, residuals=res, model_errors=err, save=False)
+            miscal_list_recal.append(miscal)
+
+        # Make the plot of miscalibration area per bin
+        plt.clf()
+        miscal_avg = np.mean(miscal_list[0:number_of_bins])
+        miscal_recal_avg = np.mean(miscal_list_recal[0:number_of_bins])
+
+        plt.scatter(err_values, miscal_list[0:number_of_bins], color='gray', s=50, alpha=0.5, label='Uncalibrated')
+        plt.plot([min(err_values), max(err_values)], [miscal_avg, miscal_avg], color='gray', linestyle='--', label='Avg. uncal. miscalibration value = '+str(round(miscal_avg,2)))
+
+        plt.scatter(err_values_recal, miscal_list_recal[0:number_of_bins], color='blue', s=50, alpha=0.5, label='Calibrated')
+        plt.plot([min(err_values_recal), max(err_values_recal)], [miscal_recal_avg, miscal_recal_avg], color='blue', linestyle='--', label='Avg. cal. miscalibration value = '+str(round(miscal_recal_avg,2)))
+
+        plt.xlabel('Model errors / dataset stdev', fontsize=12)
+        plt.xticks(fontsize=12)
+        plt.ylabel('CDF Miscalibration area', fontsize=12)
+        plt.yticks(fontsize=12)
+
+        plt.legend(loc='best', fontsize=10)
+
+        if name_str is not None:
+            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '_' + name_str + '.png'), dpi=image_dpi, bbox_inches='tight')
+        else:
+            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '.png'), dpi=image_dpi, bbox_inches='tight')
+
+        data = {'err_values': err_values, 'cdf_miscal': miscal_list, 'err_values_recal': err_values_recal, 'cdf_miscal_recal': miscal_list_recal}
+        df = pd.DataFrame.from_dict(data, orient='index').T
+        if name_str is not None:
+            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '_' + name_str + '.csv'), index=False)
+        else:
+            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '.csv'), index=False)
+
+        return
 
     @classmethod
     def plot_rstat_per_bin(cls, savepath, data_type, residuals, model_errors, dataset_stdev, number_of_bins=15,
@@ -2260,7 +2345,7 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                 except:
                     print('Warning: unable to make Error.plot_rstat_uncal_cal_overlay plot. Skipping...')
                 try:
-                    plot_rstat_per_bin_uncal_cal_overlay(savepath=savepath,
+                    Error.plot_rstat_per_bin_uncal_cal_overlay(savepath=savepath,
                                                          data_type=data_type,
                                                          residuals=residuals,
                                                          model_errors=model_errors,
@@ -2271,6 +2356,19 @@ def make_plots(plots, y_true, y_pred, groups, dataset_stdev, metrics, model, res
                                                          image_dpi=image_dpi)
                 except:
                     print('Warning: unable to make Error.plot_rstat_per_bin_uncal_cal_overlay plot. Skipping...')
+                try:
+                    Error.plot_cdf_miscal_per_bin_uncal_cal_overlay(savepath=savepath,
+                                                                    data_type=data_type,
+                                                                    residuals=residuals,
+                                                                    model_errors=model_errors,
+                                                                    model_errors_cal=model_errors_cal,
+                                                                    dataset_stdev=dataset_stdev,
+                                                                    number_of_bins=number_of_bins,
+                                                                    equal_sized_bins=equal_sized_bins,
+                                                                    image_dpi=image_dpi,
+                                                                    name_str=None)
+                except:
+                    print('Warning: unable to make Error.plot_cdf_miscal_per_bin_uncal_cal_overlay plot. Skipping...')
                 try:
                     Error.plot_real_vs_predicted_error(savepath=savepath,
                                                        data_type=data_type,
