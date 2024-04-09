@@ -34,6 +34,12 @@ import subprocess
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from sklearn.model_selection import train_test_split
+
+import transfernet as trans
+import shutil
+import torch
+
 try:
     import xgboost
 except:
@@ -139,6 +145,199 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         print('Class attributes for,', self.model)
         pprint(self.model.__dict__)
         return
+
+
+class SourceNN:
+
+    def __init__(
+                 self,
+                 source_arch,
+                 nn_params,
+                 val_size=None,
+                 test_size=None,
+                 savepath='source_model',
+                 ):
+
+        self.source_arch = source_arch  # NN Architecture
+        self.nn_params = nn_params  # Fitting marameters like lr and batch size
+        self.val_size = val_size
+        self.test_size = test_size
+        self.savepath = savepath  # The location to save results
+
+    def fit(self, X_train, y_train):
+
+        # Split source domain into train and validation
+        if self.val_size is not None:
+            splits = train_test_split(
+                                      X_train,
+                                      y_train,
+                                      test_size=self.val_size,
+                                      )
+            X_train, X_val, y_train, y_val = splits
+
+            # Split source domain validation to get test set
+            if self.test_size is not None:
+                splits = train_test_split(
+                                          X_val,
+                                          y_val,
+                                          test_size=self.test_size,
+                                          )
+                X_val, X_test, y_val, y_test = splits
+
+            else:
+                X_test = y_test = None
+
+        else:
+            X_val = y_val = X_test = y_test = None
+
+        # Fit the NN
+        out = trans.utils.fit(
+                              self.source_arch,
+                              X_train,
+                              y_train,
+                              X_val=X_val,
+                              y_val=y_val,
+                              X_test=X_test,
+                              y_test=y_test,
+                              save_dir=self.savepath+'/source',
+                              **self.nn_params,
+                              )
+
+        self.source_model = out[1]  # The fitted NN
+        self.source_model = model_wrapper(self.source_model)
+
+    def predict(self, X):
+        return self.source_model.predict(X)
+
+class Transfer:
+
+    def __init__(
+                 self,                
+                 prefit_path,
+                 nn_params=None,
+                 val_size=None,
+                 test_size=None,
+                 freeze_n_layers=None,
+                 cover_model=None,
+                 savepath='transfer_model',
+                 ):
+          
+        self.nn_params = nn_params  # Fitting marameters like lr and batch size
+        self.val_size = val_size          
+        self.test_size = test_size
+        self.freeze_n_layers = freeze_n_layers
+        self.cover_model = cover_model
+        self.prefit_path = prefit_path
+        self.savepath = savepath  # The location to save results
+
+    def fit(self, X_train, y_train):
+
+        # Split source domain into train and validation
+        if self.val_size is not None:
+            splits = train_test_split(
+                                      X_train,
+                                      y_train,
+                                      test_size=self.val_size,
+                                      )
+            X_train, X_val, y_train, y_val = splits
+          
+            # Split source domain validation to get test set
+            if self.test_size is not None:
+                splits = train_test_split(
+                                          X_val,
+                                          y_val,
+                                          test_size=self.test_size,
+                                          )
+                X_val, X_test, y_val, y_test = splits
+
+            else:
+                X_test = y_test = None
+
+        else:
+            X_val = y_val = X_test = y_test = None
+
+        # Chose defalut device
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+
+        # Load a prefit NN model
+        self.source_model = torch.load(
+                                       self.prefit_path,
+                                       map_location=torch.device(device),
+                                       )
+
+        # Use final hidden layer of NN as features
+        if self.cover_model is not None:
+            self.target_model = trans.models.AppendModel(
+                                                         self.source_model,
+                                                         self.cover_model,
+                                                         )
+
+            self.target_model.fit(X_train, y_train)
+
+            if all([X_test is not None, y_test is not None]):
+
+                y_pred = self.target_model.predict(X_test)
+
+                df = pd.DataFrame()
+                df['y'] = y_test.ravel()
+                df['y_pred'] = y_pred
+                df['set'] = 'test'
+
+                name = self.savepath+'/transfer_by_appending_model'
+                os.makedirs(name, exist_ok=True)
+                trans.plots.parity(df, os.path.join(name, 'parity'))
+
+        # Alternatively freeze layers of NN
+        elif self.freeze_n_layers is not None:
+
+            name = '/transfer_by_freeze_{}_layers'.format(self.freeze_n_layers)
+            out = trans.utils.fit(
+                                  self.source_model,  # Start from original model
+                                  X_train,
+                                  y_train,
+                                  X_val=X_val,
+                                  y_val=y_val,
+                                  X_test=X_test,
+                                  y_test=y_test,
+                                  save_dir=self.savepath+name,
+                                  freeze_n_layers=self.freeze_n_layers,
+                                  **self.nn_params,
+                                  )
+
+            self.target_model = out[1]
+            self.target_model = model_wrapper(self.target_model)
+
+        return self.target_model
+
+    def predict(self, X):
+        return self.target_model.predict(X)
+
+
+class model_wrapper:
+    '''
+    Wrapper for pytorch model to include predict method
+    '''
+
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, X):
+
+        # Chose defalut device
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+
+        X = trans.utils.to_tensor(X, device)
+
+        pred = self.model(X)  # If model object passed
+        pred = pred.cpu().detach().view(-1).numpy()
+
+        return pred
 
 
 class HostedModel():

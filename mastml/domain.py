@@ -15,11 +15,13 @@ from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel, Matern
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.cluster import AgglomerativeClustering
+'''
 from madml.ml.splitters import BootstrappedLeaveClusterOut
 from madml.models.space import distance_model
 from madml.models.combine import domain_model
 from madml.models.uq import calibration_model
 from madml.ml.assessment import nested_cv
+'''
 
 class Domain():
 

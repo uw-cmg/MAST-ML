@@ -91,6 +91,8 @@ from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.domain import Domain
 from mastml.mastml import parallel
+from transfernet import models
+
 
 class BaseSplitter(ms.BaseCrossValidator):
     """
@@ -400,6 +402,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
                  file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
+                 X_val=None, y_val=None, X_test=None, y_test=None,
                  rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, **kwargs):
 
         if nested_CV == True:
@@ -1417,7 +1420,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         if hyperopt is not None:
             model = hyperopt.fit(X=X_train, y=y_train, model=model, cv=5, savepath=splitpath)
 
-        if model_name == 'Model' or model_name == 'CrabNetModel':
+        if model_name in ['Model', 'CrabNetModel', 'SourceNN', 'Transfer']:
             model.savepath = splitpath
         try:
             model.fit(X_train, y_train)
