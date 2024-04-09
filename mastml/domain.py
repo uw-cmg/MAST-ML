@@ -15,13 +15,11 @@ from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel, Matern
 
 from sklearn.model_selection import GridSearchCV
 from sklearn.cluster import AgglomerativeClustering
-'''
-from madml.ml.splitters import BootstrappedLeaveClusterOut
-from madml.models.space import distance_model
-from madml.models.combine import domain_model
-from madml.models.uq import calibration_model
-from madml.ml.assessment import nested_cv
-'''
+from madml.splitters import BootstrappedLeaveClusterOut
+from madml.models import dissimilarity
+from madml.models import calibration
+from madml.assess import nested_cv
+from madml.models import combine
 
 class Domain():
 
@@ -91,7 +89,7 @@ class Domain():
 
             # Train one more time with all training data
             self.pipe.fit(
-                          X_train.values, 
+                          X_train.values,
                           y_train.values
                           )
 
@@ -118,7 +116,7 @@ class Domain():
                                     cv=((slice(None), slice(None)),),
                                     )
 
-            ds_model = distance_model(dist='kde')  #  Distance model
+            ds_model = dissimilarity(dis='kde')
             if 'bandwidth' in self.params:
                 ds_model.bandwidth= self.params['bandwidth']
             if 'kernel' in self.params:
@@ -126,14 +124,14 @@ class Domain():
 
             # Uncertainty estimation model
             if 'uq_coeffs' in self.params:
-                uq_model = calibration_model(params=self.params['uq_coeffs'])
+                uq_model = calibration(params=self.params['uq_coeffs'])
             elif 'uq_function' in self.params:
-                uq_model = calibration_model(
+                uq_model = calibration(
                                              uq_func=self.params['uq_function'],
                                              prior=True
                                              )
             else:
-                uq_model = calibration_model(params=[0.0, 1.0])  # UQ model
+                uq_model = calibration(params=[0.0, 1.0])  # UQ model
 
             # Types of sampling to test
             splits = [('fit', RepeatedKFold(n_repeats=self.params['n_repeats']))]
@@ -156,25 +154,24 @@ class Domain():
                 splits.append(('agglo_{}'.format(i), top_split))
 
             # Fit models
-            model = domain_model(gs_model, ds_model, uq_model, splits)
-            
+            model = combine(gs_model, ds_model, uq_model, splits)
+
             # Arguments may have different names in MADML implementation
             if 'bins' in self.params:
                 model.bins = self.params['bins']
-            if 'gt_residual' in self.params:
-                model.gts = self.params['gt_residual']
-            if 'gt_uncertainty' in self.params:
-                model.gtb = self.params['gt_uncertainty']
+            if 'gt_rmse' in self.params:
+                model.gt_rmse = self.params['gt_rmse']
+            if 'gt_area' in self.params:
+                model.gt_area = self.params['gt_area']
 
-            cv = nested_cv(
-                           X_train.values,
-                           y_train.values,
-                           np.array(['None']*y_train.shape[0]),
-                           model,
-                           splits,
-                           save=os.path.join(self.path, 'madml_domain'),
+            cv = nested_cv(model=model,
+                           X=X_train.values,
+                           y=y_train.values.ravel(),
+                           g=np.array(['None']*y_train.shape[0]),
+                           splitters=splits,
                            )
-            _, self.madml_model = cv.assess()
+
+            _, __, self.madml_model = cv.test(save_outer_folds=os.path.join(self.path, 'madml_domain'))
 
     def predict(self, X_test, *args, **kwargs):
         domains = dict()
@@ -227,7 +224,7 @@ class Domain():
                 th = []
                 for i in t:
                     i = ['dist', i[0], i[1]]
-                    
+
                     if i[1] == 'residual':
                         i[1] = 'id'
                     elif i[1] == 'uncertainty':
@@ -238,45 +235,6 @@ class Domain():
                 domains = self.madml_model.predict(X_test, th)
             else:
                 domains = self.madml_model.predict(X_test)
-
-            # Drop extra stuff
-            domains = domains.drop([
-                                    'y_pred',
-                                    'y_pred/std(y)',
-                                    'y_stdu',
-                                    'y_stdu/std(y)',
-                                    'y_stdc',
-                                    'y_stdc/std(y)',
-                                    ], axis=1)
-
-            for col in domains.columns:
-                if ('OD' in col) or ('y_stdc/std(y)' in col):
-                    domains = domains.drop(col, axis=1)
-
-            # Rename some columns
-            cols = []
-            for col in domains.columns:
-                splits = col.split(' ')
-                if 'Max' in col:
-                    number = ' '.join(splits[-2:])
-                else:
-                    number = splits[-1]
-
-                if 'ID_BIN' in col:
-                    c = f'Uncertainty for {number}'
-                    cols.append(c)
-                elif 'ID' in col:
-                    c = f'Residual for {number}'
-                    cols.append(c)
-                else:
-                    cols.append(col)
-
-            domains.columns = cols
-
-            # To convert bool to integers
-            dist = domains['dist']
-            domains = domains[domains.columns.difference(['dist'])].applymap(lambda x: 1 if x else 0)
-            domains['dist'] = dist
 
             return domains
 
