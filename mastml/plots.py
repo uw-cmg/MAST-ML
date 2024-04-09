@@ -23,14 +23,11 @@ import pandas as pd
 import numpy as np
 from collections.abc import Iterable
 from math import log, ceil
-import scipy
-from scipy.stats import gaussian_kde, norm
 import scipy.stats as stats
 import json
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.metrics import ConfusionMatrixDisplay as plot_confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.exceptions import NotFittedError
 
@@ -42,8 +39,6 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure, figaspect
 from matplotlib.font_manager import FontProperties
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 try:
@@ -897,11 +892,13 @@ class Error():
 
         nx = len(x)
         z = np.random.normal(0, np.var(x), nz)  # Altered variance
+        z_cal = np.random.normal(0, np.var(x_cal), nz)
 
         # Need sorting
         x = sorted(x)
         x_cal = sorted(x_cal)
         z = sorted(z)
+        z_cal = sorted(z_cal)
 
         # Cummulative fractions
         xfrac = np.arange(nx) / (nx - 1)
@@ -911,17 +908,19 @@ class Error():
         # Interpolation to compare cdf
         eval_points = sorted(list(set(x + z)))
         y_pred = np.interp(eval_points, x, xfrac)  # Predicted
-        eval_points_cal = sorted(list(set(x_cal + z)))
+        eval_points_cal = sorted(list(set(x_cal + z_cal)))
         y_pred_cal = np.interp(eval_points_cal, x_cal, xfrac_cal)
+
         y = np.interp(eval_points, z, zfrac)  # Standard Normal
+        y_cal = np.interp(eval_points_cal, z_cal, zfrac)
 
         # Area between ideal distribution and observed
         absres = np.abs(y_pred - y)
         areacdf = np.trapz(absres, x=eval_points, dx=0.00001)
         areaparity = np.trapz(absres, x=y, dx=0.00001)
-        absres_cal = np.abs(y_pred_cal - y)
+        absres_cal = np.abs(y_pred_cal - y_cal)
         areacdf_cal = np.trapz(absres_cal, x=eval_points_cal, dx=0.00001)
-        areaparity_cal = np.trapz(absres_cal, x=y, dx=0.00001)
+        areaparity_cal = np.trapz(absres_cal, x=y_cal, dx=0.00001)
 
         parity_name = 'cdf_parity'
 
@@ -991,8 +990,8 @@ class Error():
         # create plot
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
-        ax.set_xlabel('residuals / model error estimates')
-        ax.set_ylabel('relative counts')
+        ax.set_xlabel('Residuals / model error estimates')
+        ax.set_ylabel('Relative counts')
         ax.hist(z_values, bins=30, color='blue', edgecolor='black', density=True)
         pdf_vals = stats.norm.pdf(gaussian_x, 0, 1)
         ax.plot(gaussian_x, pdf_vals, label='Gaussian mu: 0 std: 1', color='black', linestyle='--', linewidth=1.5)
@@ -1045,8 +1044,8 @@ class Error():
         # create plot
         x_align = 0.64
         fig, ax = make_fig_ax(x_align=x_align)
-        ax.set_xlabel('residuals / model error estimates')
-        ax.set_ylabel('relative counts')
+        ax.set_xlabel('Residuals / model error estimates')
+        ax.set_ylabel('Relative counts')
         ax.hist(z_values, bins=30, color='gray', edgecolor='black', density=True, alpha=0.4)
         ax.hist(z_values_cal, bins=30, color='blue', edgecolor='black', density=True, alpha=0.4)
         pdf_vals = stats.norm.pdf(gaussian_x, 0, 1)
@@ -1055,6 +1054,12 @@ class Error():
         ax.text(0.05, 0.85, 'std = %.3f' % (np.std(z_values)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'gray'})
         ax.text(0.05, 0.8, 'mean = %.3f' % (np.mean(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
         ax.text(0.05, 0.75, 'std = %.3f' % (np.std(z_values_cal)), transform=ax.transAxes, fontdict={'fontsize': 10, 'color': 'blue'})
+
+        z_stats = {'z_values_uncal_mean': np.mean(z_values),
+                'z_values_uncal_stdev': np.std(z_values),
+                'z_values_cal_mean': np.mean(z_values_cal),
+                'z_values_cal_stdev': np.std(z_values_cal)}
+        df_z_stats = pd.DataFrame(z_stats, index=[0])
 
         if name_str is not None:
             fig.savefig(os.path.join(savepath, 'rstat_histogram_' + str(data_type) + '_uncal_cal_overlay' + '_' + name_str + '.png'),
@@ -1071,8 +1076,10 @@ class Error():
         df = pd.DataFrame.from_dict(data, orient='index').T
         if name_str is not None:
             df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_' + name_str + '_uncal_cal_overlay.csv'), index=False)
+            df_z_stats.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_' + name_str + '_uncal_cal_overlay_zvals.csv'), index=False)
         else:
             df.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_uncal_cal_overlay.csv'), index=False)
+            df_z_stats.to_csv(os.path.join(savepath, 'rstat_histogram_' + data_type + '_uncal_cal_overlay_zvals.csv'), index=False)
 
         return
 
@@ -1193,14 +1200,14 @@ class Error():
 
         # Make the plot of miscalibration area per bin
         plt.clf()
-        miscal_avg = np.mean(miscal_list[0:number_of_bins])
-        miscal_recal_avg = np.mean(miscal_list_recal[0:number_of_bins])
+        miscal_avg = np.nanmean(miscal_list[0:number_of_bins])
+        miscal_recal_avg = np.nanmean(miscal_list_recal[0:number_of_bins])
 
         plt.scatter(err_values, miscal_list[0:number_of_bins], color='gray', s=50, alpha=0.5, label='Uncalibrated')
-        plt.plot([min(err_values), max(err_values)], [miscal_avg, miscal_avg], color='gray', linestyle='--', label='Avg. uncal. miscalibration value = '+str(round(miscal_avg,2)))
+        plt.plot([min(err_values), max(err_values)], [miscal_avg, miscal_avg], color='gray', linestyle='--', label='Avg. uncal. miscalibration value = '+str(round(miscal_avg,3)))
 
         plt.scatter(err_values_recal, miscal_list_recal[0:number_of_bins], color='blue', s=50, alpha=0.5, label='Calibrated')
-        plt.plot([min(err_values_recal), max(err_values_recal)], [miscal_recal_avg, miscal_recal_avg], color='blue', linestyle='--', label='Avg. cal. miscalibration value = '+str(round(miscal_recal_avg,2)))
+        plt.plot([min(err_values_recal), max(err_values_recal)], [miscal_recal_avg, miscal_recal_avg], color='blue', linestyle='--', label='Avg. cal. miscalibration value = '+str(round(miscal_recal_avg,3)))
 
         plt.xlabel('Model errors / dataset stdev', fontsize=12)
         plt.xticks(fontsize=12)
@@ -1210,16 +1217,16 @@ class Error():
         plt.legend(loc='best', fontsize=10)
 
         if name_str is not None:
-            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '_' + name_str + '.png'), dpi=image_dpi, bbox_inches='tight')
+            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_'+ data_type + '_uncal_cal_overlay_' + name_str + '.png'), dpi=image_dpi, bbox_inches='tight')
         else:
-            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '.png'), dpi=image_dpi, bbox_inches='tight')
+            plt.savefig(os.path.join(savepath, 'cdf_miscal_perbin_'+ data_type + '_uncal_cal_overlay.png'), dpi=image_dpi, bbox_inches='tight')
 
         data = {'err_values': err_values, 'cdf_miscal': miscal_list, 'err_values_recal': err_values_recal, 'cdf_miscal_recal': miscal_list_recal}
         df = pd.DataFrame.from_dict(data, orient='index').T
         if name_str is not None:
-            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '_' + name_str + '.csv'), index=False)
+            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_'+ data_type + '_uncal_cal_overlay_' + name_str + '.csv'), index=False)
         else:
-            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_uncal_cal_overlay' + data_type + '.csv'), index=False)
+            df.to_csv(os.path.join(savepath, 'cdf_miscal_perbin_'+ data_type + '_uncal_cal_overlay.csv'), index=False)
 
         return
 
@@ -1299,12 +1306,14 @@ class Error():
                                              image_dpi=250, name_str=None):
 
         # Eliminate model errors with value 0, so that the ratios can be calculated
+        plt.clf()
         zero_indices = []
         for i in range(0, len(model_errors)):
             if model_errors[i] == 0:
                 zero_indices.append(i)
         residuals = np.delete(residuals, zero_indices)
         model_errors = np.delete(model_errors, zero_indices)
+        model_errors_cal = np.delete(model_errors_cal, zero_indices)
 
         digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(model_errors=model_errors,
                                                                                                              residuals=residuals,
@@ -1395,7 +1404,9 @@ class Error():
         else:
             plt.savefig(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + 'uncal_cal_overlay' + '.png'), dpi=image_dpi, bbox_inches='tight')
 
-        data = {'err_values': err_values, 'bin_means': bin_z_means, 'bin_stds': bin_z_stds}
+        data = {'err_values': err_values, 'bin_means': bin_z_means, 'bin_stds': bin_z_stds,
+                'err_values_recal': err_values_recal, 'bin_means_recal': bin_z_means_recal, 'bin_stds_recal': bin_z_stds_recal}
+
         df = pd.DataFrame.from_dict(data, orient='index').T
         if name_str is not None:
             df.to_csv(os.path.join(savepath, 'rstat_vs_err_perbin_' + data_type + '_' + name_str + '.csv'), index=False)
@@ -1641,6 +1652,11 @@ class Error():
         slope_cal = linear_cal.coef_
         intercept_cal = linear_cal.intercept_
 
+        dict_params = {'slope_uncal': slope_uncal, 'intercept_uncal': intercept_uncal,
+                       'slope_cal': slope_cal, 'intercept_cal': intercept_cal}
+
+        df_params = pd.DataFrame(dict_params, index=[0])
+
         divider = make_axes_locatable(ax)
         axbarx = divider.append_axes("top", 1.2, pad=0.12, sharex=ax)
 
@@ -1698,8 +1714,10 @@ class Error():
         df = pd.DataFrame.from_dict(data, orient='index').T
         if name_str is not None:
             df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type + '_' + name_str + '_uncal_cal_overlay.csv'), index=False)
+            df_params.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_params_'+ data_type + '_' + name_str +'.csv'), index=False)
         else:
             df.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_' + data_type  + '_uncal_cal_overlay.csv'), index=False)
+            df_params.to_csv(os.path.join(savepath, 'Residuals_vs_modelerror_params_' + data_type + '.csv'), index=False)
 
         return
 
