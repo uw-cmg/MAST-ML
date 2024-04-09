@@ -154,33 +154,78 @@ class ErrorUtils():
         return model_errors, residuals, dataset_stdev
 
     @classmethod
-    def _recalibrate_errors(cls, model_errors, residuals, power=1):
-        corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
-        recal_dict = dict()
-        if power == 0:
-            a = corrector.nll(power=0)
-            model_errors = pd.Series(np.array(model_errors) + a, name='model_errors')
-            recal_dict['a'] = a
-        elif power == 1:
-            a, b = corrector.nll(power=1)
-            # shift the model errors by the correction factor
-            model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
-            recal_dict['a'] = a
-            recal_dict['b'] = b
-        elif power == 2:
-            a, b, c = corrector.nll(power=2)
-            model_errors = pd.Series(a * np.array(model_errors)**2 + b * np.array(model_errors) + c, name='model_errors')
-            recal_dict['a'] = a
-            recal_dict['b'] = b
-            recal_dict['c'] = c
-        elif power == 3:
-            a, b, c, d = corrector.nll(power=3)
-            model_errors = pd.Series(a * np.array(model_errors)**3 + b * np.array(model_errors)**2 + c * np.array(model_errors) + d, name='model_errors')
-            recal_dict['a'] = a
-            recal_dict['b'] = b
-            recal_dict['c'] = c
-            recal_dict['d'] = d
-        return model_errors, recal_dict
+    def _recalibrate_errors(cls, model_errors, residuals, power=1, recal_per_bin=False, number_of_bins=15, equal_sized_bins=False, dataset_stdev=None):
+        if recal_per_bin == True:
+            # Bin all the data first
+            digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(
+                model_errors=model_errors,
+                residuals=residuals,
+                dataset_stdev=dataset_stdev,
+                number_of_bins=number_of_bins,
+                equal_sized_bins=equal_sized_bins)
+
+            # Now organize the residuals and ebars into the right bins
+            data_dict = dict()
+            counts = 0
+            for b, r, e in zip(digitized, residuals, model_errors):
+                if b not in data_dict.keys():
+                    data_dict[b] = {'res': list(), 'err': list(), 'z': list()}
+                data_dict[b]['res'].append(r)
+                data_dict[b]['err'].append(e)
+                try:
+                    data_dict[b]['z'].append(r / e)
+                except:
+                    data_dict[b]['z'].append(np.nan)
+                if b < 2:
+                    counts += 1
+
+            # Now loop over each bin and recalibrate that bin
+            recal_params_bin_list = list()
+            err_recal_perbin_list = list()
+            residuals_perbin_list = list()
+            err_perbin_list = list()
+            bin_numbers = list()
+            for k, v in sorted(data_dict.items()):  # HERE changed to sorted
+                err_recal_perbin, recal_dict_perbin, _, __, ___ = ErrorUtils()._recalibrate_errors(model_errors=v['err'],
+                                                                                       residuals=v['res'],
+                                                                                       power=power,
+                                                                                       number_of_bins=number_of_bins,
+                                                                                       equal_sized_bins=equal_sized_bins,
+                                                                                       recal_per_bin=False)
+                recal_params_bin_list.append(recal_dict_perbin)
+                err_recal_perbin_list.append(err_recal_perbin)
+                residuals_perbin_list.append(v['res'])
+                err_perbin_list.append(v['err'])
+                bin_numbers.append(k)
+            return err_recal_perbin_list, recal_params_bin_list, bin_numbers, residuals_perbin_list, err_perbin_list
+        else:
+            corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
+            recal_dict = dict()
+            if power == 0:
+                a = corrector.nll(power=0)
+                model_errors = pd.Series(np.array(model_errors) + a, name='model_errors')
+                recal_dict['a'] = a
+            elif power == 1:
+                a, b = corrector.nll(power=1)
+                # shift the model errors by the correction factor
+                model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+            elif power == 2:
+                a, b, c = corrector.nll(power=2)
+                model_errors = pd.Series(a * np.array(model_errors)**2 + b * np.array(model_errors) + c, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+                recal_dict['c'] = c
+            elif power == 3:
+                a, b, c, d = corrector.nll(power=3)
+                model_errors = pd.Series(a * np.array(model_errors)**3 + b * np.array(model_errors)**2 + c * np.array(model_errors) + d, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+                recal_dict['c'] = c
+                recal_dict['d'] = d
+            bin_numbers = [0]
+            return model_errors, recal_dict, bin_numbers, residuals, model_errors
 
     @classmethod
     def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15, equal_sized_bins=False):
@@ -239,7 +284,6 @@ class ErrorUtils():
         # Set the x-values to the midpoint of each bin
         # TODO: this can have issues if doing higher-order recalibration and have some negative values, leading to large step
         # at first. Try using last two values instead
-        #bin_width = abs(bins[-1] - bins[-2])
         bin_width = abs(bins[1]-bins[0])
         binned_model_errors = np.zeros(len(bins_present))
         for i in range(0, len(bins_present)):
@@ -361,8 +405,6 @@ class ErrorUtils():
                 num_outliers += 1
             else:
                 preds_cleaned.append(pred)
-        #print('num outliers', num_outliers)
-        #print('Found number of outlier predictions in ensemble error analysis:', num_outliers, 'which reduces number of ensemble predictions used in error analysis from ', len(preds), 'to ', len(preds_cleaned))
         return np.array(preds_cleaned), num_outliers
 
 class CorrectionFactors():
