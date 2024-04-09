@@ -403,7 +403,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
                  file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
                  X_val=None, y_val=None, X_test=None, y_test=None,
-                 rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, **kwargs):
+                 rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, recalibrate_per_bin=False, **kwargs):
 
         if nested_CV == True:
             model_names = [m.__class__.__name__ for m in models]
@@ -559,6 +559,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                                              rve_equal_sized_bins,
                                                              domain,
                                                              recalibrate_power,
+                                                             recalibrate_per_bin,
                                                              **kwargs)
 
                         # Save the split summary dict
@@ -622,7 +623,6 @@ class BaseSplitter(ms.BaseCrossValidator):
                             selected_features = [line.rstrip() for line in f]
                         X_leaveout = X_leaveout[selected_features]
                         X_leaveout_preprocessed = preprocessor.transform(X=X_leaveout)
-                        #y_pred_leaveout = best_model.predict(X=X_leaveout_preprocessed)
                         y_pred_leaveout = best_model.predict(X_leaveout_preprocessed)
                         y_pred_leaveout = y_pred_leaveout.ravel()
                         y_pred_leaveout = pd.Series(y_pred_leaveout, name='y_pred_leaveout')
@@ -712,22 +712,86 @@ class BaseSplitter(ms.BaseCrossValidator):
                             residuals_leaveout = y_pred_leaveout-y_leaveout
                             self._save_split_data(df=residuals_leaveout, filename='residuals_leaveout', savepath=splitouterpath, columns='residuals', file_extension=file_extension)
 
-                        # 6/2/2023 HERE
                         if recalibrate_errors is True:
                             recalibrate_dict = self._get_recalibration_params(savepath=splitouterpath,
                                                                               data_type='test', file_extension=file_extension)
-                            if recalibrate_power == 0:
-                                model_errors_leaveout_cal = model_errors_leaveout + recalibrate_dict['a']
-                            elif recalibrate_power == 1:
-                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
-                            elif recalibrate_power == 2:
-                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**2 + recalibrate_dict['b']*model_errors_leaveout + recalibrate_dict['c']
-                            elif recalibrate_power == 3:
-                                model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**3 + recalibrate_dict['b']*model_errors_leaveout**2 + recalibrate_dict['c']*model_errors_leaveout + recalibrate_dict['d']
+
+                            if recalibrate_per_bin == False:
+                                recalibrate_dict = recalibrate_dict[0]
+                                if recalibrate_power == 0:
+                                    model_errors_leaveout_cal = model_errors_leaveout + recalibrate_dict['a']
+                                elif recalibrate_power == 1:
+                                    model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout+recalibrate_dict['b']
+                                elif recalibrate_power == 2:
+                                    model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**2 + recalibrate_dict['b']*model_errors_leaveout + recalibrate_dict['c']
+                                elif recalibrate_power == 3:
+                                    model_errors_leaveout_cal = recalibrate_dict['a']*model_errors_leaveout**3 + recalibrate_dict['b']*model_errors_leaveout**2 + recalibrate_dict['c']*model_errors_leaveout + recalibrate_dict['d']
+                            else:
+                                # Need to bin the data
+                                digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(
+                                    model_errors=model_errors_leaveout,
+                                    residuals=residuals_leaveout,
+                                    dataset_stdev=dataset_stdev,
+                                    number_of_bins=rve_number_of_bins,
+                                    equal_sized_bins=rve_equal_sized_bins)
+
+                                # Now organize the residuals and ebars into the right bins
+                                data_dict_leaveout = dict()
+                                counts = 0
+                                for b, r, e in zip(digitized, residuals_leaveout, model_errors_leaveout):
+                                    if b not in data_dict_leaveout.keys():
+                                        data_dict_leaveout[b] = {'res': list(), 'err': list(), 'z': list()}
+                                    data_dict_leaveout[b]['res'].append(r)
+                                    data_dict_leaveout[b]['err'].append(e)
+                                    try:
+                                        data_dict_leaveout[b]['z'].append(r / e)
+                                    except:
+                                        data_dict_leaveout[b]['z'].append(np.nan)
+                                    if b < 2:
+                                        counts += 1
+
+                                # Need to apply the per-bin recal params
+                                model_errors_leaveout_cal = list()
+                                residuals_leaveout_reorder = list()
+                                model_errors_leaveout_reorder = list()
+                                for i, b in enumerate(data_dict_leaveout.keys()):
+                                    # If the bin can't be found, default to the last bin
+                                    try:
+                                        recal = recalibrate_dict[b-1]
+                                    except:
+                                        recal = recalibrate_dict[-1]
+                                    err = np.array(data_dict_leaveout[b]['err'])
+                                    if recalibrate_power == 0:
+                                        err_cal = err + recal['a']
+                                    elif recalibrate_power == 1:
+                                        err_cal = recal['a'] * err + \
+                                                                    recal['b']
+                                    elif recalibrate_power == 2:
+                                        err_cal = recal['a'] * err ** 2 + \
+                                                                    recal['b'] * err + \
+                                                                    recal['c']
+                                    elif recalibrate_power == 3:
+                                        err_cal = recal['a'] * err ** 3 + \
+                                                                    recal['b'] * err ** 2 + \
+                                                                    recal['c'] * err + \
+                                                                    recal['d']
+                                    model_errors_leaveout_cal.append(err_cal)
+                                    residuals_leaveout_reorder.append(data_dict_leaveout[b]['res'])
+                                    model_errors_leaveout_reorder.append(data_dict_leaveout[b]['err'])
+
+                                # TODO: issue here where model errors now in different order from before, and are detached from their respective residuals??
+                                model_errors_leaveout_cal = pd.Series(list(itertools.chain.from_iterable(model_errors_leaveout_cal)), name='model_errors')
+                                residuals_leaveout = pd.Series(list(itertools.chain.from_iterable(residuals_leaveout_reorder)), name='residuals')
+                                model_errors_leaveout = pd.Series(list(itertools.chain.from_iterable(model_errors_leaveout_reorder)), name='model_errors')
 
                             if verbosity >= 0:
                                 self._save_split_data(df=model_errors_leaveout_cal, filename='model_errors_leaveout_calibrated',
                                                   savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+                                # Save the residuals and model errors again since they're been re-sorted
+                                self._save_split_data(df=model_errors_leaveout, filename='model_errors_leaveout',
+                                                  savepath=splitouterpath, columns='model_errors', file_extension=file_extension)
+                                self._save_split_data(df=residuals_leaveout, filename='residuals_leaveout',
+                                                  savepath=splitouterpath, columns='residuals', file_extension=file_extension)
 
                             split_summary_list_outer[split_outer_count]['model_errors_leaveout_cal'] = np.array(model_errors_leaveout_cal).ravel()
                         else:
@@ -847,11 +911,11 @@ class BaseSplitter(ms.BaseCrossValidator):
                         recalibrate_avg_dict, recalibrate_stdev_dict = self._get_average_recalibration_params(savepath=splitdir,
                                                                                                               data_type='test', file_extension=file_extension)
                         if file_extension == '.xlsx':
-                            pd.DataFrame(recalibrate_avg_dict, index=[0]).to_excel(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
-                            pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_excel(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
+                            pd.DataFrame(recalibrate_avg_dict).to_excel(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
+                            pd.DataFrame(recalibrate_stdev_dict).to_excel(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
                         elif file_extension == '.csv':
-                            pd.DataFrame(recalibrate_avg_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
-                            pd.DataFrame(recalibrate_stdev_dict, index=[0]).to_csv(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
+                            pd.DataFrame(recalibrate_avg_dict).to_csv(os.path.join(splitdir, 'recalibration_parameters_average_test'+file_extension))
+                            pd.DataFrame(recalibrate_stdev_dict).to_csv(os.path.join(splitdir, 'recalibration_parameters_stdev_test'+file_extension))
 
                     # Make all leaveout data plots
                     if verbosity >= 1:
@@ -942,7 +1006,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     # Remove all the splitdirs if set to True
                     if remove_split_dirs == True:
                         ds = os.listdir(splitdir)
-                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d]
+                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d and '.json' not in d]
                         for d in splitdirs:
                             shutil.rmtree(os.path.join(splitdir, d))
 
@@ -979,6 +1043,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                                               rve_equal_sized_bins,
                                               domain,
                                               recalibrate_power,
+                                              recalibrate_per_bin,
                                               **kwargs)
 
                     # Save the split summary dict
@@ -1026,7 +1091,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                     # Remove all the splitdirs if set to True
                     if remove_split_dirs == True:
                         ds = os.listdir(splitdir)
-                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d]
+                        splitdirs = [d for d in ds if 'split_' in d and '.png' not in d and '.json' not in d]
                         for d in splitdirs:
                             shutil.rmtree(os.path.join(splitdir, d))
 
@@ -1035,7 +1100,8 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _evaluate_split_sets(self, X_splits, y_splits, train_inds, test_inds, model, model_name, selector, preprocessor,
                              X_extra, groups, splitdir, hyperopt, metrics, plots, has_model_errors, error_method,
                              remove_outlier_learners, recalibrate_errors, verbosity, baseline_test, distance_metric,
-                             file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, recalibrate_power, **kwargs):
+                             file_extension, image_dpi, parallel_run, number_of_bins, equal_sized_bins, domain, recalibrate_power,
+                             recalibrate_per_bin):
 
         def _evaluate_split_sets_serial(data, verbosity, groups=None, domain=None):
 
@@ -1185,31 +1251,90 @@ class BaseSplitter(ms.BaseCrossValidator):
             model_errors_test_all = np.concatenate(err_test_all)
             residuals_test_all = np.concatenate(res_test_all)
 
-            model_errors_test_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all, residuals=residuals_test_all, power=recalibrate_power)
+            if recalibrate_per_bin == True:
+                model_errors_test_all_cal, recal_dict, bin_numbers, residuals_test_all, model_errors_test_all = ErrorUtils()._recalibrate_errors(model_errors=model_errors_test_all,
+                                                                                     residuals=residuals_test_all,
+                                                                                     power=recalibrate_power,
+                                                                                     recal_per_bin=recalibrate_per_bin,
+                                                                                     number_of_bins=number_of_bins,
+                                                                                     equal_sized_bins=equal_sized_bins,
+                                                                                     dataset_stdev=np.std(y_test_all))
+
+                if type(model_errors_test_all_cal) is list and type(residuals_test_all) is list:
+                    # TODO: issue here where model errors now in different order from before, and are detached from their respective residuals?? Need to do for both I think
+                    model_errors_test_all_cal = pd.Series(list(itertools.chain.from_iterable(model_errors_test_all_cal)), name='model_errors')
+                    residuals_test_all = pd.Series(list(itertools.chain.from_iterable(residuals_test_all)), name='residuals')
+                    model_errors_test_all = pd.Series(list(itertools.chain.from_iterable(model_errors_test_all)), name='model_errors')
+            else:
+                model_errors_test_all_cal, recal_dict, bin_numbers, _, __ = ErrorUtils()._recalibrate_errors(
+                    model_errors=model_errors_test_all,
+                    residuals=residuals_test_all,
+                    power=recalibrate_power,
+                    recal_per_bin=recalibrate_per_bin,
+                    number_of_bins=number_of_bins,
+                    equal_sized_bins=equal_sized_bins,
+                    dataset_stdev=np.std(y_test_all))
 
             # Write the recalibration values to file
-            recal_df = pd.DataFrame(recal_dict, index=[0])
+            if recalibrate_per_bin == False:
+                recal_df = pd.DataFrame(recal_dict, index=[0])
+            else:
+                recal_df = pd.DataFrame(recal_dict)
+                #recal_df['bin_numbers'] = bin_numbers
             if file_extension == '.xlsx':
                 recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_'+str('test')+file_extension), index=False)
             elif file_extension == '.csv':
                 recal_df.to_csv(os.path.join(splitdir, 'recalibration_parameters_' + str('test') + file_extension), index=False)
 
+            self._save_split_data(df=model_errors_test_all_cal, filename='model_errors_test_calibrated',
+                                  savepath=splitdir,
+                                  columns='model_errors', file_extension=file_extension)
+
             # Write the calibrated model errors to file
             if verbosity >= 0:
 
-                model_errors_train_all_cal, recal_dict = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
+                if recalibrate_per_bin == True:
+                    model_errors_train_all_cal, recal_dict, bin_numbers, residuals_train_all, model_errors_train_all = ErrorUtils()._recalibrate_errors(model_errors=model_errors_train_all,
                                                                                            residuals=residuals_train_all,
-                                                                                          power=recalibrate_power)
+                                                                                          power=recalibrate_power,
+                                                                                          recal_per_bin=recalibrate_per_bin,
+                                                                                          number_of_bins=number_of_bins,
+                                                                                          equal_sized_bins=equal_sized_bins,
+                                                                                          dataset_stdev=np.std(y_train_all))
+
+                    if type(model_errors_train_all_cal) is list and type(residuals_train_all) is list:
+                        # TODO: issue here where model errors now in different order from before, and are detached from their respective residuals?? Need to do for both I think
+                        model_errors_train_all_cal = pd.Series(list(itertools.chain.from_iterable(model_errors_train_all_cal)), name='model_errors')
+                        residuals_train_all = pd.Series(list(itertools.chain.from_iterable(residuals_train_all)), name='residuals')
+                        model_errors_train_all = pd.Series(list(itertools.chain.from_iterable(model_errors_train_all)), name='model_errors')
+                else:
+                    model_errors_train_all_cal, recal_dict, bin_numbers, _, __ = ErrorUtils()._recalibrate_errors(
+                        model_errors=model_errors_train_all,
+                        residuals=residuals_train_all,
+                        power=recalibrate_power,
+                        recal_per_bin=recalibrate_per_bin,
+                        number_of_bins=number_of_bins,
+                        equal_sized_bins=equal_sized_bins,
+                        dataset_stdev=np.std(y_train_all))
 
                 # Write the recalibration values to file
-                recal_df = pd.DataFrame(recal_dict, index=[0])
+                if recalibrate_per_bin == False:
+                    recal_df = pd.DataFrame(recal_dict, index=[0])
+                else:
+                    recal_df = pd.DataFrame(recal_dict)
+                    #recal_df['bin_numbers'] = bin_numbers
                 if file_extension == '.xlsx':
                     recal_df.to_excel(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
                 elif file_extension == '.csv':
                     recal_df.to_csv(os.path.join(splitdir, 'recalibration_parameters_' + str('train') + file_extension), index=False)
                 # Write the calibrated model errors to file
+                #if recalibrate_per_bin == False:
                 self._save_split_data(df=model_errors_train_all_cal, filename='model_errors_train_calibrated', savepath=splitdir,
                                       columns='model_errors', file_extension=file_extension)
+                #else:
+                #    for i, data in enumerate(model_errors_train_all_cal):
+                #        self._save_split_data(df=data, filename='model_errors_train_calibrated_bin_'+str(i), savepath=splitdir,
+                #                              columns='model_errors', file_extension=file_extension)
         else:
             model_errors_test_all_cal = None
             model_errors_train_all_cal = None
@@ -1327,6 +1452,23 @@ class BaseSplitter(ms.BaseCrossValidator):
         split_summary['train_ind'] = np.array(train_ind)
         split_summary['test_ind'] = np.array(test_ind)
 
+        X_train_orig = copy.deepcopy(X_train)
+        X_test_orig = copy.deepcopy(X_test)
+
+        preprocessor1 = copy.deepcopy(preprocessor)
+        preprocessor2 = copy.deepcopy(preprocessor)
+
+        # Preprocess the full split data
+        X_train = preprocessor1.evaluate(X_train, savepath=splitpath, file_name='train', file_extension=file_extension, verbosity=verbosity)
+        #X_test = preprocessor1.evaluate(X_test, savepath=splitpath, file_name='test', file_extension=file_extension, verbosity=verbosity)
+
+        # run feature selector to get new Xtrain, Xtest
+        X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath, verbosity=verbosity)
+        selected_features = selector.selected_features
+        # TODO: this should be X_test scaled like X_train ?? Yes b/c domains_train and domains_test for full fit should be same and they are not
+        #X_test = X_test_orig[selected_features]
+        X_test = preprocessor1.transform(X_test_orig[selected_features])
+
         if domain is not None:
             domains_test = list()
             domains_train = list()
@@ -1378,20 +1520,6 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             domains_test = pd.concat(domains_test, axis=1)
             domains_train = pd.concat(domains_train, axis=1)
-
-        X_train_orig = copy.deepcopy(X_train)
-        X_test_orig = copy.deepcopy(X_test)
-
-        preprocessor1 = copy.deepcopy(preprocessor)
-        preprocessor2 = copy.deepcopy(preprocessor)
-
-        # Preprocess the full split data
-        X_train = preprocessor1.evaluate(X_train, savepath=splitpath, file_name='train', file_extension=file_extension, verbosity=verbosity)
-        X_test = preprocessor1.evaluate(X_test, savepath=splitpath, file_name='test', file_extension=file_extension, verbosity=verbosity)
-
-        # run feature selector to get new Xtrain, Xtest
-        X_train = selector.evaluate(X=X_train, y=y_train, savepath=splitpath, verbosity=verbosity)
-        selected_features = selector.selected_features
 
         X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected', file_extension=file_extension, verbosity=verbosity)
         X_test = preprocessor2.transform(X_test_orig[selected_features])
@@ -1571,10 +1699,10 @@ class BaseSplitter(ms.BaseCrossValidator):
             # Edge case of ensemble of keras models- pickle won't work here. Just state warning
             if model.base_estimator_ == 'KerasRegressor':
             #if model.model.estimators_[0].__class__.__name__=='KerasRegressor':
-                # Save the individiual Keras models comprising the Ensemble
+                # Save the individual Keras models comprising the Ensemble
                 count = 0
                 for m in model.model.estimators_:
-                    m.model.save(filepath=os.path.join(splitpath,'keras_model_' + str(count)))
+                    m.model_.save(filepath=os.path.join(splitpath,'keras_model_' + str(count)))
                     count += 1
                 #print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
             else:
@@ -1711,7 +1839,7 @@ class BaseSplitter(ms.BaseCrossValidator):
     def _collect_data(self, filename, savepath, file_extension, iterdirs=True):
         # Note this is only meant for collecting y-data (single column)
         if iterdirs == True:
-            dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d]
+            dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d and '.json' not in d]
         else:
             dirs = ['']
         data = list()
@@ -1740,7 +1868,7 @@ class BaseSplitter(ms.BaseCrossValidator):
         return df
 
     def _collect_df_data(self, filename, savepath, file_extension):
-        dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d]
+        dirs = [d for d in os.listdir(savepath) if 'split' in d and '.png' not in d and file_extension not in d and '.json' not in d]
         data = list()
 
         # Condition to evaluate in parallel
@@ -1841,49 +1969,74 @@ class BaseSplitter(ms.BaseCrossValidator):
 
     def _get_average_recalibration_params(self, savepath, data_type, file_extension):
         dirs = os.listdir(savepath)
-        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d]
+        splitdirs = [d for d in dirs if 'split_' in d and '.png' not in d and '.json' not in d]
 
-        recalibrate_a_vals = list()
-        recalibrate_b_vals = list()
-        recalibrate_c_vals = list()
-        recalibrate_d_vals = list()
+        recalibrate_a_vals = dict()
+        recalibrate_b_vals = dict()
+        recalibrate_c_vals = dict()
+        recalibrate_d_vals = dict()
         recalibrate_avg_dict = dict()
         recalibrate_stdev_dict = dict()
         for splitdir in splitdirs:
             if file_extension == '.xlsx':
                 recalibrate_dict = pd.read_excel(os.path.join(os.path.join(savepath, splitdir),
-                                                          'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
+                                                          'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')
             elif file_extension == '.csv':
                 recalibrate_dict = pd.read_csv(os.path.join(os.path.join(savepath, splitdir),
-                                                          'recalibration_parameters_'+str(data_type)+'.csv')).to_dict('records')[0]
-            if 'a' in recalibrate_dict.keys():
-                recalibrate_a_vals.append(recalibrate_dict['a'])
-            if 'b' in recalibrate_dict.keys():
-                recalibrate_b_vals.append(recalibrate_dict['b'])
-            if 'c' in recalibrate_dict.keys():
-                recalibrate_c_vals.append(recalibrate_dict['c'])
-            if 'd' in recalibrate_dict.keys():
-                recalibrate_d_vals.append(recalibrate_dict['d'])
-        if len(recalibrate_a_vals) > 0:
-            recalibrate_avg_dict['a'] = np.mean(recalibrate_a_vals)
-            recalibrate_stdev_dict['a'] = np.std(recalibrate_a_vals)
-        if len(recalibrate_b_vals) > 0:
-            recalibrate_avg_dict['b'] = np.mean(recalibrate_b_vals)
-            recalibrate_stdev_dict['b'] = np.std(recalibrate_b_vals)
-        if len(recalibrate_c_vals) > 0:
-            recalibrate_avg_dict['c'] = np.mean(recalibrate_c_vals)
-            recalibrate_stdev_dict['c'] = np.std(recalibrate_c_vals)
-        if len(recalibrate_d_vals) > 0:
-            recalibrate_avg_dict['d'] = np.mean(recalibrate_d_vals)
-            recalibrate_stdev_dict['d'] = np.std(recalibrate_d_vals)
+                                                          'recalibration_parameters_'+str(data_type)+'.csv')).to_dict('records')
+            for i, recal in enumerate(recalibrate_dict):
+                if i not in recalibrate_a_vals:
+                    recalibrate_a_vals[i] = list()
+                if i not in recalibrate_b_vals:
+                    recalibrate_b_vals[i] = list()
+                if i not in recalibrate_c_vals:
+                    recalibrate_c_vals[i] = list()
+                if i not in recalibrate_d_vals:
+                    recalibrate_d_vals[i] = list()
+                if 'a' in recal.keys():
+                    recalibrate_a_vals[i].append(recal['a'])
+                if 'b' in recal.keys():
+                    recalibrate_b_vals[i].append(recal['b'])
+                if 'c' in recal.keys():
+                    recalibrate_c_vals[i].append(recal['c'])
+                if 'd' in recal.keys():
+                    recalibrate_d_vals[i].append(recal['d'])
+        if len(recalibrate_a_vals[0]) > 0:
+            avals = list()
+            for k, v in recalibrate_a_vals.items():
+                avals.append(v)
+            avals = np.array(avals)
+            recalibrate_avg_dict['a'] = np.mean(avals, axis=1)
+            recalibrate_stdev_dict['a'] = np.std(avals, axis=1)
+        if len(recalibrate_b_vals[0]) > 0:
+            bvals = list()
+            for k, v in recalibrate_b_vals.items():
+                bvals.append(v)
+            bvals = np.array(bvals)
+            recalibrate_avg_dict['b'] = np.mean(bvals, axis=1)
+            recalibrate_stdev_dict['b'] = np.std(bvals, axis=1)
+        if len(recalibrate_c_vals[0]) > 0:
+            cvals = list()
+            for k, v in recalibrate_c_vals.items():
+                cvals.append(v)
+            cvals = np.array(cvals)
+            recalibrate_avg_dict['c'] = np.mean(cvals, axis=1)
+            recalibrate_stdev_dict['c'] = np.std(cvals, axis=1)
+        if len(recalibrate_d_vals[0]) > 0:
+            dvals = list()
+            for k, v in recalibrate_d_vals.items():
+                dvals.append(v)
+            dvals = np.array(dvals)
+            recalibrate_avg_dict['d'] = list(np.mean(dvals, axis=1))
+            recalibrate_stdev_dict['d'] = list(np.std(dvals, axis=1))
 
         return recalibrate_avg_dict, recalibrate_stdev_dict
 
     def _get_recalibration_params(self, savepath, data_type, file_extension):
         if file_extension == '.xlsx':
-            recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')[0]
+            recalibrate_dict = pd.read_excel(os.path.join(savepath, 'recalibration_parameters_'+str(data_type)+'.xlsx'), engine='openpyxl').to_dict('records')
         elif file_extension == '.csv':
-            recalibrate_dict = pd.read_csv(os.path.join(savepath, 'recalibration_parameters_' + str(data_type) + '.csv')).to_dict('records')[0]
+            recalibrate_dict = pd.read_csv(os.path.join(savepath, 'recalibration_parameters_' + str(data_type) + '.csv')).to_dict('records')
         return recalibrate_dict
 
     def help(self):
