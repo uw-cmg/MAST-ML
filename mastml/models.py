@@ -488,7 +488,7 @@ class CrabNetModel(BaseEstimator, TransformerMixin):
         self.drop_unary = drop_unary
         self.savepath = savepath
 
-        self.get_model()
+        #self.get_model()
 
     def get_model(self):
         from mastml.crabnet.model import Model
@@ -504,6 +504,8 @@ class CrabNetModel(BaseEstimator, TransformerMixin):
         return
 
     def fit(self, X, y):
+        self.get_model()
+
         # Crabnet needs to read a csv for data. The data needs compositions with "formula" as column name and targets with "target" as column name
         train_data = os.path.join(self.savepath, 'train_crabnet.csv')
         val_data = os.path.join(self.savepath, 'val_crabnet.csv')
