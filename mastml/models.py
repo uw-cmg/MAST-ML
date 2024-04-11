@@ -420,7 +420,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             print('Could not find designated model type in scikit-learn model library. Note the other supported model'
                   'type is the keras.wrappers.scikit_learn.KerasRegressor model')
         self.n_estimators = n_estimators
-        self.model = BaggingRegressor(base_estimator=model, n_estimators=self.n_estimators)
+        self.model = BaggingRegressor(estimator=model, n_estimators=self.n_estimators)
         self.base_estimator_ = model.__class__.__name__
 
     def fit(self, X, y):

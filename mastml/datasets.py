@@ -44,7 +44,6 @@ except:
     print('Figshare is an optional dependency. To import data from figshare, manually install figshare via git clone of '
           'git clone https://github.com/cognoma/figshare.git')
 
-
 class SklearnDatasets():
     """
     Class wrapping the sklearn.datasets funcionality for easy import of toy datasets from sklearn. Added some changes
@@ -80,13 +79,13 @@ class SklearnDatasets():
         self.return_X_y = return_X_y
         self.as_frame = as_frame
 
-    def load_boston(self):
+    def load_housing(self):
         if self.as_frame:
-            boston = sklearn.datasets.load_boston()
-            X = pd.DataFrame(boston.data, columns=boston.feature_names)
-            y = pd.DataFrame(boston.target, columns=['MEDV'])
+            housing = sklearn.datasets.fetch_california_housing()
+            X = pd.DataFrame(housing.data, columns=housing.feature_names)
+            y = pd.DataFrame(housing.target, columns=['MedHouseVal'])
             return X, y
-        return sklearn.datasets.load_boston(return_X_y=self.return_X_y)
+        return sklearn.datasets.fetch_california_housing(return_X_y=self.return_X_y)
 
     def load_iris(self):
         return sklearn.datasets.load_iris(return_X_y=self.return_X_y, as_frame=self.as_frame)
@@ -112,7 +111,6 @@ class SklearnDatasets():
             return pd.DataFrame(X, columns=["x"+str(i) for i in range(n_features)]), pd.DataFrame(y, columns=['target'])
         else:
             return X, y
-
 
 class LocalDatasets():
     """
