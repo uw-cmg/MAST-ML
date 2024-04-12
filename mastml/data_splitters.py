@@ -616,10 +616,14 @@ class BaseSplitter(ms.BaseCrossValidator):
                             best_model = joblib.load(best_split_dict['model'])
                         preprocessor = joblib.load(best_split_dict['preprocessor'])
 
-                        #if file_extension == '.xlsx':
-                        #    X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
-                        #elif file_extension == '.csv':
-                        #    X_train_bestmodel = preprocessor.transform(pd.read_csv(best_split_dict['X_train']))  # Need to preprocess the Xtrain data
+                        # Need this for jacknife-after-bootstrap method.
+                        try:
+                            if file_extension == '.xlsx':
+                                X_train_bestmodel = preprocessor.transform(pd.read_excel(best_split_dict['X_train'], engine='openpyxl')) # Need to preprocess the Xtrain data
+                            elif file_extension == '.csv':
+                                X_train_bestmodel = preprocessor.transform(pd.read_csv(best_split_dict['X_train']))  # Need to preprocess the Xtrain data
+                        except:
+                            pass
 
                         with open(os.path.join(splitouterpath, 'selected_features.txt')) as f:
                             selected_features = [line.rstrip() for line in f]
