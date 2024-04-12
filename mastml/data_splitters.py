@@ -460,6 +460,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 model_name = model.model.__class__.__name__
             except:
                 model_name = model.__class__.__name__
+            if model_name == 'NoneType':
+                model_name = model.__class__.__name__
 
             if model_name in ['RandomForestRegressor',
                                                      'GradientBoostingRegressor',
@@ -1718,9 +1720,10 @@ class BaseSplitter(ms.BaseCrossValidator):
 
         # If using a Keras model, need to clear the session so training multiple models doesn't slow training down
         if model_name == 'KerasRegressor':
+            print('HERE CLEARING SESSION')
             keras.backend.clear_session()
         elif model_name == 'BaggingRegressor':
-            if model.model.base_estimator.__class__.__name__ == 'KerasRegressor':
+            if model.base_estimator_.__class__.__name__ == 'KerasRegressor':
                 keras.backend.clear_session()
 
         if baseline_test is not None:
