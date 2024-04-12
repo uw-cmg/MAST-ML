@@ -10,17 +10,18 @@ import sys
 from setuptools import setup, find_packages
 
 ###Python version check
-#print "Python version detected: %s" % sys.version_info
 if sys.version_info[0] < 3:
     print('Python Version %d.%d.%d found' % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
-    print('Python version >= 3 needed!')
+    print('Python version >= 3.11 needed!')
     sys.exit(0)
-
-#print("Python version 3.6.6 is REQUIRED")
-#print("Check with `python --version`")
+if sys.version_info[0] >= 3:
+    if sys.version_info[1] < 10:
+        print('Python Version %d.%d.%d found' % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+        print('Python version >= 3.10 needed!')
+        sys.exit(0)
 
 # One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
-verstr = "3.0.1"
+verstr = "3.2.0"
 try:
     verstr = open("VERSION", "rt").read().strip()
 except EnvironmentError:
@@ -36,7 +37,6 @@ setup(
         "scikit-learn",
         "scikit-optimize",
         "citrination-client",
-        "dlhub_sdk",
         "foundry-ml",
         "globus_nexus_client",
         "globus_sdk",
@@ -49,8 +49,7 @@ setup(
         "pandas",
         "pathos",
         "pymatgen",
-        "pyyaml>=5.4.1",
-        "scikit-learn",
+        "pyyaml",
         "scikit-learn-extra",
         "scipy",
         "shap",
@@ -59,6 +58,7 @@ setup(
         "madml",
         "udocker",
         "transfernet",
+        "forestci"
         ],
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
