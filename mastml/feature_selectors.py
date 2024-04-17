@@ -34,7 +34,6 @@ ShapFeatureSelector:
 
 """
 
-import copy
 import os
 import warnings
 import shap
@@ -555,8 +554,8 @@ class PearsonSelector(BaseSelector):
 
             #### Print the removed features and the new smaller dataframe with features removed
             # Deep copy the original dataframe
-            removed_features_df = copy.deepcopy(X)
-            new_df = copy.deepcopy(X)
+            removed_features_df = copy(X)
+            new_df = copy(X)
 
             # Drop the features that can be removed
             all_features = list(new_df.columns)
