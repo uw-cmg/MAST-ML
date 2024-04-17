@@ -5,9 +5,9 @@ name: Python Package
 
 on:
   push:
-    branches: [ master, dev_Ryan_2020-12-21, dev ]
+    branches: [ master]
   pull_request:
-    branches: [ master, dev_Ryan_2020-12-21, dev ]
+    branches: [ master]
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
     #if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: [3.10]
 
     steps:
     - uses: actions/checkout@v2
