@@ -6,7 +6,7 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 
 <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/mastml">
 
-[![Actions Status](https://github.com/uw-cmg/MAST-ML/workflows/python_package.yml/badge.svg)](https://github.com/uw-cmg/MAST-ML/actions)
+[![Actions Status](https://github.com/uw-cmg/MAST-ML/tree/master/.github/workflows/python_package.yml/badge.svg)](https://github.com/uw-cmg/MAST-ML/actions)
 
 <a href='https://mastmldocs.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/mastmldocs/badge/?version=latest' alt='Documentation Status' />
