@@ -17,14 +17,14 @@ class TestDatasets(unittest.TestCase):
 
     def test_sklearn(self):
         sklearndata = SklearnDatasets(return_X_y=True, as_frame=True)
-        bostonX, bostony = sklearndata.load_boston()
+        housingX, housingy = sklearndata.load_housing()
         irisX, irisy = sklearndata.load_iris()
         digitsX, digitsy = sklearndata.load_digits()
         diabetesX, diabetesy = sklearndata.load_diabetes()
         breast_cancerX, breast_cancery = sklearndata.load_breast_cancer()
         wineX, winey = sklearndata.load_wine()
         linnerudX, linnerudy = sklearndata.load_linnerud()
-        self.assertEqual(bostonX.shape, (506, 13))
+        self.assertEqual(housingX.shape, (20640, 8))
         self.assertEqual(irisX.shape, (150, 4))
         self.assertEqual(digitsX.shape, (1797, 64))
         self.assertEqual(diabetesX.shape, (442, 10))

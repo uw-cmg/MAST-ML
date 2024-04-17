@@ -110,7 +110,8 @@ class TestSelectors(unittest.TestCase):
         self.assertEqual(Xselect.shape, (408, 15))
         self.assertTrue(os.path.exists(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.csv')))
         os.remove(os.path.join(os.getcwd(), 'ShapFeatureSelector_sorted_features.csv'))
-        os.remove('SHAP_features_selected.png')
+        os.remove('SHAP_features_selected_bar.png')
+        os.remove('SHAP_features_selected_beeswarm.png')
         os.remove('selected_features.csv')
         os.remove('selected_features.txt')
         return

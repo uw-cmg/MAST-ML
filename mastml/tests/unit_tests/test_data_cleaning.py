@@ -11,7 +11,7 @@ from mastml.data_cleaning import DataCleaning
 class TestDataCleaning(unittest.TestCase):
 
     def test_datacleaning(self):
-        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(50, 10)))
+        X = pd.DataFrame(np.random.uniform(low=0.0, high=100, size=(50, 3)), columns=['zero', 'one', 'two'])
         y_input = pd.Series(np.random.uniform(low=0.0, high=100, size=(50,)))
         y_input.name = 'target'
         X_input = X.mask(np.random.random(X.shape) < 0.1)
