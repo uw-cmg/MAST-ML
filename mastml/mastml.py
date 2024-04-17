@@ -13,6 +13,7 @@ from collections import OrderedDict
 import json
 from pathos.multiprocessing import ProcessingPool as Pool
 from functools import partial
+import numpy as np
 
 class Mastml():
     """
@@ -123,6 +124,9 @@ class Mastml():
                          X_extra_train=None,
                          X_extra_test=None,
                          X_extra_leaveout=None,
+                         train_inds=None,
+                         test_inds=None,
+                         leaveout_inds=None,
                          y_train=None,
                          y_test=None,
                          y_test_domain=None,
@@ -171,63 +175,69 @@ class Mastml():
         if hyperopt is not None:
             self.mastml_metadata[outerdir][split_name]['hyperopt'] = hyperopt.__class__.__name__
         if train_stats is not None:
-            self.mastml_metadata[outerdir][split_name]['train_stats'] = train_stats.to_json()
+            self.mastml_metadata[outerdir][split_name]['train_stats'] = train_stats.to_dict()
         if test_stats is not None:
-            self.mastml_metadata[outerdir][split_name]['test_stats'] = test_stats.to_json() #to_dict
+            self.mastml_metadata[outerdir][split_name]['test_stats'] = test_stats.to_dict()
         if leaveout_stats is not None:
-            self.mastml_metadata[outerdir][split_name]['leaveout_stats'] = leaveout_stats.to_json()
-        if X_train is not None:
-            self.mastml_metadata[outerdir][split_name]['train_columns'] = X_train.columns.tolist()
-            self.mastml_metadata[outerdir][split_name]['X_train'] = X_train.to_json()
-        if X_test is not None:
-            self.mastml_metadata[outerdir][split_name]['X_test'] = X_test.to_json()
-        if X_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['X_leaveout'] = X_leaveout.to_json()
-        if X_extra_train is not None:
-            self.mastml_metadata[outerdir][split_name]['X_extra_train'] = X_extra_train.to_json()
-        if X_extra_test is not None:
-            self.mastml_metadata[outerdir][split_name]['X_extra_test'] = X_extra_test.to_json()
-        if X_extra_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['X_extra_leaveout'] = X_extra_leaveout.to_json()
+            self.mastml_metadata[outerdir][split_name]['leaveout_stats'] = leaveout_stats.to_dict()
+        #if X_train is not None:
+        #    self.mastml_metadata[outerdir][split_name]['train_columns'] = X_train.columns.tolist()
+        #    self.mastml_metadata[outerdir][split_name]['X_train'] = X_train.to_json()
+        #if X_test is not None:
+        #    self.mastml_metadata[outerdir][split_name]['X_test'] = X_test.to_json()
+        #if X_leaveout is not None:
+        #    self.mastml_metadata[outerdir][split_name]['X_leaveout'] = X_leaveout.to_json()
+        #if X_extra_train is not None:
+        #    self.mastml_metadata[outerdir][split_name]['X_extra_train'] = X_extra_train.to_json()
+        #if X_extra_test is not None:
+        #    self.mastml_metadata[outerdir][split_name]['X_extra_test'] = X_extra_test.to_json()
+        #if X_extra_leaveout is not None:
+        #    self.mastml_metadata[outerdir][split_name]['X_extra_leaveout'] = X_extra_leaveout.to_json()
+        if train_inds is not None:
+            self.mastml_metadata[outerdir][split_name]['train_inds'] = np.array(train_inds).ravel()
+        if test_inds is not None:
+            self.mastml_metadata[outerdir][split_name]['test_inds'] = np.array(test_inds).ravel()
+        if leaveout_inds is not None:
+            self.mastml_metadata[outerdir][split_name]['leaveout_inds'] = np.array(leaveout_inds).ravel()
         if y_train is not None:
-            self.mastml_metadata[outerdir][split_name]['y_train'] = y_train.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_train'] = np.array(y_train).ravel()
         if y_test is not None:
-            self.mastml_metadata[outerdir][split_name]['y_test'] = y_test.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_test'] = np.array(y_test).ravel()
         if y_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['y_leaveout'] = y_leaveout.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_leaveout'] = np.array(y_leaveout).ravel()
         if y_pred_train is not None:
-            self.mastml_metadata[outerdir][split_name]['y_pred_train'] = y_pred_train.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_pred_train'] = np.array(y_pred_train).ravel()
         if y_pred is not None:
-            self.mastml_metadata[outerdir][split_name]['y_pred'] = y_pred.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_pred'] = np.array(y_pred).ravel()
         if y_pred_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['y_pred_leaveout'] = y_pred_leaveout.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_pred_leaveout'] = np.array(y_pred_leaveout).ravel()
         if y_test_domain is not None:
-            self.mastml_metadata[outerdir][split_name]['y_test_domain'] = y_test_domain.to_json()
+            self.mastml_metadata[outerdir][split_name]['y_test_domain'] = np.array(y_test_domain).ravel()
         if residuals_train is not None:
-            self.mastml_metadata[outerdir][split_name]['residuals_train'] = residuals_train.to_json()
+            self.mastml_metadata[outerdir][split_name]['residuals_train'] = np.array(residuals_train).ravel()
         if residuals_test is not None:
-            self.mastml_metadata[outerdir][split_name]['residuals_test'] = residuals_test.to_json()
+            self.mastml_metadata[outerdir][split_name]['residuals_test'] = np.array(residuals_test).ravel()
         if residuals_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['residuals_leaveout'] = residuals_leaveout.to_json()
+            self.mastml_metadata[outerdir][split_name]['residuals_leaveout'] = np.array(residuals_leaveout).ravel()
         if model_errors_train is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_train'] = model_errors_train.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_train'] = np.array(model_errors_train).ravel()
         if model_errors_test is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_test'] = model_errors_test.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_test'] = np.array(model_errors_test).ravel()
         if model_errors_leaveout is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout'] = model_errors_leaveout.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout'] = np.array(model_errors_leaveout).ravel()
         if model_errors_train_cal is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_train_cal'] = model_errors_train_cal.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_train_cal'] = np.array(model_errors_train_cal).ravel()
         if model_errors_test_cal is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_test_cal'] = model_errors_test_cal.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_test_cal'] = np.array(model_errors_test_cal).ravel()
         if model_errors_leaveout_cal is not None:
-            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout_cal'] = model_errors_leaveout_cal.to_json()
+            self.mastml_metadata[outerdir][split_name]['model_errors_leaveout_cal'] = np.array(model_errors_leaveout_cal).ravel()
         if dataset_stdev is not None:
             self.mastml_metadata[outerdir][split_name]['dataset_stdev'] = dataset_stdev
         return
 
     def _save_mastml_metadata(self):
         with open(os.path.join(self.savepath, 'mastml_metadata.json'), 'w') as f:
-            json.dump(self.mastml_metadata, f)
+            json.dump(self.mastml_metadata, f, cls=NumpyEncoder)
         return
 
     @property
@@ -237,6 +247,12 @@ class Mastml():
     @property
     def get_mastml_metadata(self):
         return self.mastml_metadata
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 def parallel(func, x, *args, **kwargs):
     '''

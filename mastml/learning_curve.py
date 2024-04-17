@@ -13,13 +13,13 @@ import pandas as pd
 import os
 import sys
 from datetime import datetime
+from copy import copy
 
 from sklearn.model_selection import learning_curve
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import KFold
 
 from mastml.metrics import Metrics
-from mastml.feature_selectors import SklearnFeatureSelector
 from mastml.plots import Line
 
 class LearningCurve():
@@ -214,12 +214,7 @@ class LearningCurve():
             scoring = make_scorer(metrics[scoring][1], greater_is_better=True) #Note using True b/c if False then sklearn multiplies by -1
 
         if selector is None:
-            selector_name = 'SequentialFeatureSelector'
-            selector = SklearnFeatureSelector(selector='SequentialFeatureSelector',
-                                              estimator=model,
-                                              n_features_to_select=X.shape[1]-1,
-                                              scoring=scoring,
-                                              cv=cv)
+            selector_name = 'NoChange'
         else:
             try:
                 selector_name = selector.selector.__class__.__name__
@@ -245,6 +240,9 @@ class LearningCurve():
             print("Using SelectKBest as feature selector does not support a custom estimator model, CV or grouping scheme. "
                         "Your learning curve will be generated properly, but will not use the custom model, CV or grouping scheme")
             Xnew = selector.fit(X=X, y=y).transform(X=X)
+        elif selector_name == 'NoChange':
+            print('Note that no feature selector was specified- the learning curve will be made using the proivded feature set, in order')
+            Xnew = copy(X)
         else:
             Xnew = selector.fit(X=X, y=y).transform(X=X)
 
@@ -258,13 +256,14 @@ class LearningCurve():
         test_scores = dict()
         train_sizes = list()
         y = np.array(y)
-        for n_features in range(len(features_selected)):
-            train_sizes.append(n_features+1)
-            Xnew_subset = Xnew.iloc[:, 0:n_features+1]
+        for i, feature in enumerate(features_selected):
+            print('Adding feature: ', feature)
+            train_sizes.append(i+1)
+            Xnew_subset = Xnew.iloc[:, 0:i+1]
 
             cv_number = 1
             Xnew_subset = np.array(Xnew_subset)
-            if n_features+1 == 1:
+            if i+1 == 1:
                 Xnew_subset.reshape(-1, 1)
 
             for trains, tests in zip(train_inds, test_inds):

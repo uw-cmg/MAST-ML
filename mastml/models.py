@@ -12,6 +12,12 @@ EnsembleModel:
     class supports construction of ensembles of most scikit-learn regression models as well as ensembles of neural
     networks that are made via Keras' keras.wrappers.scikit_learn.KerasRegressor class.
 
+CrabNetModel:
+    Class that provides an implementation of PyTorch-based CrabNet regressor model based on the following work:
+    Wang, A., Kauwe, S., Murdock, R., Sparks, T. "Compositionally restricted attention-based network for
+    " materials property predictions", npj Computational Materials (2021) (https://www.nature.com/articles/s41524-021-00545-1)
+
+
 """
 
 import pandas as pd
@@ -23,8 +29,16 @@ import inspect
 from pprint import pprint
 import numpy as np
 import re
+import os
+import subprocess
 
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from sklearn.model_selection import train_test_split
+
+import transfernet as trans
+import shutil
+import torch
 
 try:
     import xgboost
@@ -38,6 +52,16 @@ try:
 except:
     print('scikit-lego is an optional dependency, enabling use of the LowessRegression model. If you want to use this model, '
           'do "pip install scikit-lego"')
+try:
+    from lineartree import LinearTreeRegressor, LinearForestRegressor, LinearBoostingRegressor
+except:
+    print('linear-tree is an optional dependency, enabling use of Linear tree, forest, and boosting models. If you want'
+          ' to use this model, do "pip install linear-tree"')
+try:
+    from gplearn.genetic import SymbolicRegressor
+except:
+    print('gplearn is an optional dependency, enabling the use of genetic programming SymbolicRegressor model. If you'
+          ' want to use this model, do "pip install gplearn"')
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -84,6 +108,14 @@ class SklearnModel(BaseEstimator, TransformerMixin):
             self.model = GaussianProcessRegressor(kernel=kernel, **kwargs)
         elif model == 'LowessRegression':
             self.model = LowessRegression(**kwargs)
+        elif model == 'LinearTreeRegressor':
+            self.model = LinearTreeRegressor(**kwargs)
+        elif model == 'LinearForestRegressor':
+            self.model = LinearForestRegressor(**kwargs)
+        elif model == 'LinearBoostingRegressor':
+            self.model = LinearBoostingRegressor(**kwargs)
+        elif model == 'SymbolicRegressor':
+            self.model = SymbolicRegressor(**kwargs)
         else:
             self.model = dict(sklearn.utils.all_estimators())[model](**kwargs)
 
@@ -113,6 +145,226 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         print('Class attributes for,', self.model)
         pprint(self.model.__dict__)
         return
+
+
+class SourceNN:
+
+    def __init__(
+                 self,
+                 source_arch,
+                 nn_params,
+                 val_size=None,
+                 test_size=None,
+                 savepath='source_model',
+                 ):
+
+        self.source_arch = source_arch  # NN Architecture
+        self.nn_params = nn_params  # Fitting marameters like lr and batch size
+        self.val_size = val_size
+        self.test_size = test_size
+        self.savepath = savepath  # The location to save results
+
+    def fit(self, X_train, y_train):
+
+        # Split source domain into train and validation
+        if self.val_size is not None:
+            splits = train_test_split(
+                                      X_train,
+                                      y_train,
+                                      test_size=self.val_size,
+                                      )
+            X_train, X_val, y_train, y_val = splits
+
+            # Split source domain validation to get test set
+            if self.test_size is not None:
+                splits = train_test_split(
+                                          X_val,
+                                          y_val,
+                                          test_size=self.test_size,
+                                          )
+                X_val, X_test, y_val, y_test = splits
+
+            else:
+                X_test = y_test = None
+
+        else:
+            X_val = y_val = X_test = y_test = None
+
+        # Fit the NN
+        out = trans.utils.fit(
+                              self.source_arch,
+                              X_train,
+                              y_train,
+                              X_val=X_val,
+                              y_val=y_val,
+                              X_test=X_test,
+                              y_test=y_test,
+                              save_dir=self.savepath+'/source',
+                              **self.nn_params,
+                              )
+
+        self.source_model = out[1]  # The fitted NN
+        self.source_model = model_wrapper(self.source_model)
+
+    def predict(self, X):
+        return self.source_model.predict(X)
+
+class Transfer:
+
+    def __init__(
+                 self,                
+                 prefit_path,
+                 nn_params=None,
+                 val_size=None,
+                 test_size=None,
+                 freeze_n_layers=None,
+                 cover_model=None,
+                 savepath='transfer_model',
+                 ):
+          
+        self.nn_params = nn_params  # Fitting marameters like lr and batch size
+        self.val_size = val_size          
+        self.test_size = test_size
+        self.freeze_n_layers = freeze_n_layers
+        self.cover_model = cover_model
+        self.prefit_path = prefit_path
+        self.savepath = savepath  # The location to save results
+
+    def fit(self, X_train, y_train):
+
+        # Split source domain into train and validation
+        if self.val_size is not None:
+            splits = train_test_split(
+                                      X_train,
+                                      y_train,
+                                      test_size=self.val_size,
+                                      )
+            X_train, X_val, y_train, y_val = splits
+          
+            # Split source domain validation to get test set
+            if self.test_size is not None:
+                splits = train_test_split(
+                                          X_val,
+                                          y_val,
+                                          test_size=self.test_size,
+                                          )
+                X_val, X_test, y_val, y_test = splits
+
+            else:
+                X_test = y_test = None
+
+        else:
+            X_val = y_val = X_test = y_test = None
+
+        # Chose defalut device
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+
+        # Load a prefit NN model
+        self.source_model = torch.load(
+                                       self.prefit_path,
+                                       map_location=torch.device(device),
+                                       )
+
+        # Use final hidden layer of NN as features
+        if self.cover_model is not None:
+            self.target_model = trans.models.AppendModel(
+                                                         self.source_model,
+                                                         self.cover_model,
+                                                         )
+
+            self.target_model.fit(X_train, y_train)
+
+            if all([X_test is not None, y_test is not None]):
+
+                y_pred = self.target_model.predict(X_test)
+
+                df = pd.DataFrame()
+                df['y'] = y_test.ravel()
+                df['y_pred'] = y_pred
+                df['set'] = 'test'
+
+                name = self.savepath+'/transfer_by_appending_model'
+                os.makedirs(name, exist_ok=True)
+                trans.plots.parity(df, os.path.join(name, 'parity'))
+
+        # Alternatively freeze layers of NN
+        elif self.freeze_n_layers is not None:
+
+            name = '/transfer_by_freeze_{}_layers'.format(self.freeze_n_layers)
+            out = trans.utils.fit(
+                                  self.source_model,  # Start from original model
+                                  X_train,
+                                  y_train,
+                                  X_val=X_val,
+                                  y_val=y_val,
+                                  X_test=X_test,
+                                  y_test=y_test,
+                                  save_dir=self.savepath+name,
+                                  freeze_n_layers=self.freeze_n_layers,
+                                  **self.nn_params,
+                                  )
+
+            self.target_model = out[1]
+            self.target_model = model_wrapper(self.target_model)
+
+        return self.target_model
+
+    def predict(self, X):
+        return self.target_model.predict(X)
+
+
+class model_wrapper:
+    '''
+    Wrapper for pytorch model to include predict method
+    '''
+
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, X):
+
+        # Chose defalut device
+        if torch.cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+
+        X = trans.utils.to_tensor(X, device)
+
+        pred = self.model(X)  # If model object passed
+        pred = pred.cpu().detach().view(-1).numpy()
+
+        return pred
+
+
+class HostedModel():
+
+    def __init__(self, container_name):
+        self.container_name = container_name
+
+    def predict(self, df):
+
+        df.to_csv('./test.csv', index=False)
+
+        command = 'udocker --allow-root run -v '
+        command += '{}:/mnt '.format(os.getcwd())
+        command += self.container_name
+        command += ' python3 predict.py'
+
+        subprocess.check_output(
+                                command,
+                                shell=True
+                                )
+
+        df = pd.read_csv('./prediction.csv')
+
+        os.remove('./test.csv')
+        os.remove('./prediction.csv')
+
+        return df
 
 class EnsembleModel(BaseEstimator, TransformerMixin):
     """
@@ -168,7 +420,7 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
             print('Could not find designated model type in scikit-learn model library. Note the other supported model'
                   'type is the keras.wrappers.scikit_learn.KerasRegressor model')
         self.n_estimators = n_estimators
-        self.model = BaggingRegressor(base_estimator=model, n_estimators=self.n_estimators)
+        self.model = BaggingRegressor(estimator=model, n_estimators=self.n_estimators)
         self.base_estimator_ = model.__class__.__name__
 
     def fit(self, X, y):
@@ -183,6 +435,127 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
     def get_params(self, deep=True):
         return self.model.get_params(deep)
 
+
+class CrabNetModel(BaseEstimator, TransformerMixin):
+    '''
+    Implementation of PyTorch-based CrabNet regressor model based on the following work:
+        Wang, A., Kauwe, S., Murdock, R., Sparks, T. "Compositionally restricted attention-based network for
+        " materials property predictions", npj Computational Materials (2021) (https://www.nature.com/articles/s41524-021-00545-1)
+
+    The code to run CrabNet was integrated into MAST-ML based on source files available in this repository: https://github.com/anthony-wang/CrabNet
+
+    Args:
+        composition_column (str): string denoting the name of an input column containing materials compositions
+
+        epochs (int): number of training epochs
+
+        val_frac (float): fraction of input data to use as validation (0 to 1). Note this can be set to 0 for most MAST-ML
+            runs as the splitting is done outside of this model.
+
+        drop_unary (bool): whether or not to drop compositions containing one element. Should probably be False always. If true,
+            can cause some array length mismatches.
+
+        savepath (str): path to save the data to. This is set automatically in the data_splitters routine.
+
+    Methods:
+        get_model: method that prepares the CrabNet model. Called when the CrabNetModel class is instantiated.
+
+        fit: method that fits the model parameters to the provided training data
+            Args:
+                X: (pd.DataFrame), dataframe of X data, needs to contain at least a column of material compositions. Note
+                    that featurization is done internally by the model.
+
+                y: (pd.Series), series of y target data
+
+            Returns:
+                fitted model
+
+        predict: method that evaluates model on new data to give predictions
+            Args:
+                X: (pd.DataFrame), dataframe of X data, needs to contain at least a column of material compositions. Note
+                    that featurization is done internally by the model.
+
+                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)
+
+            Returns:
+                series or array of predicted values
+    '''
+    def __init__(self, composition_column, epochs, val_frac, drop_unary=False, savepath=None):
+        super(CrabNetModel, self).__init__()
+        self.composition_column = composition_column
+        self.epochs = epochs
+        self.val_frac = val_frac
+        self.drop_unary = drop_unary
+        self.savepath = savepath
+
+        #self.get_model()
+
+    def get_model(self):
+        from mastml.crabnet.model import Model
+        from mastml.crabnet.kingcrab import CrabNet
+        from mastml.utils.get_compute_device import get_compute_device
+
+        compute_device = get_compute_device(prefer_last=True)
+
+        model = Model(CrabNet(compute_device=compute_device).to(compute_device),
+                      model_name='crabnet_model', verbose=True, drop_unary=self.drop_unary)
+
+        self.model = model
+        return
+
+    def fit(self, X, y):
+        self.get_model()
+
+        # Crabnet needs to read a csv for data. The data needs compositions with "formula" as column name and targets with "target" as column name
+        train_data = os.path.join(self.savepath, 'train_crabnet.csv')
+        val_data = os.path.join(self.savepath, 'val_crabnet.csv')
+
+        all_data = pd.DataFrame({'formula': X[self.composition_column].values, 'target': y.values})
+        if self.val_frac > 0:
+            from sklearn.model_selection import train_test_split
+            trains, vals = train_test_split(all_data, test_size=self.val_frac)
+        else:
+            trains = all_data
+        trains.to_csv(train_data, index=False)
+        if self.val_frac > 0:
+            vals.to_csv(val_data, index=False)
+
+        data_size = trains.shape[0]
+        batch_size = 2 ** round(np.log2(data_size) - 4)
+        if batch_size < 2 ** 7:
+            batch_size = 2 ** 7
+        if batch_size > 2 ** 12:
+            batch_size = 2 ** 12
+
+        self.batch_size = batch_size
+        self.model.load_data(train_data, batch_size=self.batch_size, train=True)
+
+        print(f'training with batchsize {self.model.batch_size} '
+              f'(2**{np.log2(self.model.batch_size):0.3f})')
+
+        if self.val_frac > 0:
+            self.model.load_data(val_data, batch_size=batch_size)
+
+        # Set the number of epochs, decide if you want a loss curve to be plotted
+        self.model.fit(epochs=self.epochs, losscurve=False)
+
+        # Save the network (saved as f"{model_name}.pth")
+        self.model.save_network(path=self.savepath)
+        return
+
+    def predict(self, X, as_frame=True):
+        test_data = os.path.join(self.savepath, 'test_crabnet.csv')
+        data = pd.DataFrame({'formula': X[self.composition_column].values, 'target': np.zeros(shape=X.shape[0])})
+        data.to_csv(test_data, index=False)
+
+        self.model.load_data(test_data, batch_size=self.batch_size, train=False)
+        output = self.model.predict(self.model.data_loader)
+        preds = output[1]
+
+        if as_frame == True:
+            return pd.DataFrame(preds, columns=['y_pred']).squeeze()
+        else:
+            return preds.ravel()
 
 def _make_gpr_kernel(kernel_string):
     """

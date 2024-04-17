@@ -154,15 +154,81 @@ class ErrorUtils():
         return model_errors, residuals, dataset_stdev
 
     @classmethod
-    def _recalibrate_errors(cls, model_errors, residuals):
-        corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
-        a, b = corrector.nll()
-        # shift the model errors by the correction factor
-        model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
-        return model_errors, a, b
+    def _recalibrate_errors(cls, model_errors, residuals, power=1, recal_per_bin=False, number_of_bins=15, equal_sized_bins=False, dataset_stdev=None):
+        if recal_per_bin == True:
+            # Bin all the data first
+            digitized, err_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values = ErrorUtils()._parse_error_data(
+                model_errors=model_errors,
+                residuals=residuals,
+                dataset_stdev=dataset_stdev,
+                number_of_bins=number_of_bins,
+                equal_sized_bins=equal_sized_bins)
+
+            # Now organize the residuals and ebars into the right bins
+            data_dict = dict()
+            counts = 0
+            for b, r, e in zip(digitized, residuals, model_errors):
+                if b not in data_dict.keys():
+                    data_dict[b] = {'res': list(), 'err': list(), 'z': list()}
+                data_dict[b]['res'].append(r)
+                data_dict[b]['err'].append(e)
+                try:
+                    data_dict[b]['z'].append(r / e)
+                except:
+                    data_dict[b]['z'].append(np.nan)
+                if b < 2:
+                    counts += 1
+
+            # Now loop over each bin and recalibrate that bin
+            recal_params_bin_list = list()
+            err_recal_perbin_list = list()
+            residuals_perbin_list = list()
+            err_perbin_list = list()
+            bin_numbers = list()
+            for k, v in sorted(data_dict.items()):  # HERE changed to sorted
+                err_recal_perbin, recal_dict_perbin, _, __, ___ = ErrorUtils()._recalibrate_errors(model_errors=v['err'],
+                                                                                       residuals=v['res'],
+                                                                                       power=power,
+                                                                                       number_of_bins=number_of_bins,
+                                                                                       equal_sized_bins=equal_sized_bins,
+                                                                                       recal_per_bin=False)
+                recal_params_bin_list.append(recal_dict_perbin)
+                err_recal_perbin_list.append(err_recal_perbin)
+                residuals_perbin_list.append(v['res'])
+                err_perbin_list.append(v['err'])
+                bin_numbers.append(k)
+            return err_recal_perbin_list, recal_params_bin_list, bin_numbers, residuals_perbin_list, err_perbin_list
+        else:
+            corrector = CorrectionFactors(residuals=residuals, model_errors=model_errors)
+            recal_dict = dict()
+            if power == 0:
+                a = corrector.nll(power=0)
+                model_errors = pd.Series(np.array(model_errors) + a, name='model_errors')
+                recal_dict['a'] = a
+            elif power == 1:
+                a, b = corrector.nll(power=1)
+                # shift the model errors by the correction factor
+                model_errors = pd.Series(a * np.array(model_errors) + b, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+            elif power == 2:
+                a, b, c = corrector.nll(power=2)
+                model_errors = pd.Series(a * np.array(model_errors)**2 + b * np.array(model_errors) + c, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+                recal_dict['c'] = c
+            elif power == 3:
+                a, b, c, d = corrector.nll(power=3)
+                model_errors = pd.Series(a * np.array(model_errors)**3 + b * np.array(model_errors)**2 + c * np.array(model_errors) + d, name='model_errors')
+                recal_dict['a'] = a
+                recal_dict['b'] = b
+                recal_dict['c'] = c
+                recal_dict['d'] = d
+            bin_numbers = [0]
+            return model_errors, recal_dict, bin_numbers, residuals, model_errors
 
     @classmethod
-    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15):
+    def _parse_error_data(cls, model_errors, residuals, dataset_stdev, number_of_bins=15, equal_sized_bins=False):
 
         # Normalize the residuals and model errors by dataset stdev
         model_errors = model_errors/dataset_stdev
@@ -172,17 +238,28 @@ class ErrorUtils():
 
         # check to see if number of bins should increase, and increase it if so
         model_errors_sorted = np.sort(model_errors)
-        ninety_percentile = int(len(model_errors_sorted) * 0.9)
-        ninety_percentile_range = model_errors_sorted[ninety_percentile] - np.amin(model_errors)
-        total_range = np.amax(model_errors) - np.amin(model_errors)
-        number_of_bins = number_of_bins
-        if ninety_percentile_range / total_range < 5 / number_of_bins:
-            number_of_bins = int(5 * total_range / ninety_percentile_range)
+        #ninety_percentile = int(len(model_errors_sorted) * 0.9)
+        #ninety_percentile_range = model_errors_sorted[ninety_percentile] - np.amin(model_errors)
+        #total_range = np.amax(model_errors) - np.amin(model_errors)
+        #number_of_bins = number_of_bins
+        #if ninety_percentile_range / total_range < 5 / number_of_bins:
+        #    number_of_bins = int(5 * total_range / ninety_percentile_range)
 
         # Set bins for calculating RMS
         upperbound = np.amax(model_errors)
         lowerbound = np.amin(model_errors)
-        bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
+
+        if equal_sized_bins == False:
+            bins = np.linspace(lowerbound, upperbound, number_of_bins, endpoint=False)
+        else:
+            # Thanks to this StackOverflow solution: https://stackoverflow.com/questions/39418380/histogram-with-equal-number-of-points-in-each-bin
+            def histedges_equalN(x, nbin):
+                npt = len(x)
+                return np.interp(np.linspace(0, npt, nbin + 1),
+                                 np.arange(npt),
+                                 np.sort(x))
+
+            bins = histedges_equalN(x=model_errors_sorted.ravel(), nbin=number_of_bins)
 
         # Create a vector determining bin of each data point
         digitized = np.digitize(model_errors, bins)
@@ -205,23 +282,24 @@ class ErrorUtils():
         Var_squarederr_res = [np.std((abs_res[digitized == bins_present[i]] ** 2)) ** 2 for i in range(0, len(bins_present))]
 
         # Set the x-values to the midpoint of each bin
-        bin_width = bins[1] - bins[0]
+        # TODO: this can have issues if doing higher-order recalibration and have some negative values, leading to large step
+        # at first. Try using last two values instead
+        bin_width = abs(bins[1]-bins[0])
         binned_model_errors = np.zeros(len(bins_present))
         for i in range(0, len(bins_present)):
             curr_bin = bins_present[i]
             binned_model_errors[i] = bins[curr_bin - 1] + bin_width / 2
 
-        #TODO this is temporary
         bin_values = np.array(binned_model_errors)
         rms_residual_values = np.array(RMS_abs_res)
         ms_residual_values = np.array(MS_abs_res)
         var_sq_residual_values = np.array(Var_squarederr_res)
         num_values_per_bin = np.array(weights)
 
-        return bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
+        return digitized, bin_values, rms_residual_values, num_values_per_bin, number_of_bins, ms_residual_values, var_sq_residual_values
 
     @classmethod
-    def _get_model_errors(cls, model, X, X_train, X_test, error_method='stdev_weak_learners', remove_outlier_learners=False):
+    def _get_model_errors(cls, model, X, X_test, X_train=None, error_method='stdev_weak_learners', remove_outlier_learners=False):
 
         err_down = list()
         err_up = list()
@@ -230,6 +308,7 @@ class ErrorUtils():
         if model.model.__class__.__name__ in ['RandomForestRegressor', 'GradientBoostingRegressor', 'ExtraTreesRegressor',
                                               'BaggingRegressor', 'AdaBoostRegressor']:
 
+            # TODO: jackknife needs X_train, but can't easily do that with verbosity =-1
             if error_method == 'jackknife_after_bootstrap':
                 model_errors_var = random_forest_error(forest=model.model, X_test=X_test, X_train=X_train)
                 # Wager method returns the variance. Take sqrt to turn into stdev
@@ -326,8 +405,6 @@ class ErrorUtils():
                 num_outliers += 1
             else:
                 preds_cleaned.append(pred)
-        #print('num outliers', num_outliers)
-        #print('Found number of outlier predictions in ensemble error analysis:', num_outliers, 'which reduces number of ensemble predictions used in error analysis from ', len(preds), 'to ', len(preds_cleaned))
         return np.array(preds_cleaned), num_outliers
 
 class CorrectionFactors():
@@ -362,22 +439,57 @@ class CorrectionFactors():
         self.residuals = residuals
         self.model_errors = model_errors
 
-    def nll(self):
-        x0 = np.array([1.0, 0.0])
+    def nll(self, power=1):
+        if power == 0:
+            x0 = np.array([0.1])
+        elif power == 1:
+            x0 = np.array([1.0, 0.0])
+        elif power == 2:
+            x0 = np.array([0.1, 1.0, 0.0])
+        elif power == 3:
+            x0 = np.array([0.05, 0.1, 1.0, 0.0])
         res = minimize(self._nll_opt, x0, method='nelder-mead')
-        a = res.x[0]
-        b = res.x[1]
+        if power == 0:
+            a = res.x[0]
+        elif power == 1:
+            a = res.x[0]
+            b = res.x[1]
+        elif power == 2:
+            a = res.x[0]
+            b = res.x[1]
+            c = res.x[2]
+        elif power == 3:
+            a = res.x[0]
+            b = res.x[1]
+            c = res.x[2]
+            d = res.x[3]
         success = res.success
         if success is True:
             pass
         elif success is False:
             print("Warning: NLL optimization failed!")
-        # print(res)
         #r_squared = self._direct_rsquared(a, b)
-        return a, b
+        if power == 0:
+            return a
+        elif power == 1:
+            return a, b
+        elif power == 2:
+            return a, b, c
+        elif power == 3:
+            return a, b, c, d
 
     def _nll_opt(self, x):
         sum = 0
-        for i in range(0, len(self.residuals)):
-            sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i] + x[1]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i] + x[1]) ** 2
+        if x.shape[0] == 1:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((self.model_errors[i] + x[0]) ** 2) + (self.residuals[i]) ** 2 / (self.model_errors[i] + x[0]) ** 2
+        elif x.shape[0] == 2:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i] + x[1]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i] + x[1]) ** 2
+        elif x.shape[0] == 3:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i]**2 + x[1] * self.model_errors[i] + x[2]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i]**2 + x[1] * self.model_errors[i] + x[2]) ** 2
+        elif x.shape[0] == 4:
+            for i in range(0, len(self.residuals)):
+                sum += np.log(2 * np.pi) + np.log((x[0] * self.model_errors[i]**3 + x[1] * self.model_errors[i]**2 + x[2] * self.model_errors[i] + x[3]) ** 2) + (self.residuals[i]) ** 2 / (x[0] * self.model_errors[i]**3 + x[1] * self.model_errors[i]**2 + x[2] * self.model_errors[i] + x[3]) ** 2
         return 0.5 * sum / len(self.residuals)
