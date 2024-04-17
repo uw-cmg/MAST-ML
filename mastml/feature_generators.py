@@ -1421,7 +1421,7 @@ class PolynomialFeatureGenerator(BaseGenerator):
         return self
 
     def transform(self, X):
-        new_features = self.SPF.get_feature_names()
+        new_features = self.SPF.get_feature_names_out()
         return pd.DataFrame(self.SPF.transform(self.featurize_df), columns=new_features), self.y
 
 class OneHotGroupGenerator(BaseGenerator):
