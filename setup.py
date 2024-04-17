@@ -22,6 +22,7 @@ if sys.version_info[0] >= 3:
 
 # One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
 verstr = "3.2.0"
+
 try:
     verstr = open("VERSION", "rt").read().strip()
 except EnvironmentError:
@@ -33,6 +34,7 @@ setup(
     package_data={'mastml.magpie': ["*.*"], 'mastml.tests.unit_tests': ["*.*"], 'mastml.data': ["*.*"]},
     include_package_data = True,
     version=verstr,
+
     install_requires=[
         "scikit-learn",
         "scikit-optimize",
@@ -60,6 +62,7 @@ setup(
         "transfernet",
         "forestci"
         ],
+
     author="MAST Development Team, University of Wisconsin-Madison Computational Materials Group",
     author_email="ddmorgan@wisc.edu",
     url="https://github.com/uw-cmg/MAST-ML",

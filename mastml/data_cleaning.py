@@ -21,7 +21,10 @@ import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from scipy.linalg import orth
-from collections import Counter
+try:
+    from collections.abc import Counter
+except ImportError:
+    from collections import Counter
 from datetime import datetime
 
 from mastml.plots import Histogram
