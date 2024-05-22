@@ -64,6 +64,7 @@ import pickle
 from tqdm import tqdm
 from scipy import constants
 
+from matminer.featurizers.composition.alloy import Miedema
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import PolynomialFeatures, OneHotEncoder
 
@@ -149,7 +150,10 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
             splitdir = self._setup_savedir(generator=self, savepath=savepath)
             savepath = splitdir
         X, y = self.fit_transform(X=X, y=y)
+
         # Join the originally provided feature set with the new feature set
+        X = X.reset_index(drop=True)
+        X_orig = X_orig.reset_index(drop=True)
         X = pd.concat([X_orig, X], axis=1)
         df = pd.concat([X, y], axis=1)
         try:
@@ -161,6 +165,7 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
         # Pickle the generator as well for use in making predictions later
         with open(os.path.join(savepath, self.__class__.__name__+'.pkl'), 'wb') as f:
             pickle.dump(self, f)
+
         return X, y
 
     def _setup_savedir(self, generator, savepath):
@@ -302,7 +307,6 @@ class DeepChemFeatureGenerator(BaseGenerator):
             feature_names = featurizer.descriptors
         except:
             feature_names = np.arange(0, array.shape[1])
-        print(feature_names)
         df = pd.DataFrame(array, columns=feature_names)
 
         df = df[sorted(df.columns.tolist())]
@@ -408,10 +412,9 @@ class ElementalFeatureGenerator_Extra(BaseGenerator):
             data['smix'].append(smix)
             data['delta'].append(delta)
             data['gamma'].append(gamma)
-            data['hmix'].append(h)
+            data['hmix'].append(hmix)
 
         data = pd.DataFrame(data)
-        print(data)
 
         return data
 
