@@ -56,6 +56,7 @@ DataframeUtilities:
 
 import os
 import re
+import functools
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -106,6 +107,18 @@ except:
     except:
         print('failed to define the magpie data files path, the path to the magpie data files needs to be defined to perform elemental property-based feature generation')
 
+ELEMENT_NAMES = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',
+    'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
+    'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs',
+    'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta',
+    'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
+    'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt',
+    'Ds', 'Rg', 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
+
+
+@functools.lru_cache(maxsize=1000)
+def make_composition(composition_string):
+    return Composition(composition_string)
 
 class BaseGenerator(BaseEstimator, TransformerMixin):
     """
@@ -141,26 +154,28 @@ class BaseGenerator(BaseEstimator, TransformerMixin):
     def __init__(self):
         pass
 
-    def evaluate(self, X, y, savepath=None, make_new_dir=True):
+    def evaluate(self, X, y, savepath=None, make_new_dir=True, write_to_file=True):
         X_orig = copy(X)
-        if not savepath:
-            savepath = os.getcwd()
-        if make_new_dir is True:
-            splitdir = self._setup_savedir(generator=self, savepath=savepath)
-            savepath = splitdir
+        if write_to_file:
+            if not savepath:
+                savepath = os.getcwd()
+            if make_new_dir is True:
+                splitdir = self._setup_savedir(generator=self, savepath=savepath)
+                savepath = splitdir
         X, y = self.fit_transform(X=X, y=y)
         # Join the originally provided feature set with the new feature set
         X = pd.concat([X_orig, X], axis=1)
         df = pd.concat([X, y], axis=1)
-        try:
-            df.to_excel(os.path.join(savepath, 'generated_features.xlsx'), index=False)
-        except ValueError:
-            print('Warning! Excel file too large to save.')
-        with open(os.path.join(savepath, 'generated_features.pickle'), 'wb') as f:
-            pickle.dump(df, f)
-        # Pickle the generator as well for use in making predictions later
-        with open(os.path.join(savepath, self.__class__.__name__+'.pkl'), 'wb') as f:
-            pickle.dump(self, f)
+        if write_to_file:
+            try:
+                df.to_excel(os.path.join(savepath, 'generated_features.xlsx'), index=False)
+            except ValueError:
+                print('Warning! Excel file too large to save.')
+            with open(os.path.join(savepath, 'generated_features.pickle'), 'wb') as f:
+                pickle.dump(df, f)
+            # Pickle the generator as well for use in making predictions later
+            with open(os.path.join(savepath, self.__class__.__name__+'.pkl'), 'wb') as f:
+                pickle.dump(self, f)
         return X, y
 
     def _setup_savedir(self, generator, savepath):
@@ -416,6 +431,36 @@ class ElementalFeatureGenerator_Extra(BaseGenerator):
         return data
 
 
+@functools.cache
+def _read_atomic_magpie_properties(data_path):
+    # Identify all the magpie data files
+    magpie_feature_names = []
+    for f in os.listdir(data_path):
+        if '.table' in f:
+            magpie_feature_names.append(f[:-6])
+    
+    # Create a mapping of element name to dict of magpie features
+    atomic_values_by_element = {}
+    for element_number, element_name in enumerate(ELEMENT_NAMES):
+        atomic_values = {}
+        for feature_name in magpie_feature_names:
+            f = open(data_path + '/' + feature_name + '.table', 'r')
+            # Get Magpie data of relevant atomic numbers for this composition
+            for line_num, feature_value in enumerate(f.readlines()):
+                if line_num == element_number:
+                    if "Missing" not in feature_value and "NA" not in feature_value:
+                        if feature_name != "OxidationStates":
+                            try:
+                                atomic_values[feature_name] = float(feature_value.strip())
+                            except ValueError:
+                                atomic_values[feature_name] = 'NaN'
+                    if "Missing" in feature_value:
+                        atomic_values[feature_name] = 'NaN'
+                    if "NA" in feature_value:
+                        atomic_values[feature_name] = 'NaN'
+            f.close()
+        atomic_values_by_element[element_name] = atomic_values
+    return atomic_values_by_element
 
 class ElementalFeatureGenerator(BaseGenerator):
     """
@@ -497,7 +542,7 @@ class ElementalFeatureGenerator(BaseGenerator):
                     sites = re.findall(r"\[([A-Za-z0-9_.]+)\]", comp)
                     site_dict = dict()
                     for i, site in enumerate(sites):
-                        comp_by_site = Composition(site).as_dict()
+                        comp_by_site = make_composition(site).as_dict()
                         site_dict['Site'+str(i+1)] = comp_by_site
                     site_dict_list.append(site_dict)
 
@@ -868,7 +913,7 @@ class ElementalFeatureGenerator(BaseGenerator):
         magpiedata_min = {}
         magpiedata_difference = {}
         magpiedata_atomic = self._get_atomic_magpie_features(composition=composition, data_path=data_path)
-        composition = Composition(composition)
+        composition = make_composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
 
         # Make per-site dicts if site_dict_list specified
@@ -993,11 +1038,12 @@ class ElementalFeatureGenerator(BaseGenerator):
 
         # Original magpie feature set
         for element in magpiedata_atomic:
+            element_composition_value = float(composition[element])
             for magpie_feature, feature_value in magpiedata_atomic[element].items():
                 if feature_value is not 'NaN':
 
                     # Composition average features
-                    magpiedata_composition_average[magpie_feature] += feature_value*float(composition[element])/atoms_per_formula_unit
+                    magpiedata_composition_average[magpie_feature] += feature_value*element_composition_value/atoms_per_formula_unit
                     # Arithmetic average features
                     magpiedata_arithmetic_average[magpie_feature] += feature_value/len(element_list)
                     # Max features
@@ -1259,39 +1305,12 @@ class ElementalFeatureGenerator(BaseGenerator):
                     magpiedata_max_renamed, magpiedata_min_renamed, magpiedata_difference_renamed)
 
     def _get_atomic_magpie_features(self, composition, data_path):
-        # Get .table files containing feature values for each element, assign file names as feature names
-        magpie_feature_names = []
-        for f in os.listdir(data_path):
-            if '.table' in f:
-                magpie_feature_names.append(f[:-6])
-
-        composition = Composition(composition)
+        composition = make_composition(composition)
         element_list, atoms_per_formula_unit = self._get_element_list(composition=composition)
-
-        element_dict = {}
-        for element in element_list:
-            element_dict[element] = Element(element).Z
-
-        magpiedata_atomic = {}
-        for k, v in element_dict.items():
-            atomic_values = {}
-            for feature_name in magpie_feature_names:
-                f = open(data_path + '/' + feature_name + '.table', 'r')
-                # Get Magpie data of relevant atomic numbers for this composition
-                for line, feature_value in enumerate(f.readlines()):
-                    if line + 1 == v:
-                        if "Missing" not in feature_value and "NA" not in feature_value:
-                            if feature_name != "OxidationStates":
-                                try:
-                                    atomic_values[feature_name] = float(feature_value.strip())
-                                except ValueError:
-                                    atomic_values[feature_name] = 'NaN'
-                        if "Missing" in feature_value:
-                            atomic_values[feature_name] = 'NaN'
-                        if "NA" in feature_value:
-                            atomic_values[feature_name] = 'NaN'
-                f.close()
-            magpiedata_atomic[k] = atomic_values
+        
+        atomic_values_by_element = _read_atomic_magpie_properties(data_path)
+        element_dict = {element: Element(element).Z for element in element_list}
+        magpiedata_atomic = {k: atomic_values_by_element[k] for k in element_dict}
 
         return magpiedata_atomic
 
@@ -1365,19 +1384,12 @@ class ElementalFractionGenerator(BaseGenerator):
         for comp_str in tqdm(compositions_list, 'Featurizing compositions'):
             # As of early 2021, there are 118 elements, though only ~80 of them can form stable non-radioactive chemical compounds.
             el_frac_onehot = np.zeros((118,))
-            comp = Composition(comp_str)
+            comp = make_composition(comp_str)
             elements = comp.elements
             for el in elements:
                 el_frac_onehot[el.number-1] = comp.get_atomic_fraction(el)
             el_frac_list.append(el_frac_onehot)
-        element_names = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',
-            'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb',
-            'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs',
-            'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta',
-            'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
-            'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt',
-            'Ds', 'Rg', 'Cn', 'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og']
-        df = pd.DataFrame(el_frac_list, columns=element_names)
+        df = pd.DataFrame(el_frac_list, columns=ELEMENT_NAMES)
         return df
 
 class PolynomialFeatureGenerator(BaseGenerator):
@@ -1528,7 +1540,7 @@ class OneHotElementGenerator(BaseGenerator):
         something crazy like "contains {element}" and "does not contain {element}" if you really
         wanted.
         """
-        comp = Composition(comp)
+        comp = make_composition(comp)
         count = comp[self.element]
         return int(count != 0)
 
@@ -1536,7 +1548,7 @@ class OneHotElementGenerator(BaseGenerator):
         elements = list()
         df_trans = pd.DataFrame()
         for comp in compositions.values:
-            comp = Composition(comp)
+            comp = make_composition(comp)
             for element in comp.elements:
                 if element not in elements:
                     elements.append(element)
