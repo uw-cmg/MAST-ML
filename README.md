@@ -38,7 +38,7 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 University of Wisconsin-Madison Computational Materials Group:
 * Prof. Dane Morgan
 * Dr. Ryan Jacobs
-* Lane Schultz
+* Dr. Lane Schultz
 * Dr. Tam Mayeshiba
 * Dr. Ben Afflerbach
 * Dr. Henry Wu
