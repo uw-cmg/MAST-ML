@@ -27,18 +27,19 @@ from sklearn.ensemble import BaggingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 import inspect
 from pprint import pprint
-import numpy as np
 import re
-import os
 import subprocess
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from sklearn.model_selection import train_test_split
 
-import transfernet as trans
-import shutil
-import torch
+try:
+    import transfernet as trans
+    import torch
+except:
+    print('transfernet is an optional dependency. If you want to use transfer learning pytorch NNs, do'
+          ' "pip install transfernet"')
 
 try:
     import xgboost
@@ -62,6 +63,12 @@ try:
 except:
     print('gplearn is an optional dependency, enabling the use of genetic programming SymbolicRegressor model. If you'
           ' want to use this model, do "pip install gplearn"')
+try:
+    from kan import *
+except:
+    print('pykan is an optional dependency, enabling use of Kolmogorov-Arnold Networks (KANs). If you want to use'
+          ' this mode, do "pip install pykan"')
+
 
 class SklearnModel(BaseEstimator, TransformerMixin):
     """
@@ -146,6 +153,104 @@ class SklearnModel(BaseEstimator, TransformerMixin):
         pprint(self.model.__dict__)
         return
 
+
+class KANModel(KAN):
+    '''
+    Implementation of Kolmogorov-Arnold Networks (KANs) from the following work:
+        Liu, Z., Wang, Y., Vaidya, S., Ruehle, F. Halverson, J., Soljacic, M. Hou, T. Y., Tegmark, M.
+        "KAN: Kolmogorov-Arnold Networks", arXiv (2024) (https://arxiv.org/abs/2404.19756)
+
+    Information on input parameters taken from pykan Github: https://github.com/KindXiaoming/pykan
+
+    Args:
+        width (list of int): list of integers specifying the network architecture. For regression problems, the first number is
+            equal to the number of input features, the last number is the output number of nodes (= 1), and the intermediate
+            numbers determine the number of nodes in hidden layers. Default is N - 2N+1 - 1 following the KA theorem, where
+            N = number of input features
+
+        grid (int): The number of grid intervals
+
+        k (int): The order of piecewise polynomial
+
+        steps (int): Number of KAN training steps. Similar to epochs for MLPs
+
+        seed (int): the input seed. Defaults to 0 so need to set new seed for each split to have random start
+
+        savepath (str): path to save the output model
+
+        opt (str): optimization method. Possibilities include "LBFGS", or "Adam"
+
+        lamb (float): overall penalty strength
+
+        lamb_entropy (float): entropy penalty strength
+
+    Methods:
+
+        fit: method that fits the model parameters to the provided training data
+            Args:
+                X: (pd.DataFrame), dataframe of X data used for model training
+
+                y: (pd.Series), series of y target data
+
+            Returns:
+                fitted model
+
+        predict: method that evaluates model on new data to give predictions
+            Args:
+                X: (pd.DataFrame), dataframe of X data used for model testing
+
+                as_frame: (bool), whether to return data as pandas dataframe (else numpy array)
+
+            Returns:
+                series or array of predicted values
+    '''
+
+    def __init__(self, width, grid=3, k=3, steps=20, seed=None, savepath=None, opt='LBFGS', lamb=0.01, lamb_entropy=10):
+        self.width = width
+        self.grid = grid
+        self.k = k
+        self.steps = steps
+        self.seed = seed
+        self.savepath = savepath
+        self.opt = opt
+        self.lamb = lamb
+        self.lamb_entropy = lamb_entropy
+        super(KANModel, self).__init__(width=self.width, grid=self.grid, k=self.k)
+
+    def fit(self, X, y):
+        # Need to re-instantiate the model at each fit, otherwise data leakage will occur e.g., when doing 5fold CV
+        super(KANModel, self).__init__(width=self.width, grid=self.grid, k=self.k)
+        if self.seed is None:
+            # get new random seed
+            seed = np.random.randint(0, 1000000000, 1)[0]
+            self.seed = seed
+
+        if self.width is None:
+            # set default width
+            N = X.shape[1]
+            self.width = [N, 2*N+1, 1]
+
+        # Make data into torch tensors
+        import torch
+        dataset = {'train_input': torch.from_numpy(np.array(X)),
+                   'test_input': torch.from_numpy(np.array(X)),
+                   'train_label': torch.from_numpy(np.array(y).reshape(-1, 1)),
+                   'test_label': torch.from_numpy(np.array(y).reshape(-1, 1))}
+
+        self(dataset['train_input'])
+        self.train(dataset, opt=self.opt, steps=self.steps, lamb=self.lamb, lamb_entropy=self.lamb_entropy)
+
+        return
+
+    def predict(self, X, as_frame=True):
+        dataset = {'test_input': torch.from_numpy(np.array(X))}
+
+        preds = self(dataset['test_input']).detach().numpy().ravel()
+
+        if as_frame == True:
+            return pd.DataFrame(preds, columns=['y_pred']).squeeze()
+        else:
+            return preds
 
 class SourceNN:
 
@@ -414,6 +519,8 @@ class EnsembleModel(BaseEstimator, TransformerMixin):
                 kernel = _make_gpr_kernel(kernel_string=kernel)
                 del kwargs['kernel']
                 model = GaussianProcessRegressor(kernel=kernel, **kwargs)
+            elif model == 'KANModel':
+                model = KANModel(**kwargs)
             else:
                 model = dict(sklearn.utils.all_estimators())[model](**kwargs)
         except:
