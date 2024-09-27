@@ -65,7 +65,7 @@ This work was funded by the National Science Foundation (NSF) DMREF award number
 This work was funded by the National Science Foundation (NSF) CSSI award number 1931298
 
 
-## Citing MAST-ML
+## Citing MAST-ML, Error bar and Domain of Applicability Tools
 
 If you find MAST-ML useful, please cite the following publication:
 
@@ -77,6 +77,11 @@ If you find the uncertainty quantification (error bar) approaches useful, please
 
 Palmer, G., Du, S., Politowicz, A., Emory, J. P., Yang, X., Gautam, A., Gupta, G., Li, Z., Jacobs, R., Morgan, D.,
 "Calibration after bootstrap for accurate uncertainty quantification in regression models", npj Computational Materials 8 115 (2022). https://doi.org/10.1038/s41524-022-00794-8
+
+If you find the domain of applicability approaches useful, please cite the following publication:
+
+Schultz, L. E., Wang, Y., Jacobs, R., Morgan, D., "Determining Domain of Machine Learning Models using Kernel Density Estimates: Applications in Materials Property Prediction", arXiv (2024). 
+https://doi.org/10.48550/arXiv.2406.05143 
 
 ## Installation
 
