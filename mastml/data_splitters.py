@@ -91,7 +91,12 @@ from mastml.preprocessing import NoPreprocessor
 from mastml.baseline_tests import Baseline_tests
 from mastml.domain import Domain
 from mastml.mastml import parallel
-from transfernet import models
+try:
+    import transfernet as trans
+    import torch
+except:
+    print('transfernet is an optional dependency. If you want to use transfer learning pytorch NNs, do'
+          ' "pip install transfernet"')
 
 
 class BaseSplitter(ms.BaseCrossValidator):
@@ -1473,7 +1478,10 @@ class BaseSplitter(ms.BaseCrossValidator):
         selected_features = selector.selected_features
         # TODO: this should be X_test scaled like X_train ?? Yes b/c domains_train and domains_test for full fit should be same and they are not
         #X_test = X_test_orig[selected_features]
-        X_test = preprocessor1.transform(X_test_orig[selected_features])
+        # Now preprocess the feature-selected data
+        X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected', file_extension=file_extension, verbosity=verbosity)
+        X_test = preprocessor2.transform(X_test_orig[selected_features])
+        #X_test = preprocessor1.transform(X_test_orig[selected_features])
 
         if domain is not None:
             domains_test = list()
@@ -1526,9 +1534,6 @@ class BaseSplitter(ms.BaseCrossValidator):
 
             domains_test = pd.concat(domains_test, axis=1)
             domains_train = pd.concat(domains_train, axis=1)
-
-        X_train = preprocessor2.evaluate(X_train_orig[selected_features], savepath=splitpath, file_name='train_selected', file_extension=file_extension, verbosity=verbosity)
-        X_test = preprocessor2.transform(X_test_orig[selected_features])
 
         split_summary['trues'] = np.array(y_test)
         if verbosity >= 0:
@@ -1719,6 +1724,9 @@ class BaseSplitter(ms.BaseCrossValidator):
             torch.save(model, os.path.join(splitpath, str(model_name) + ".pkl"))
         elif model_name == 'Model': #Once instantiated, the CrabNet model is just called "Model"
             print('CrabNet model is already saved')
+        elif model_name == 'KANModel': # Save the KAN model
+            model.save_ckpt('model_ckpt')
+            shutil.move('model_ckpt', os.path.join(splitpath, 'model_ckpt'))
         else:
             joblib.dump(model, os.path.join(splitpath, str(model_name) + ".pkl"))
 
