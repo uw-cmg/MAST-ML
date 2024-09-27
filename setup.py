@@ -50,7 +50,7 @@ setup(
         "openpyxl",
         "pandas",
         "pathos",
-        "pykan==0.0.5"
+        "pykan==0.0.5",
         "pymatgen",
         "pyyaml",
         "scikit-learn-extra",
