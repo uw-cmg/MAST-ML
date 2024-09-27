@@ -1716,7 +1716,8 @@ class BaseSplitter(ms.BaseCrossValidator):
                 # Save the individual Keras models comprising the Ensemble
                 count = 0
                 for m in model.model.estimators_:
-                    m.model_.save(filepath=os.path.join(splitpath,'keras_model_' + str(count)))
+                    m.model_.save(filepath=os.path.join(splitpath,'keras_model_' + str(count)+'.keras'))
+                    #m.model.save(filepath=os.path.join(splitpath, 'keras_model_' + str(count)))
                     count += 1
                 #print('Warning: unable to save pickled model of ensemble of KerasRegressor models. Passing through...')
             else:
