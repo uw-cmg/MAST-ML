@@ -67,7 +67,7 @@ try:
     from kan import *
 except:
     print('pykan is an optional dependency, enabling use of Kolmogorov-Arnold Networks (KANs). If you want to use'
-          ' this mode, do "pip install pykan"')
+          ' this mode, do "pip install pykan". As of 9/27/24, need pykan==0.0.5')
 
 
 class SklearnModel(BaseEstimator, TransformerMixin):
