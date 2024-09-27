@@ -407,7 +407,7 @@ class BaseSplitter(ms.BaseCrossValidator):
                  best_run_metric=None, nested_CV=False, error_method='stdev_weak_learners', remove_outlier_learners=False,
                  recalibrate_errors=False, verbosity=1, baseline_test=None, distance_metric="euclidean",
                  file_extension='.csv', image_dpi=250, parallel_run=False, remove_split_dirs=False,
-                 X_val=None, y_val=None, X_test=None, y_test=None,
+                 X_val=None, y_val=None, X_test=None, y_test=None, force_no_model_errors=False,
                  rve_number_of_bins=15, rve_equal_sized_bins=False, domain=None, recalibrate_power=1, recalibrate_per_bin=False, **kwargs):
 
         if nested_CV == True:
@@ -481,6 +481,9 @@ class BaseSplitter(ms.BaseCrossValidator):
                     print('Warning: you have selected to recalibrate errors using a model that does not support '
                           'error estimation. Automatically changing to set recalibrate_errors = False')
                     recalibrate_errors = False
+
+            if force_no_model_errors == True:
+                has_model_errors = False
 
             for selector in selectors:
                 splitdir = self._setup_savedir(model=model, selector=selector, preprocessor=preprocessor, savepath=savepath)
