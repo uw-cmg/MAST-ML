@@ -40,8 +40,8 @@ setup(
         "scikit-optimize",
         "citrination-client",
         "foundry-ml",
-        "globus_nexus_client",
-        "globus_sdk",
+        #"globus_nexus_client",
+        #"globus_sdk",
         "matminer",
         "matplotlib",
         "mdf_forge",
@@ -50,6 +50,7 @@ setup(
         "openpyxl",
         "pandas",
         "pathos",
+        "pykan==0.0.5"
         "pymatgen",
         "pyyaml",
         "scikit-learn-extra",

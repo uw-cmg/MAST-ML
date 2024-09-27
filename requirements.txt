@@ -1,8 +1,5 @@
 citrination-client
-dlhub_sdk
 foundry-ml
-globus_nexus_client
-globus_sdk
 matminer
 matplotlib
 mdf_forge
@@ -11,6 +8,7 @@ numpy
 openpyxl
 pandas
 pathos
+pykan==0.0.5
 pymatgen
 pyyaml>=5.4.1
 scikit-learn
