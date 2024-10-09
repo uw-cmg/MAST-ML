@@ -33,6 +33,9 @@ MAST-ML is an open-source Python package designed to broaden and accelerate the 
 * Tutorial 7: Model predictions with guide rails:
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/MASTML_Tutorial_7_ModelPredictions_with_Guide_Rails.ipynb)
 
+* Run random forest materials property models with predictions, calibrated error bars, and domain of applicability guidance:
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/uw-cmg/MAST-ML/blob/master/examples/Garden_Run_Materials_Property_Models_Remotely.ipynb)
+
 ## Contributors
 
 University of Wisconsin-Madison Computational Materials Group:
