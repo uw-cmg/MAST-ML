@@ -46,7 +46,7 @@ setup(
         "matplotlib",
         "mdf_forge",
         "mdf-toolbox",
-        "numpy",
+        "numpy==1.26.4", #scikit-learn-extra doesn't work with numpy >= 2
         "openpyxl",
         "pandas",
         "pathos",
