@@ -551,13 +551,9 @@ class ElementalFeatureGenerator(BaseGenerator):
             # Parse out brackets from compositions
             for comp in compositions_raw:
                 comp_split = comp.split('[')
-                comp_str = ''
-                for s in comp_split:
-                    comp_str += s
+                comp_str = ''.join([s for s in comp_split])
                 comp_split = comp_str.split(']')
-                comp_str = ''
-                for s in comp_split:
-                    comp_str += s
+                comp_str = ''.join([s for s in comp_split])
                 compositions.append(comp_str)
         else:
             compositions = compositions_raw
