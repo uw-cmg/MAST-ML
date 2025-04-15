@@ -83,8 +83,7 @@ Palmer, G., Du, S., Politowicz, A., Emory, J. P., Yang, X., Gautam, A., Gupta, G
 
 If you find the domain of applicability approaches useful, please cite the following publication:
 
-Schultz, L. E., Wang, Y., Jacobs, R., Morgan, D., "Determining Domain of Machine Learning Models using Kernel Density Estimates: Applications in Materials Property Prediction", arXiv (2024). 
-https://doi.org/10.48550/arXiv.2406.05143 
+Schultz, L. E., Wang, Y., Jacobs, R., Morgan, D., "A general approach for determining applicability domain of machine learning models", npj Computational Materials 11 95 (2025). https://doi.org/10.1038/s41524-025-01573-x 
 
 ## Installation
 
