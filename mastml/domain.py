@@ -10,6 +10,7 @@ from pymatgen.core import Composition
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import ShuffleSplit
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import ConstantKernel, WhiteKernel, Matern
 
@@ -113,7 +114,7 @@ class Domain():
             gs_model = GridSearchCV(
                                     pipe,
                                     {},
-                                    cv=((slice(None), slice(None)),),
+                                    cv=ShuffleSplit(n_splits=1),
                                     )
 
             ds_model = dissimilarity(dis='kde')
@@ -239,5 +240,6 @@ class Domain():
             return domains
 
         domains = pd.DataFrame(domains)
+
 
         return domains
