@@ -21,7 +21,7 @@ if sys.version_info[0] >= 3:
         sys.exit(0)
 
 # One of the techniques from https://packaging.python.org/guides/single-sourcing-package-version/
-verstr = "3.2.0"
+verstr = "3.2.5"
 
 try:
     verstr = open("VERSION", "rt").read().strip()
@@ -38,22 +38,22 @@ setup(
     install_requires=[
         "scikit-learn",
         "scikit-optimize",
-        "citrination-client",
-        "foundry-ml",
+        #"citrination-client",
+        #"foundry-ml",
         #"globus_nexus_client",
         #"globus_sdk",
         "matminer",
         "matplotlib",
         "mdf_forge",
         "mdf-toolbox",
-        "numpy==1.26.4", #scikit-learn-extra doesn't work with numpy >= 2
+        "numpy", #scikit-learn-extra doesn't work with numpy >= 2, works with 1.26.4
         "openpyxl",
         "pandas",
         "pathos",
-        "pykan==0.0.5",
+        #"pykan==0.0.5",
         "pymatgen",
         "pyyaml",
-        "scikit-learn-extra",
+        #"scikit-learn-extra",
         "scipy",
         "shap",
         "sphinx-automodapi",
