@@ -1,5 +1,5 @@
 '''
-This module contains a collection of routines to perform domain evaluations
+This module contains a collection of routines to perform domain of applicability evaluations
 '''
 import os
 import re

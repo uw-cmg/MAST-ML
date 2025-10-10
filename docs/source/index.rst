@@ -45,6 +45,8 @@ Welcome to MAterials Simulation Toolkit for Machine Learning (MAST-ML)'s documen
 
    15_mastml_predictor.rst
 
+   16_domain.rst
+
 
 Indices and tables
 ==================
