@@ -12,7 +12,7 @@ numpy #scikit-learn-extra doesn't work with numpy >= 2, works with 1.26.4
 openpyxl
 pandas
 pathos
-#pykan==0.0.5
+pykan==0.0.5
 pymatgen
 pyyaml
 #scikit-learn-extra
