@@ -57,6 +57,7 @@ setup(
         "scipy",
         "shap",
         "sphinx-automodapi",
+        "sphinx-rtd-theme",
         "statsmodels",
         "madml",
         "udocker",
