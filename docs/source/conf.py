@@ -21,6 +21,7 @@ import os
 import sys
 os.system('pip install sphinx-automodapi sphinx-rtd-theme')
 #os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
+os.system('pip install scikit-learn scikit-optimize matminer matplotlib mdf_forge mdf-toolbox numpy openpyxl pandas pathos pykan==0.0.5 pymatgen pyyaml scipy shap statsmodels madml udocker transfernet forestci')
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../..'))
 
