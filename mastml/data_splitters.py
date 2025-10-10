@@ -78,10 +78,15 @@ except:
     print('matminer and pymatgen are optional dependencies. To use data splitter methods invoking these packages,'
           'do pip install matminer pymatgen')
 
+try:
+    import sklearn_extra.cluster
+except:
+    print('sklearn-extra is an optional dependency, used to do LeaveOutClusterCV. To use it, do pip install sklearn_extra')
+
 import sklearn.model_selection as ms
 from sklearn.utils import check_random_state
 from sklearn.neighbors import NearestNeighbors
-import sklearn_extra.cluster
+
 
 from mastml.plots import make_plots
 from mastml.feature_selectors import NoSelect
