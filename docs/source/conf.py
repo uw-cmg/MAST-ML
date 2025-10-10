@@ -19,8 +19,8 @@
 #
 import os
 import sys
-os.system('pip install sphinx-automodapi')
-os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
+os.system('pip install sphinx-automodapi sphinx-rtd-theme')
+#os.system('pip install citrination-client dlhub_sdk globus_nexus_client globus_sdk matminer matplotlib mdf_forge mdf-toolbox mlxtend numpy pandas pymatgen scikit-learn scikit-optimize scipy sphinx-automodapi')
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'MAterials Simulation Toolkit for Machine Learning (MAST-ML)'
-copyright = '2018-2021, University of Wisconsin-Madison Computational Materials Group'
+copyright = '2018-2025, University of Wisconsin-Madison Computational Materials Group'
 author = 'University of Wisconsin-Madison Computational Materials Group'
 
 # The version info for the project you're documenting, acts as replacement for
